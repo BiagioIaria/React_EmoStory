@@ -1,26 +1,34 @@
+import {BrowserRouter as Router, Link, Route, Routes} from 'react-router-dom'
+import Button from 'react-bootstrap/Button';
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Home from "./page/home";
+
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  return (<div className="App">
+    <Router>
+      {Header()}
+      <article>
+        <Routes>
+          <Route path="/" element={<Home/>}/>
+        </Routes>
+      </article>
+    </Router>
+  </div>);
+}
+
+function Header() {
+
+  return (<header>
+        <span className="buttons1">
+            <Link to='/'>
+                <Button variant="outline-secondary" className="square border border-5">
+                    Home
+                </Button>
+            </Link>
+        </span>
+  </header>);
 }
 
 export default App;
