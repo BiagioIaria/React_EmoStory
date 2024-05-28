@@ -2,7 +2,7 @@ import {BrowserRouter as Router, Link, Route, Routes} from 'react-router-dom'
 import Button from 'react-bootstrap/Button';
 import React from 'react';
 import './App.css';
-import Home from "./page/home";
+import Home from "./page/Home";
 
 
 function App() {
