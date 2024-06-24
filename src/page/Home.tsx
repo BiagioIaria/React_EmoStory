@@ -3,6 +3,7 @@ import {Background, Controls, MarkerType, Position, ReactFlow} from "reactflow";
 import "reactflow/dist/style.css";
 import {Chip} from "@mui/material";
 import PlanNode from '../CustomNode/PlanNode';
+import UnitNode from '../CustomNode/UnitNode';
 
 const upload_file = (
     <Button
@@ -41,20 +42,46 @@ function Home() {
 function Unit() {
     const nodeTypes = {
         pNode: PlanNode,
+        uNode: UnitNode,
     };
 
     const defaultNodes = [
         {
+            id: 'U1',
+            position: {x: -200, y: 70},
+            data: {label: 'Unit1'},
+            type: 'input',
+            sourcePosition: Position.Right,
+        },
+        {
+            id: 'U3',
+            position: {x: 600, y: 70},
+            data: {label: 'Unit3'},
+            type: 'output',
+            targetPosition: Position.Left,
+        },
+        {
+            id: 'U2',
+                position: {x: 200, y: 60},
+            data: {label: 'Unit2'},
+            type: 'uNode',
+            style: {
+                background: '#D6D5E6',
+                color: '#333',
+                border: '1px solid #222138',
+            },
+        },
+        {
             id: 'A1',
             position: {x: 120, y: 350},
             data: {label: 'AGENT1'},
-            style: {}
+            type: 'input',
         },
         {
             id: 'A2',
-            position: {x: 270, y: 330},
+            position: {x: 370, y: 330},
             data: {label: 'AGENT2'},
-            style: {}
+            type: 'input',
         },
         {
             id: 'G1',
@@ -64,7 +91,7 @@ function Unit() {
         },
         {
             id: 'G2',
-            position: {x: 340, y: 450},
+            position: {x: 440, y: 450},
             data: {label: 'Goal2'},
             sourcePosition: Position.Right
         },
@@ -78,19 +105,29 @@ function Unit() {
         {
             id: 'P2',
             type: 'pNode',
-            position: {x: 300, y: 200},
+            position: {x: 400, y: 200},
             data: {label: 'Plan2'},
             targetPosition: Position.Bottom,
         },
         {
             id: 'V1',
-            position: {x: 120, y: 500},
+            position: {x: 190, y: 460},
             data: {label: 'Value11\nValue12'},
         },
         {
             id: 'V2',
-            position: {x: 280, y: 500},
+            position: {x: 310, y: 450},
             data: {label: 'Value21\nValue22'},
+        },
+        {
+            id: 'E1',
+            position: {x: 120, y: 530},
+            data: {label: 'Emotion11\nEmotion12'},
+        },
+        {
+            id: 'E2',
+            position: {x: 380, y: 530},
+            data: {label: 'Emotion21\nEmotion22'},
         }
     ];
 
@@ -104,6 +141,25 @@ function Unit() {
     }));
 
     const defaultEdges = [
+        {
+            id: 'U1->U2',
+            source: 'U1',
+            target: 'U2',
+            markerEnd: {
+                type: MarkerType.Arrow,
+            },
+            label: 'precedes/follows',
+        },
+        {
+            id: 'U2->U3',
+            source: 'U2',
+            target: 'U3',
+            sourceHandle: 'u_s_r',
+            markerEnd: {
+                type: MarkerType.Arrow,
+            },
+            label: 'precedes/follows',
+        },
         {
             id: 'A1->G1',
             source: 'A1',
@@ -142,7 +198,7 @@ function Unit() {
             label: 'achieves/isAchievedBy',
         },
         {
-            id: 'P1->P2',
+            id: 'P1->P2_conflict',
             source: 'P1',
             target: 'P2',
             sourceHandle: 'p_s_c',
@@ -155,7 +211,7 @@ function Unit() {
             label: 'conflict',
         },
         {
-            id: 'P1->P2',
+            id: 'P1->P2_support',
             source: 'P1',
             target: 'P2',
             sourceHandle: 'p_s_s',
@@ -167,6 +223,28 @@ function Unit() {
                 type: MarkerType.ArrowClosed,
             },
             label: 'support',
+        },
+        {
+            id: 'U2->P1',
+            source: 'U2',
+            target: 'P1',
+            targetHandle: 'p_t_s',
+            type: 'smoothstep',
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+            },
+            label: 'hasMotivation/isMotivationFor',
+        },
+        {
+            id: 'U2->P2',
+            source: 'U2',
+            target: 'P2',
+            targetHandle: 'p_t_s',
+            type: 'smoothstep',
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+            },
+            label: 'hasMotivation/\nisMotivationFor',
         },
         {
             id: 'A1->V1',
@@ -185,6 +263,41 @@ function Unit() {
                 type: MarkerType.Arrow,
             },
             label: 'hasValue',
+        },
+        {
+            id: 'A1->E1',
+            source: 'A1',
+            target: 'E1',
+            markerEnd: {
+                type: MarkerType.Arrow,
+                width: 20,
+                height: 20,
+                color: '#1f39e1',
+
+            },
+            label: 'feels',
+            animated: true,
+            style: {
+                strokeWidth: 2,
+                stroke: '#1f39e1',
+            },
+        },
+        {
+            id: 'A2->E2',
+            source: 'A2',
+            target: 'E2',
+            markerEnd: {
+                type: MarkerType.Arrow,
+                width: 20,
+                height: 20,
+                color: '#1f39e1',
+            },
+            label: 'feels',
+            animated: true,
+            style: {
+                strokeWidth: 2,
+                stroke: '#1f39e1',
+            },
         }
     ];
 
@@ -201,8 +314,11 @@ function Unit() {
                     defaultEdges={defaultEdges}
                     proOptions={proOptions}
                     nodeTypes={nodeTypes}
-                    fitView>
-                    <Controls />
+                    fitView
+                    elementsSelectable={true}
+                    nodesConnectable={false}
+                    nodesDraggable={true}>
+                    <Controls showInteractive={false} />
                     <Background />
                 </ReactFlow>
             </div>
