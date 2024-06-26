@@ -2,8 +2,9 @@ import Button from '@mui/material/Button';
 import {Background, Controls, MarkerType, Position, ReactFlow} from "reactflow";
 import "reactflow/dist/style.css";
 import {Chip} from "@mui/material";
-import PlanNode from '../CustomNode/PlanNode';
-import UnitNode from '../CustomNode/UnitNode';
+import PlanNode from '../CustomNodeEdge/PlanNode';
+import UnitNode from '../CustomNodeEdge/UnitNode';
+import CustomEndEdge from '../CustomNodeEdge/CustomEndEdge';
 
 const upload_file = (
     <Button
@@ -45,6 +46,10 @@ function Unit() {
         uNode: UnitNode,
     };
 
+    const edgeTypes = {
+        endEdge: CustomEndEdge,
+    };
+
     const defaultNodes = [
         {
             id: 'U1',
@@ -79,7 +84,7 @@ function Unit() {
         },
         {
             id: 'A2',
-            position: {x: 370, y: 330},
+            position: {x: 470, y: 280},
             data: {label: 'AGENT2'},
             type: 'input',
         },
@@ -91,7 +96,7 @@ function Unit() {
         },
         {
             id: 'G2',
-            position: {x: 440, y: 450},
+            position: {x: 540, y: 450},
             data: {label: 'Goal2'},
             sourcePosition: Position.Right
         },
@@ -105,9 +110,29 @@ function Unit() {
         {
             id: 'P2',
             type: 'pNode',
-            position: {x: 400, y: 200},
+            position: {x: 500, y: 200},
             data: {label: 'Plan2'},
             targetPosition: Position.Bottom,
+        },
+        {
+            id: 'PSP1',
+            position: {x: 260, y: 380},
+            data: {label: 'Possible SuperPlan1\n(Hierarchically higher)'},
+            type: 'output',
+            targetPosition: Position.Left,
+            style: {
+                border: 'none'
+            }
+        },
+        {
+            id: 'PSP2',
+            position: {x: 300, y: 330},
+            data: {label: 'Possible SuperPlan2\n(Hierarchically higher)'},
+            type: 'output',
+            targetPosition: Position.Right,
+            style: {
+                border: 'none',
+            }
         },
         {
             id: 'V1',
@@ -116,29 +141,60 @@ function Unit() {
         },
         {
             id: 'V2',
-            position: {x: 310, y: 450},
+            position: {x: 410, y: 450},
             data: {label: 'Value21\nValue22'},
         },
         {
             id: 'E1',
-            position: {x: 120, y: 530},
+            position: {x: 120, y: 550},
             data: {label: 'Emotion11\nEmotion12'},
         },
         {
             id: 'E2',
-            position: {x: 380, y: 530},
+            position: {x: 480, y: 550},
             data: {label: 'Emotion21\nEmotion22'},
+        },
+        {
+            id: 'PU2',
+            position: {x: -200, y: 130},
+            data: {label: 'Consistent State Set\nPre Unit 2'},
+            sourcePosition: Position.Right,
+            targetPosition: Position.Bottom
+        },
+        {
+            id: 'PP2',
+            position: {x: -300, y: 300},
+            data: {label: 'Consistent State Set\nPre Plan 2'},
+            sourcePosition: Position.Right,
+            targetPosition: Position.Bottom
+        },
+        {
+            id: 'EU2',
+            position: {x: 700, y: 130},
+            data: {label: 'Consistent State Set\nEff Unit 2'},
+            targetPosition: Position.Bottom
+        },
+        {
+            id: 'EP2',
+            position: {x: 800, y: 300},
+            data: {label: 'Consistent State Set\nEff Plan 2'},
+            targetPosition: Position.Bottom
         }
     ];
 
-    const updatedNodes = defaultNodes.map((node) => ({
-        ...node,
-        style: {
-            ...node.style,
-            width: 100,
-            height: '40pe',
-        },
-    }));
+    const updatedNodes = defaultNodes.map((node) => {
+        if (node.id === 'PSP1' || node.id === 'PSP2') {
+            return node;
+        }
+
+        return {
+            ...node,
+            style: {
+                ...node.style,
+                width: 100,
+            },
+        };
+    });
 
     const defaultEdges = [
         {
@@ -244,7 +300,7 @@ function Unit() {
             markerEnd: {
                 type: MarkerType.ArrowClosed,
             },
-            label: 'hasMotivation/\nisMotivationFor',
+            label: 'hasMotivation/isMotivationFor',
         },
         {
             id: 'A1->V1',
@@ -298,6 +354,117 @@ function Unit() {
                 strokeWidth: 2,
                 stroke: '#1f39e1',
             },
+        },
+        {
+            id: 'PU2->U2',
+            source: 'PU2',
+            target: 'U2',
+            markerEnd: {
+                type: MarkerType.Arrow,
+            },
+            label: 'hasPrecondition/ IsPreconditionOf',
+        },
+        {
+            id: 'P2->EP2',
+            source: 'P2',
+            target: 'EP2',
+            markerEnd: {
+                type: MarkerType.Arrow,
+            },
+            label: 'hasPrecondition/ IsPreconditionOf',
+        },
+        {
+            id: 'V1->PU2',
+            source: 'V1',
+            target: 'PU2',
+            type: 'endEdge',
+            data: {
+                endLabel1: 'atStake',
+                endLabel2: 'inBalance'
+            }
+        },
+        {
+            id: 'V1->PP2',
+            source: 'V1',
+            target: 'PP2',
+            type: 'endEdge',
+            data: {
+                endLabel1: 'atStake',
+                endLabel2: 'inBalance'
+            }
+        },
+        {
+            id: 'PP2->P1',
+            source: 'PP2',
+            target: 'P1',
+            markerEnd: {
+                type: MarkerType.Arrow,
+            },
+            label: 'hasPrecondition / isPreconditionOf',
+        },
+        {
+            id: 'V1->EU2',
+            source: 'V1',
+            target: 'EU2',
+            type: 'endEdge',
+            data: {
+                endLabel1: 'atStake',
+                endLabel2: 'inBalance',
+                color: '#0924f6'
+            },
+            animated: true,
+        },
+        {
+            id: 'V2->EU2',
+            source: 'V2',
+            target: 'EU2',
+            type: 'endEdge',
+            data: {
+                endLabel1: 'atStake',
+                endLabel2: 'inBalance',
+                color: '#0924f6'
+            },
+            animated: true,
+        },
+        {
+            id: 'V2->EP2',
+            source: 'V2',
+            target: 'EP2',
+            type: 'endEdge',
+            data: {
+                endLabel1: 'atStake',
+                endLabel2: 'inBalance'
+            }
+        },
+        {
+            id: 'E2->EU2',
+            source: 'E2',
+            target: 'EU2',
+            type: 'smoothstep',
+        },
+        {
+            id: 'E1->EU2',
+            source: 'E1',
+            target: 'EU2',
+            type: 'smoothstep',
+        },
+        {
+            id: 'A1->PSP1',
+            source: 'A1',
+            target: 'PSP1',
+            label: 'intends',
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+            },
+        },
+        {
+            id: 'A2->PSP2',
+            source: 'A2',
+            target: 'PSP2',
+            label: 'intends',
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+            },
         }
     ];
 
@@ -314,6 +481,7 @@ function Unit() {
                     defaultEdges={defaultEdges}
                     proOptions={proOptions}
                     nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
                     fitView
                     elementsSelectable={true}
                     nodesConnectable={false}
