@@ -25,6 +25,7 @@
   font-size: large;
 }
 
-.App .home {
-  margin: 1em;
+.App .edit {
+  margin: 1em auto;
+  width: 50%;
 }

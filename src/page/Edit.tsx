@@ -134,14 +134,18 @@ function rowContent(_index: number, row: Data) {
     );
 }
 
-export default function Edit() {
+function Edit() {
     return (
-        <Paper style={{ height: 400, width: '50%' }}>
-            <TableVirtuoso
-                data={rows}
-                fixedHeaderContent={fixedHeaderContent}
-                itemContent={rowContent}
-            />
-        </Paper>
+        <div className='edit'>
+            <Paper style={{ height: 400 }}>
+                <TableVirtuoso
+                    data={rows}
+                    fixedHeaderContent={fixedHeaderContent}
+                    itemContent={rowContent}
+                />
+            </Paper>
+        </div>
     );
 }
+
+export default Edit;
