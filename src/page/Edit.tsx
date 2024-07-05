@@ -137,7 +137,7 @@ function rowContent(_index: number, row: Data) {
 function Edit() {
     return (
         <div className='edit'>
-            <Paper style={{ height: 400 }}>
+            <Paper style={{ height: 400}}>
                 <TableVirtuoso
                     data={rows}
                     fixedHeaderContent={fixedHeaderContent}
