@@ -114,6 +114,10 @@ const initialRows: Data[] = Array.from({ length: sample.length }, (_, index) => 
     return createData(nameRow[index], ...selection);
 });
 
+const buttonCells: [number, keyof Data, boolean][] = [
+    [0, 'plan1', true],
+    [2, 'eff1', false],
+];
 
 function Edit() {
     const [columns, setColumns] = React.useState<ColumnData[]>(initialColumns);
@@ -160,13 +164,14 @@ function Edit() {
         );
     }
 
-    const rowContent = (_index: number, row: Data) => {
+    const rowContent = (rowIndex: number, row: Data) => {
         const stickyStyle = {
             position: 'sticky',
             left: 0,
             background: 'white',
             boxShadow: '2px 0 5px -2px rgba(0,0,0,0.3)',
         };
+
 
         return (
             <React.Fragment>
@@ -177,7 +182,13 @@ function Edit() {
                         // @ts-ignore
                         style={colIndex === 0 ? stickyStyle : {}}
                     >
-                        {row[column.dataKey]}
+                        {buttonCells.some(([r, c, f]) => r === rowIndex && c === column.dataKey && f) ? (
+                            <Button variant="contained" onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}>
+                                {row[column.dataKey]}
+                            </Button>
+                        ) : (
+                            row[column.dataKey]
+                        )}
                     </TableCell>
                 ))}
             </React.Fragment>
@@ -187,7 +198,7 @@ function Edit() {
     return (
         <div className='edit'>
             <Button variant="contained" onClick={addColumns}>Add Columns</Button>
-            <Paper style={{ height: 400}}>
+            <Paper style={{ height: 400 }}>
                 <TableVirtuoso
                     data={rows}
                     fixedHeaderContent={fixedHeaderContent}
