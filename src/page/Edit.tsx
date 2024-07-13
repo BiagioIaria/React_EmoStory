@@ -3,7 +3,19 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import {Table, TableBody, TableContainer, TableHead, TextField} from '@mui/material';
+import {
+    Box,
+    IconButton,
+    Stack,
+    Table,
+    TableBody,
+    TableContainer,
+    TableHead,
+    TextField,
+    Typography
+} from '@mui/material';
+import AddIcon from "@mui/icons-material/Add";
+import {useState} from "react";
 
 interface Data {
     [key: string]: string;
@@ -101,13 +113,10 @@ const initialRows: Data[] = Array.from({length: sampleStandard.length}, (_, inde
 });
 
 function Edit() {
-    const [rows, setRows] = React.useState<Data[]>(initialRows);
-
-    const addRow = () => {
-        const newRow: Data = createData(
-            'Frozen yoghurt', '159', '6.0', '24', '4.0', '2', '3',
-        );
-        setRows([...rows, newRow]);
+    const [groups, setGroups] = useState([3]);
+    const addGroup = (col: any) => {
+        groups.pop()
+        setGroups([...groups, Number(col[col.length - 1]), 3]);
     };
 
     const header = () => (
@@ -121,6 +130,58 @@ function Edit() {
     );
 
     const rowContent = (rowIndex: number, row: Data) => {
+        function ButtonsValue(index: number, column: ColumnData, flag: boolean) {
+            if(!flag){
+                return (
+                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
+                         margin={1}>
+                        <Stack direction="row" spacing={2}>
+                            <Button variant="contained" disabled>
+                                Balance?
+                            </Button>
+                            <Button variant="contained" disabled>
+                                Value?
+                            </Button>
+                            <Button variant="contained" disabled>
+                                Balance?
+                            </Button>
+                        </Stack>
+                        <IconButton
+                            color="primary"
+                            aria-label="add"
+                            sx={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                            }}
+                            onClick={() => addGroup(column.dataKey)}
+                        >
+                            <AddIcon/>
+                        </IconButton>
+                    </Box>
+                );
+            }else{
+                return (
+                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
+                         margin={1}>
+                        <Stack direction="row" spacing={2}>
+                            <Button variant="outlined">
+                                Balance?
+                            </Button>
+                            <Button variant="outlined">
+                                Value?
+                            </Button>
+                            <Button variant="outlined">
+                                Balance?
+                            </Button>
+                        </Stack>
+                    </Box>
+                );
+            }
+
+        }
+
         return (
             <React.Fragment>
                 {initialColumns.map((column) => {
@@ -128,33 +189,67 @@ function Edit() {
 
                     if (0 === rowIndex && ('plan1' === column.dataKey || 'plan2' === column.dataKey)) {
                         cellContent = (
-                            <>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
                                 <Button variant="outlined"
                                         onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
-                                        sx={{ m: 1 }}>
+                                        sx={{m: 1}}>
                                     {'accomplished?'}
                                 </Button>
                                 <Button variant="outlined"
                                         onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
-                                        sx={{ m: 1 }}>
-                                    {'P Agent ' +  column.dataKey[column.dataKey.length-1] + ' Title'}
+                                        sx={{m: 1}}>
+                                    {'P Agent ' + column.dataKey[column.dataKey.length - 1] + ' Title'}
                                 </Button>
                                 <Button variant="outlined"
                                         onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
-                                        sx={{ m: 1 }}>
-                                    {'G Plan Agent ' +  column.dataKey[column.dataKey.length-1]}
+                                        sx={{m: 1}}>
+                                    {'G Plan Agent ' + column.dataKey[column.dataKey.length - 1]}
                                 </Button>
                                 <Button variant="outlined"
                                         onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
-                                        sx={{ m: 1 }}>
-                                    {'Agent ' +  column.dataKey[column.dataKey.length-1]}
+                                        sx={{m: 1}}>
+                                    {'Agent ' + column.dataKey[column.dataKey.length - 1]}
                                 </Button>
-                            </>
+                            </Box>
                         );
-                    } else {
-                        cellContent = row[column.dataKey];
+                    } else if (1 === rowIndex && ('plan1' === column.dataKey || 'plan2' === column.dataKey)) {
+                        cellContent = (<>
+                            {groups.map((el, index) => {
+                                    if (el === 3) {
+                                        return ButtonsValue(index, column, false)
+                                    } else if (el === 1 && 'plan1' === column.dataKey) {
+                                        return ButtonsValue(index, column, true)
+                                    } else if (el === 2 && 'plan2' === column.dataKey) {
+                                        return ButtonsValue(index, column, true)
+                                    } else if (el === 1 && 'plan2' === column.dataKey) {
+                                        return (
+                                            <div key={'Value ' + index + ' ' + column.dataKey}
+                                                 style={{height: '3.70em'}}>
+                                            </div>
+                                        )
+                                    } else if (el === 2 && 'plan1' === column.dataKey) {
+                                        return (
+                                            <div key={'Value ' + index + ' ' + column.dataKey}
+                                                 style={{height: '3.70em'}}>
+                                            </div>
+                                        )
+                                    } else {
+                                        return (
+                                            <div key={'Value ' + index + ' ' + column.dataKey}>
+                                            </div>
+                                        )
+                                    }
+                                }
+                            )}
+                        </>)
                     }
-
                     return (
                         <TableCell
                             key={column.dataKey}
@@ -162,6 +257,19 @@ function Edit() {
                             sx={{borderRight: '1px solid rgba(224, 224, 224, 1)', width: column.width}}
                         >
                             {cellContent}
+                            <Typography
+                                variant="caption"
+                                display="block"
+                                gutterBottom
+                                sx={{
+                                    fontSize: '0.6rem',
+                                    color: 'rgba(128, 128, 128, 0.7)',
+                                    bottom: 0,
+                                    right: 0,
+                                }}
+                            >
+                                {row[column.dataKey]}
+                            </Typography>
                         </TableCell>
                     );
                 })}
@@ -172,8 +280,7 @@ function Edit() {
 
     return (
         <div className='edit'>
-            <Button variant="contained" onClick={addRow}>Add rows</Button>
-            <Paper style={{display: 'flex', flexDirection: 'column', height: '540px'}}>
+            <Paper style={{display: 'flex', flexDirection: 'column', height: '600px'}}>
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead style={{position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1}}>
@@ -194,7 +301,7 @@ function Edit() {
                             {header()}
                         </TableHead>
                         <TableBody>
-                            {rows.map((row, index) => (
+                            {initialRows.map((row, index) => (
                                 <TableRow key={index}>
                                     {rowContent(index, row)}
                                 </TableRow>
