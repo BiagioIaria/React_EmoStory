@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import {
     Box,
-    IconButton,
+    IconButton, Menu, MenuItem,
     Stack,
     Table,
     TableBody,
@@ -34,6 +34,16 @@ interface ColumnData {
     label: string;
     width: number;
 }
+
+type AnchorEls = {
+    [key: string]: HTMLElement | null;
+};
+
+type Inputs = {
+    [key: string]: {
+        input: string;
+    };
+};
 
 type Sample = [string, string, string, string, string, string, string];
 
@@ -114,6 +124,45 @@ const initialRows: Data[] = Array.from({length: sampleStandard.length}, (_, inde
 
 function Edit() {
     const [groups, setGroups] = useState([3]);
+    const [labels, setLabels] = useState({
+        plan1: 'P Agent 1 Title',
+        plan2: 'P Agent 2 Title'
+    });const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
+    const [inputs, setInputs] = useState<Inputs>({});
+    const handleClick = (event: { currentTarget: any; }, id: any) => {
+        setAnchorEls((prev) => ({ ...prev, [id]: event.currentTarget }));
+    };
+
+    const handleClose = (id: any) => {
+        setAnchorEls((prev) => ({ ...prev, [id]: null }));
+    };
+
+    const handleInputChange = (id: string | number, inputName: any, value: any) => {
+        setInputs((prev: any) => ({
+            ...prev,
+            [id]: {
+                ...prev[id],
+                [inputName]: value
+            }
+        }));
+    };
+
+    const handleConfirm = (id: any) => {
+        if(inputs[id]!==undefined) {
+            setLabels(prevLabels => {
+                switch (id) {
+                    case 'plan1':
+                        return {...prevLabels, plan1: inputs[id]['input']};
+                    case 'plan2':
+                        return {...prevLabels, plan2: inputs[id]['input']};
+                    default:
+                        return prevLabels;
+                }
+            });
+            handleClose(id);
+        }
+    };
+
     const addGroup = (col: any) => {
         groups.pop()
         setGroups([...groups, Number(col[col.length - 1]), 3]);
@@ -131,7 +180,7 @@ function Edit() {
 
     const rowContent = (rowIndex: number, row: Data) => {
         function ButtonsValue(index: number, column: ColumnData, flag: boolean) {
-            if(!flag){
+            if (!flag) {
                 return (
                     <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
                          margin={1}>
@@ -161,7 +210,7 @@ function Edit() {
                         </IconButton>
                     </Box>
                 );
-            }else{
+            } else {
                 return (
                     <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
                          margin={1}>
@@ -199,14 +248,34 @@ function Edit() {
                             >
                                 <Button variant="outlined"
                                         onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
-                                        sx={{m: 1}}>
+                                        sx={{m: 1}}
+                                        disabled={inputs[column.dataKey] === undefined}>
                                     {'accomplished?'}
                                 </Button>
                                 <Button variant="outlined"
-                                        onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
+                                        onClick={(e: { currentTarget: any; }) => handleClick(e, column.dataKey)}
                                         sx={{m: 1}}>
-                                    {'P Agent ' + column.dataKey[column.dataKey.length - 1] + ' Title'}
+                                    {labels[column.dataKey]}
                                 </Button>
+                                <Menu
+                                    anchorEl={anchorEls[column.dataKey]}
+                                    open={Boolean(anchorEls[column.dataKey])}
+                                    onClose={() => handleClose(column.dataKey)}
+                                >
+                                    <MenuItem>
+                                        <TextField
+                                            label="Plan"
+                                            value={inputs[column.dataKey]?.input || ''}
+                                            onChange={(e) => handleInputChange(column.dataKey, 'input', e.target.value)}
+                                            fullWidth
+                                        />
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <Button variant="contained" onClick={() => handleConfirm(column.dataKey)}>
+                                            Confirm
+                                        </Button>
+                                    </MenuItem>
+                                </Menu>
                                 <Button variant="outlined"
                                         onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
                                         sx={{m: 1}}>
@@ -249,6 +318,29 @@ function Edit() {
                                 }
                             )}
                         </>)
+                    } else if (1 === rowIndex && 'preUnit' === column.dataKey) {
+                        cellContent = (<div style={{marginTop: '-1.03em'}}>
+                            {groups.map((el, index) => {
+                                    if (el === 1 || el === 2) {
+                                        return <Box key={'Value ' + index + ' ' + column.dataKey} position="relative"
+                                                    display="inline-block"
+                                                    margin={1}>
+                                            <Stack direction="row" spacing={2}>
+                                                <Button variant="outlined">
+                                                    Balance?
+                                                </Button>
+                                            </Stack>
+                                        </Box>
+                                    } else {
+                                        return (
+                                            <div key={'Value ' + index + ' ' + column.dataKey}
+                                                 style={{height: '3.70em'}}>
+                                            </div>
+                                        )
+                                    }
+                                }
+                            )}
+                        </div>)
                     }
                     return (
                         <TableCell
@@ -280,7 +372,7 @@ function Edit() {
 
     return (
         <div className='edit'>
-            <Paper style={{display: 'flex', flexDirection: 'column', height: '600px'}}>
+            <Paper style={{display: 'flex', flexDirection: 'column', height: '630px'}}>
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead style={{position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1}}>
