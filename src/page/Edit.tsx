@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import {
     Box,
-    IconButton, Menu, MenuItem,
+    IconButton, Input, Menu, MenuItem,
     Stack,
     Table,
     TableBody,
@@ -33,6 +33,10 @@ interface ColumnData {
     dataKey: keyof Data;
     label: string;
     width: number;
+}
+
+interface Labels {
+    [key: string]: any; // Adjust the type according to the values in `labels`
 }
 
 type AnchorEls = {
@@ -124,9 +128,15 @@ const initialRows: Data[] = Array.from({length: sampleStandard.length}, (_, inde
 
 function Edit() {
     const [groups, setGroups] = useState([3]);
-    const [labels, setLabels] = useState({
+    const [labels, setLabels] = useState<Labels>({
+        accplan1: 'accomplished?',
+        accplan2: 'accomplished?',
         plan1: 'P Agent 1 Title',
         plan2: 'P Agent 2 Title',
+        goalplan1: 'G Plan Agent 1',
+        goalplan2: 'G Plan Agent 2',
+        agentplan1: 'Agent 1',
+        agentplan2: 'Agent 2',
         unit: initialColumns[3].label
     });
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
@@ -149,16 +159,28 @@ function Edit() {
         }));
     };
 
-    const handleConfirm = (id: any) => {
-        if (inputs[id] !== undefined) {
+    const handleConfirm = (id: any, action?: string) => {
+        if (inputs[id] !== undefined || id === 'accplan1' || id === 'accplan2') {
             setLabels(prevLabels => {
                 switch (id) {
                     case 'plan1':
                         return {...prevLabels, plan1: inputs[id]['input']};
+                    case 'goalplan1':
+                        return {...prevLabels, goalplan1: inputs[id]['input']};
+                    case 'agentplan1':
+                        return {...prevLabels, agentplan1: inputs[id]['input']};
                     case 'plan2':
                         return {...prevLabels, plan2: inputs[id]['input']};
+                    case 'goalplan2':
+                        return {...prevLabels, goalplan2: inputs[id]['input']};
+                    case 'agentplan2':
+                        return {...prevLabels, agentplan2: inputs[id]['input']};
+                    case 'accplan1':
+                        return {...prevLabels, accplan1: action};
+                    case 'accplan2':
+                        return {...prevLabels, accplan2: action};
                     case 'unit':
-                        initialColumns=initialColumns.map(column => ({
+                        initialColumns = initialColumns.map(column => ({
                             ...column,
                             label: column.label.replace('Unit i', inputs[id]['input'])
                         }));
@@ -195,8 +217,8 @@ function Edit() {
                                     onClose={() => handleClose(col.dataKey)}
                                 >
                                     <MenuItem>
-                                        <TextField
-                                            label="Unit"
+                                        <Input
+                                            placeholder="Unit"
                                             value={inputs[col.dataKey]?.input || ''}
                                             onChange={(e) => handleInputChange(col.dataKey, 'input', e.target.value)}
                                             fullWidth
@@ -290,12 +312,49 @@ function Edit() {
                                     justifyContent: 'center',
                                 }}
                             >
-                                <Button variant="outlined"
-                                        onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
-                                        sx={{m: 1}}
-                                        disabled={inputs[column.dataKey] === undefined}>
-                                    {'accomplished?'}
+                                <Button
+                                    variant="outlined"
+                                    onClick={(e) => handleClick(e, 'acc' + column.dataKey)}
+                                    sx={{
+                                        m: 1,
+                                        borderColor: labels['acc' + column.dataKey] === 'Accomplished'
+                                            ? 'green'
+                                            : labels['acc' + column.dataKey] === 'Unaccomplished'
+                                                ? 'red' : 'theme.palette.primary.main',
+                                        color: labels['acc' + column.dataKey] === 'Accomplished'
+                                            ? 'green'
+                                            : labels['acc' + column.dataKey] === 'Unaccomplished'
+                                                ? 'red' : 'theme.palette.primary.main'
+                                    }}
+                                    disabled={inputs[column.dataKey] === undefined}
+                                >
+                                    {labels['acc' + column.dataKey]}
                                 </Button>
+
+                                <Menu
+                                    anchorEl={anchorEls['acc' + column.dataKey]}
+                                    open={Boolean(anchorEls['acc' + column.dataKey])}
+                                    onClose={() => handleClose('acc' + column.dataKey)}
+                                >
+                                    <MenuItem>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => handleConfirm('acc' + column.dataKey, 'Accomplished')}
+                                            style={{backgroundColor: 'green', color: 'white'}}
+                                        >
+                                            Accomplished
+                                        </Button>
+
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <Button variant="contained"
+                                                onClick={() => handleConfirm('acc' + column.dataKey, 'Unaccomplished')}
+                                                style={{backgroundColor: 'red', color: 'white'}}
+                                        >
+                                            Unaccomplished
+                                        </Button>
+                                    </MenuItem>
+                                </Menu>
                                 <Button variant="outlined"
                                         onClick={(e: { currentTarget: any; }) => handleClick(e, column.dataKey)}
                                         sx={{m: 1}}>
@@ -307,8 +366,8 @@ function Edit() {
                                     onClose={() => handleClose(column.dataKey)}
                                 >
                                     <MenuItem>
-                                        <TextField
-                                            label="Plan"
+                                        <Input
+                                            placeholder="Plan"
                                             value={inputs[column.dataKey]?.input || ''}
                                             onChange={(e) => handleInputChange(column.dataKey, 'input', e.target.value)}
                                             fullWidth
@@ -321,15 +380,59 @@ function Edit() {
                                     </MenuItem>
                                 </Menu>
                                 <Button variant="outlined"
-                                        onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
+                                        onClick={(e: {
+                                            currentTarget: any;
+                                        }) => handleClick(e, 'goal' + column.dataKey)}
                                         sx={{m: 1}}>
-                                    {'G Plan Agent ' + column.dataKey[column.dataKey.length - 1]}
+                                    {labels['goal' + column.dataKey]}
                                 </Button>
+                                <Menu
+                                    anchorEl={anchorEls['goal' + column.dataKey]}
+                                    open={Boolean(anchorEls['goal' + column.dataKey])}
+                                    onClose={() => handleClose('goal' + column.dataKey)}
+                                >
+                                    <MenuItem>
+                                        <Input
+                                            placeholder="Goal"
+                                            value={inputs['goal' + column.dataKey]?.input || ''}
+                                            onChange={(e) => handleInputChange('goal' + column.dataKey, 'input', e.target.value)}
+                                            fullWidth
+                                        />
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <Button variant="contained"
+                                                onClick={() => handleConfirm('goal' + column.dataKey)}>
+                                            Confirm
+                                        </Button>
+                                    </MenuItem>
+                                </Menu>
                                 <Button variant="outlined"
-                                        onClick={() => alert(`Button clicked in row ${rowIndex + 1}, column ${column.dataKey}`)}
+                                        onClick={(e: {
+                                            currentTarget: any;
+                                        }) => handleClick(e, 'agent' + column.dataKey)}
                                         sx={{m: 1}}>
-                                    {'Agent ' + column.dataKey[column.dataKey.length - 1]}
+                                    {labels['agent' + column.dataKey]}
                                 </Button>
+                                <Menu
+                                    anchorEl={anchorEls['agent' + column.dataKey]}
+                                    open={Boolean(anchorEls['agent' + column.dataKey])}
+                                    onClose={() => handleClose('agent' + column.dataKey)}
+                                >
+                                    <MenuItem>
+                                        <Input
+                                            placeholder="Agent"
+                                            value={inputs['agent' + column.dataKey]?.input || ''}
+                                            onChange={(e) => handleInputChange('agent' + column.dataKey, 'input', e.target.value)}
+                                            fullWidth
+                                        />
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <Button variant="contained"
+                                                onClick={() => handleConfirm('agent' + column.dataKey)}>
+                                            Confirm
+                                        </Button>
+                                    </MenuItem>
+                                </Menu>
                             </Box>
                         );
                     } else if (1 === rowIndex && ('plan1' === column.dataKey || 'plan2' === column.dataKey)) {
