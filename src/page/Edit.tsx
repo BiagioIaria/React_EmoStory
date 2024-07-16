@@ -79,10 +79,10 @@ function createData(
 
 const columnWidth = 120;
 
-const initialColumns: ColumnData[] = [
+let initialColumns: ColumnData[] = [
     {
         width: columnWidth,
-        label: 'unit i-',
+        label: 'Unit i-',
         dataKey: 'unit_b',
     },
     {
@@ -97,7 +97,7 @@ const initialColumns: ColumnData[] = [
     },
     {
         width: columnWidth,
-        label: 'unit i',
+        label: 'Unit i',
         dataKey: 'unit',
     },
     {
@@ -126,15 +126,17 @@ function Edit() {
     const [groups, setGroups] = useState([3]);
     const [labels, setLabels] = useState({
         plan1: 'P Agent 1 Title',
-        plan2: 'P Agent 2 Title'
-    });const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
+        plan2: 'P Agent 2 Title',
+        unit: initialColumns[3].label
+    });
+    const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
     const handleClick = (event: { currentTarget: any; }, id: any) => {
-        setAnchorEls((prev) => ({ ...prev, [id]: event.currentTarget }));
+        setAnchorEls((prev) => ({...prev, [id]: event.currentTarget}));
     };
 
     const handleClose = (id: any) => {
-        setAnchorEls((prev) => ({ ...prev, [id]: null }));
+        setAnchorEls((prev) => ({...prev, [id]: null}));
     };
 
     const handleInputChange = (id: string | number, inputName: any, value: any) => {
@@ -148,13 +150,19 @@ function Edit() {
     };
 
     const handleConfirm = (id: any) => {
-        if(inputs[id]!==undefined) {
+        if (inputs[id] !== undefined) {
             setLabels(prevLabels => {
                 switch (id) {
                     case 'plan1':
                         return {...prevLabels, plan1: inputs[id]['input']};
                     case 'plan2':
                         return {...prevLabels, plan2: inputs[id]['input']};
+                    case 'unit':
+                        initialColumns=initialColumns.map(column => ({
+                            ...column,
+                            label: column.label.replace('Unit i', inputs[id]['input'])
+                        }));
+                        return {...prevLabels, unit: inputs[id]['input']};
                     default:
                         return prevLabels;
                 }
@@ -170,11 +178,47 @@ function Edit() {
 
     const header = () => (
         <TableRow>
-            {initialColumns.map((col, index) => (
-                <TableCell key={col.dataKey}
-                           style={{width: col.width, textAlign: "center"}}
-                >{col.label}</TableCell>
-            ))}
+            {initialColumns.map((col) => {
+                    if ('unit' === col.dataKey) {
+                        return (
+                            <TableCell key={col.dataKey}
+                                       style={{width: col.width, textAlign: "center"}}
+                            >
+                                <Button variant="outlined"
+                                        onClick={(e: { currentTarget: any; }) => handleClick(e, col.dataKey)}
+                                        sx={{m: 1}}>
+                                    {labels[col.dataKey]}
+                                </Button>
+                                <Menu
+                                    anchorEl={anchorEls[col.dataKey]}
+                                    open={Boolean(anchorEls[col.dataKey])}
+                                    onClose={() => handleClose(col.dataKey)}
+                                >
+                                    <MenuItem>
+                                        <TextField
+                                            label="Unit"
+                                            value={inputs[col.dataKey]?.input || ''}
+                                            onChange={(e) => handleInputChange(col.dataKey, 'input', e.target.value)}
+                                            fullWidth
+                                        />
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <Button variant="contained" onClick={() => handleConfirm(col.dataKey)}>
+                                            Confirm
+                                        </Button>
+                                    </MenuItem>
+                                </Menu>
+                            </TableCell>
+                        )
+                    } else {
+                        return (
+                            <TableCell key={col.dataKey}
+                                       style={{width: col.width, textAlign: "center"}}
+                            >{col.label}</TableCell>
+                        )
+                    }
+                }
+            )}
         </TableRow>
     );
 
