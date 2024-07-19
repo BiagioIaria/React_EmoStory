@@ -5,6 +5,7 @@ import AddIcon from '@mui/icons-material/Add';
 import Paper from "@mui/material/Paper";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
+import {useLocation} from "react-router-dom";
 
 interface Labels {
     [key: string]: any;
@@ -77,6 +78,10 @@ export interface Data {
     unit_n: string;
 }
 
+function useParams() {
+    return new URLSearchParams(useLocation().search);
+}
+
 function Edit() {
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
@@ -88,12 +93,16 @@ function Edit() {
         { id: 1, value: '' },
     ]);
 
+    let params = useParams();
+    const temp = params.get("temp");
+
     useEffect(() => {
         setTableEdits(prevTableEdits =>
             prevTableEdits.map(edit => (
-                <TableEdit key={edit.key} data={data} updateData={updateData} />
+                <TableEdit key={edit.key} data={data} updateData={updateData} temp={temp}/>
             ))
         );
+        // eslint-disable-next-line
     }, [data]);
 
     const updateData = (id: any, newValue: any) => {
@@ -104,7 +113,7 @@ function Edit() {
         );
     };
 
-    const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData}/>]);
+    const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData} temp={temp}/>]);
 
     const handleClick = (event: { currentTarget: any; }, id: any) => {
         setAnchorEls((prev) => ({...prev, [id]: event.currentTarget}));
@@ -147,7 +156,7 @@ function Edit() {
         setData([...data, newItem]);
         setTableEdits(prevTableEdits => [
             ...prevTableEdits,
-            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData}/>
+            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} temp={temp}/>
         ]);
     };
 
