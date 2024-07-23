@@ -126,7 +126,7 @@ function TableEdit(params: any) {
                     (id.startsWith('balEff')) ||
                     (id.startsWith('balPreUnit'))) {
                     return {...prevLabels, [id]: action};
-                } else if(id.startsWith('value')){
+                } else if (id.startsWith('value')) {
                     return {...prevLabels, [id]: inputs[id]['input']};
                 }
                 switch (id) {
@@ -206,29 +206,38 @@ function TableEdit(params: any) {
                          margin={1}>
                         <Stack direction="row" spacing={2}>
                             <Button variant="outlined"
-                                    onClick={(e) => handleClick(e, 'balPre' + index + '_' +  column.dataKey)}
+                                    onDoubleClick={(e) => {
+                                        if (labels['balPre' + index + '_' + column.dataKey] !== undefined) {
+                                            handleClick(e, 'balPre' + index + '_' + column.dataKey)
+                                        }
+                                    }}
+                                    onClick={(e) => {
+                                        if (labels['balPre' + index + '_' + column.dataKey] === undefined) {
+                                            handleClick(e, 'balPre' + index + '_' + column.dataKey)
+                                        }
+                                    }}
                                     sx={{
                                         m: 1,
-                                        borderColor: labels['balPre' + index + '_' +  column.dataKey] === 'inBalance'
+                                        borderColor: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
                                             ? 'green'
-                                            : labels['balPre' + index + '_' +  column.dataKey] === 'atStake'
+                                            : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
                                                 ? 'red' : 'theme.palette.primary.main',
-                                        color: labels['balPre' + index + '_' +  column.dataKey] === 'inBalance'
+                                        color: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
                                             ? 'green'
-                                            : labels['balPre' + index + '_' +  column.dataKey] === 'atStake'
+                                            : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
                                                 ? 'red' : 'theme.palette.primary.main'
                                     }}>
-                                {labels['balPre' + index + '_' +  column.dataKey] === undefined ? 'Balance?' : labels['balPre' + index + '_' +  column.dataKey]}
+                                {labels['balPre' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPre' + index + '_' + column.dataKey]}
                             </Button>
                             <Menu
-                                anchorEl={anchorEls['balPre' + index + '_' +  column.dataKey]}
-                                open={Boolean(anchorEls['balPre' + index + '_' +  column.dataKey])}
-                                onClose={() => handleClose('balPre' + index + '_' +  column.dataKey)}
+                                anchorEl={anchorEls['balPre' + index + '_' + column.dataKey]}
+                                open={Boolean(anchorEls['balPre' + index + '_' + column.dataKey])}
+                                onClose={() => handleClose('balPre' + index + '_' + column.dataKey)}
                             >
                                 <MenuItem>
                                     <Button
                                         variant="contained"
-                                        onClick={() => handleConfirm('balPre' + index + '_' +  column.dataKey, 'inBalance')}
+                                        onClick={() => handleConfirm('balPre' + index + '_' + column.dataKey, 'inBalance')}
                                         style={{backgroundColor: 'green', color: 'white'}}
                                     >
                                         inBalance
@@ -237,7 +246,7 @@ function TableEdit(params: any) {
                                 </MenuItem>
                                 <MenuItem>
                                     <Button variant="contained"
-                                            onClick={() => handleConfirm('balPre' + index + '_' +  column.dataKey, 'atStake')}
+                                            onClick={() => handleConfirm('balPre' + index + '_' + column.dataKey, 'atStake')}
                                             style={{backgroundColor: 'red', color: 'white'}}
                                     >
                                         atStake
@@ -245,53 +254,72 @@ function TableEdit(params: any) {
                                 </MenuItem>
                             </Menu>
                             <Button variant="outlined"
-                                    onClick={(e: { currentTarget: any; }) => handleClick(e, 'value' + index + '_' +  column.dataKey)}>
-                                {labels['value' + index + '_' +  column.dataKey] === undefined ? 'Value?' : labels['value' + index + '_' +  column.dataKey]}
+                                    onDoubleClick={(e) => {
+                                        if (inputs['value' + index + '_' + column.dataKey] !== undefined) {
+                                            handleClick(e, 'value' + index + '_' + column.dataKey);
+                                        }
+                                    }}
+                                    onClick={(e) => {
+                                        if (inputs['value' + index + '_' + column.dataKey] === undefined) {
+                                            handleClick(e, 'value' + index + '_' + column.dataKey)
+                                        }
+                                    }}
+                            >
+                                {labels['value' + index + '_' + column.dataKey] === undefined ? 'Value?' : labels['value' + index + '_' + column.dataKey]}
                             </Button>
                             <Menu
-                                anchorEl={anchorEls['value' + index + '_' +  column.dataKey]}
-                                open={Boolean(anchorEls['value' + index + '_' +  column.dataKey])}
-                                onClose={() => handleClose('value' + index + '_' +  column.dataKey)}
+                                anchorEl={anchorEls['value' + index + '_' + column.dataKey]}
+                                open={Boolean(anchorEls['value' + index + '_' + column.dataKey])}
+                                onClose={() => handleClose('value' + index + '_' + column.dataKey)}
                             >
                                 <MenuItem>
                                     <Input
                                         placeholder="Value"
-                                        value={inputs['value' + index + '_' +  column.dataKey]?.input || ''}
-                                        onChange={(e) => handleInputChange('value' + index + '_' +  column.dataKey, 'input', e.target.value)}
+                                        value={inputs['value' + index + '_' + column.dataKey]?.input || ''}
+                                        onChange={(e) => handleInputChange('value' + index + '_' + column.dataKey, 'input', e.target.value)}
                                         fullWidth
                                     />
                                 </MenuItem>
                                 <MenuItem>
                                     <Button variant="contained"
-                                            onClick={() => handleConfirm('value' + index + '_' +  column.dataKey)}>
+                                            onClick={() => handleConfirm('value' + index + '_' + column.dataKey)}>
                                         Confirm
                                     </Button>
                                 </MenuItem>
                             </Menu>
                             <Button variant="outlined"
-                                    onClick={(e) => handleClick(e, 'balEff' + index + '_' +  column.dataKey)}
+                                    onDoubleClick={(e) => {
+                                        if (labels['balEff' + index + '_' + column.dataKey] !== undefined) {
+                                            handleClick(e, 'balEff' + index + '_' + column.dataKey)
+                                        }
+                                    }}
+                                    onClick={(e) => {
+                                        if (labels['balEff' + index + '_' + column.dataKey] === undefined) {
+                                            handleClick(e, 'balEff' + index + '_' + column.dataKey)
+                                        }
+                                    }}
                                     sx={{
                                         m: 1,
-                                        borderColor: labels['balEff' + index + '_' +  column.dataKey] === 'inBalance'
+                                        borderColor: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
                                             ? 'green'
-                                            : labels['balEff' + index + '_' +  column.dataKey] === 'atStake'
+                                            : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
                                                 ? 'red' : 'theme.palette.primary.main',
-                                        color: labels['balEff' + index + '_' +  column.dataKey] === 'inBalance'
+                                        color: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
                                             ? 'green'
-                                            : labels['balEff' + index + '_' +  column.dataKey] === 'atStake'
+                                            : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
                                                 ? 'red' : 'theme.palette.primary.main'
                                     }}>
-                                {labels['balEff' + index + '_' +  column.dataKey] === undefined ? 'Balance?' : labels['balEff' + index + '_' +  column.dataKey]}
+                                {labels['balEff' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balEff' + index + '_' + column.dataKey]}
                             </Button>
                             <Menu
-                                anchorEl={anchorEls['balEff' + index + '_' +  column.dataKey]}
-                                open={Boolean(anchorEls['balEff' + index + '_' +  column.dataKey])}
-                                onClose={() => handleClose('balEff' + index + '_' +  column.dataKey)}
+                                anchorEl={anchorEls['balEff' + index + '_' + column.dataKey]}
+                                open={Boolean(anchorEls['balEff' + index + '_' + column.dataKey])}
+                                onClose={() => handleClose('balEff' + index + '_' + column.dataKey)}
                             >
                                 <MenuItem>
                                     <Button
                                         variant="contained"
-                                        onClick={() => handleConfirm('balEff' + index + '_' +  column.dataKey, 'inBalance')}
+                                        onClick={() => handleConfirm('balEff' + index + '_' + column.dataKey, 'inBalance')}
                                         style={{backgroundColor: 'green', color: 'white'}}
                                     >
                                         inBalance
@@ -300,7 +328,7 @@ function TableEdit(params: any) {
                                 </MenuItem>
                                 <MenuItem>
                                     <Button variant="contained"
-                                            onClick={() => handleConfirm('balEff' + index + '_' +  column.dataKey, 'atStake')}
+                                            onClick={() => handleConfirm('balEff' + index + '_' + column.dataKey, 'atStake')}
                                             style={{backgroundColor: 'red', color: 'white'}}
                                     >
                                         atStake
@@ -341,7 +369,16 @@ function TableEdit(params: any) {
                             >
                                 <Button
                                     variant="outlined"
-                                    onClick={(e) => handleClick(e, 'acc' + keyLabel)}
+                                    onDoubleClick={(e) => {
+                                        if (labels['acc' + keyLabel] !== 'accomplished?') {
+                                            handleClick(e, 'acc' + keyLabel);
+                                        }
+                                    }}
+                                    onClick={(e) => {
+                                        if (labels['acc' + keyLabel] === 'accomplished?') {
+                                            handleClick(e, 'acc' + keyLabel)
+                                        }
+                                    }}
                                     sx={{
                                         m: 1,
                                         borderColor: labels['acc' + keyLabel] === 'Accomplished'
@@ -383,7 +420,16 @@ function TableEdit(params: any) {
                                     </MenuItem>
                                 </Menu>
                                 <Button variant="outlined"
-                                        onClick={(e: { currentTarget: any; }) => handleClick(e, keyLabel)}
+                                        onDoubleClick={(e) => {
+                                            if (inputs[keyLabel] !== undefined) {
+                                                handleClick(e, keyLabel);
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (inputs[keyLabel] === undefined) {
+                                                handleClick(e, keyLabel);
+                                            }
+                                        }}
                                         sx={{m: 1}}>
                                     {labels[keyLabel]}
                                 </Button>
@@ -407,9 +453,16 @@ function TableEdit(params: any) {
                                     </MenuItem>
                                 </Menu>
                                 <Button variant="outlined"
-                                        onClick={(e: {
-                                            currentTarget: any;
-                                        }) => handleClick(e, 'goal' + keyLabel)}
+                                        onDoubleClick={(e) => {
+                                            if (inputs['goal' + keyLabel] !== undefined) {
+                                                handleClick(e, 'goal' + keyLabel);
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (inputs['goal' + keyLabel] === undefined) {
+                                                handleClick(e, 'goal' + keyLabel)
+                                            }
+                                        }}
                                         sx={{m: 1}}>
                                     {labels['goal' + keyLabel]}
                                 </Button>
@@ -434,9 +487,16 @@ function TableEdit(params: any) {
                                     </MenuItem>
                                 </Menu>
                                 <Button variant="outlined"
-                                        onClick={(e: {
-                                            currentTarget: any;
-                                        }) => handleClick(e, 'agent' + keyLabel)}
+                                        onDoubleClick={(e) => {
+                                            if (inputs['agent' + keyLabel] !== undefined) {
+                                                handleClick(e, 'agent' + keyLabel);
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (inputs['agent' + keyLabel] === undefined) {
+                                                handleClick(e, 'agent' + keyLabel)
+                                            }
+                                        }}
                                         sx={{m: 1}}>
                                     {labels['agent' + keyLabel]}
                                 </Button>
@@ -501,29 +561,38 @@ function TableEdit(params: any) {
                                                     margin={1}>
                                             <Stack direction="row" spacing={2}>
                                                 <Button variant="outlined"
-                                                        onClick={(e) => handleClick(e, 'balPreUnit' + index + '_' +  column.dataKey)}
+                                                        onDoubleClick={(e) => {
+                                                            if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
+                                                                handleClick(e, 'balPreUnit' + index + '_' + column.dataKey);
+                                                            }
+                                                        }}
+                                                        onClick={(e) => {
+                                                            if (labels['balPreUnit' + index + '_' + column.dataKey] === undefined) {
+                                                                handleClick(e, 'balPreUnit' + index + '_' + column.dataKey)
+                                                            }
+                                                        }}
                                                         sx={{
                                                             m: 1,
-                                                            borderColor: labels['balPreUnit' + index + '_' +  column.dataKey] === 'inBalance'
+                                                            borderColor: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
                                                                 ? 'green'
-                                                                : labels['balPreUnit' + index + '_' +  column.dataKey] === 'atStake'
+                                                                : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
                                                                     ? 'red' : 'theme.palette.primary.main',
-                                                            color: labels['balPreUnit' + index + '_' +  column.dataKey] === 'inBalance'
+                                                            color: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
                                                                 ? 'green'
-                                                                : labels['balPreUnit' + index + '_' +  column.dataKey] === 'atStake'
+                                                                : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
                                                                     ? 'red' : 'theme.palette.primary.main'
                                                         }}>
-                                                    {labels['balPreUnit' + index + '_' +  column.dataKey] === undefined ? 'Balance?' : labels['balPreUnit' + index + '_' +  column.dataKey]}
+                                                    {labels['balPreUnit' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPreUnit' + index + '_' + column.dataKey]}
                                                 </Button>
                                                 <Menu
-                                                    anchorEl={anchorEls['balPreUnit' + index + '_' +  column.dataKey]}
-                                                    open={Boolean(anchorEls['balPreUnit' + index + '_' +  column.dataKey])}
-                                                    onClose={() => handleClose('balPreUnit' + index + '_' +  column.dataKey)}
+                                                    anchorEl={anchorEls['balPreUnit' + index + '_' + column.dataKey]}
+                                                    open={Boolean(anchorEls['balPreUnit' + index + '_' + column.dataKey])}
+                                                    onClose={() => handleClose('balPreUnit' + index + '_' + column.dataKey)}
                                                 >
                                                     <MenuItem>
                                                         <Button
                                                             variant="contained"
-                                                            onClick={() => handleConfirm('balPreUnit' + index + '_' +  column.dataKey, 'inBalance')}
+                                                            onClick={() => handleConfirm('balPreUnit' + index + '_' + column.dataKey, 'inBalance')}
                                                             style={{backgroundColor: 'green', color: 'white'}}
                                                         >
                                                             inBalance
@@ -532,7 +601,7 @@ function TableEdit(params: any) {
                                                     </MenuItem>
                                                     <MenuItem>
                                                         <Button variant="contained"
-                                                                onClick={() => handleConfirm('balPreUnit' + index + '_' +  column.dataKey, 'atStake')}
+                                                                onClick={() => handleConfirm('balPreUnit' + index + '_' + column.dataKey, 'atStake')}
                                                                 style={{backgroundColor: 'red', color: 'white'}}
                                                         >
                                                             atStake

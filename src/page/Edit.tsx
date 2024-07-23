@@ -169,7 +169,16 @@ function Edit() {
                                        style={{width: col.width, textAlign: "center"}}
                             >
                                 <Button variant="outlined"
-                                        onClick={(e: { currentTarget: any; }) => handleClick(e, col.dataKey)}
+                                        onDoubleClick={(e) => {
+                                            if (inputs[col.dataKey] !== undefined) {
+                                                handleClick(e, col.dataKey);
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (inputs[col.dataKey] === undefined) {
+                                                handleClick(e, col.dataKey);
+                                            }
+                                        }}
                                         sx={{m: 1}}>
                                     {labels[col.dataKey]}
                                 </Button>
