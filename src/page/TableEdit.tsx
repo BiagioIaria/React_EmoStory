@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import Button from "@mui/material/Button";
@@ -70,9 +70,27 @@ function TableEdit(params: any) {
         agentplan1: 'Agent 1',
         agentplan2: 'Agent 2',
     });
+    const [queryLabels, setQueryLabels] = useState<Labels>({
+        accplan1: '',
+        accplan2: '',
+        plan1: '',
+        plan2: '',
+        goalplan1: '',
+        goalplan2: '',
+        agentplan1: '',
+        agentplan2: '',
+    });
 
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
+
+    useEffect(() => {
+        if(params.data[0]['value']!=='' && Object.values(queryLabels).every(value => value !== '')){
+            console.log('start')
+        }
+
+    }, [params.data, queryLabels]);
+
     let template: string | any[] | readonly Sample[]
     let posForTemplate = ['']
     if (params.temp === '2') {
@@ -120,6 +138,36 @@ function TableEdit(params: any) {
             id.startsWith('balPre') ||
             id.startsWith('balEff') ||
             id.startsWith('balPreUnit')) {
+
+            setQueryLabels(prevLabels => {
+                if (id.startsWith('balPre') ||
+                    (id.startsWith('balEff')) ||
+                    (id.startsWith('balPreUnit'))) {
+                    return {...prevLabels, [id]: action};
+                } else if (id.startsWith('value')) {
+                    return {...prevLabels, [id]: inputs[id]['input']};
+                }
+                switch (id) {
+                    case 'plan1':
+                        return {...prevLabels, plan1: inputs[id]['input']};
+                    case 'goalplan1':
+                        return {...prevLabels, goalplan1: inputs[id]['input']};
+                    case 'agentplan1':
+                        return {...prevLabels, agentplan1: inputs[id]['input']};
+                    case 'plan2':
+                        return {...prevLabels, plan2: inputs[id]['input']};
+                    case 'goalplan2':
+                        return {...prevLabels, goalplan2: inputs[id]['input']};
+                    case 'agentplan2':
+                        return {...prevLabels, agentplan2: inputs[id]['input']};
+                    case 'accplan1':
+                        return {...prevLabels, accplan1: action};
+                    case 'accplan2':
+                        return {...prevLabels, accplan2: action};
+                    default:
+                        return prevLabels;
+                }
+            });
 
             setLabels(prevLabels => {
                 if (id.startsWith('balPre') ||

@@ -90,7 +90,8 @@ function Edit() {
     });
 
     const [data, setData] = useState([
-        { id: 1, value: '' },
+        {id: 'unit', value: ''},
+        {id: 1, value: ''},
     ]);
 
     let params = useParams();
@@ -108,12 +109,13 @@ function Edit() {
     const updateData = (id: any, newValue: any) => {
         setData((prevData) =>
             prevData.map((item) =>
-                item.id === id ? { ...item, value: newValue } : item
+                item.id === id ? {...item, value: newValue} : item
             )
         );
     };
 
-    const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData} temp={temp}/>]);
+    const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData}
+                                                             temp={temp}/>]);
 
     const handleClick = (event: { currentTarget: any; }, id: any) => {
         setAnchorEls((prev) => ({...prev, [id]: event.currentTarget}));
@@ -134,10 +136,11 @@ function Edit() {
     };
 
     const handleConfirm = (id: any) => {
-        if (inputs[id] !== undefined || id === 'accplan1' || id === 'accplan2') {
+        if (inputs[id] !== undefined) {
             setLabels(prevLabels => {
                 switch (id) {
                     case 'unit':
+                        updateData('unit', inputs[id]['input'])
                         initialColumns = initialColumns.map(column => ({
                             ...column,
                             label: column.label.replace('Unit i', inputs[id]['input'])
@@ -152,7 +155,7 @@ function Edit() {
     };
 
     const addTableEdit = () => {
-        const newItem = { id: data.length, value: '' };
+        const newItem = {id: data.length, value: ''};
         setData([...data, newItem]);
         setTableEdits(prevTableEdits => [
             ...prevTableEdits,
@@ -241,13 +244,13 @@ function Edit() {
                     </Table>
                 </TableContainer>
             </Paper>
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+            <div style={{display: 'flex', justifyContent: 'center', marginTop: 16}}>
                 <Button
                     variant="contained"
                     color="primary"
                     onClick={addTableEdit}
                 >
-                    <AddIcon />
+                    <AddIcon/>
                 </Button>
             </div>
         </div>
