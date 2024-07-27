@@ -14,6 +14,8 @@ import {
     Typography
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import {ColumnData, Data, initialColumns} from "./Edit";
 
 interface Labels {
@@ -69,6 +71,9 @@ function TableEdit(params: any) {
         goalplan2: 'G Plan Agent 2',
         agentplan1: 'Agent 1',
         agentplan2: 'Agent 2',
+        sxSupport: 'Support?',
+        dxSupport: 'Support?',
+        conflict: 'Conflict?',
     });
     const [queryLabels, setQueryLabels] = useState<Labels>({
         accplan1: '',
@@ -79,13 +84,21 @@ function TableEdit(params: any) {
         goalplan2: '',
         agentplan1: '',
         agentplan2: '',
+        sxSupport: '',
+        dxSupport: '',
+        conflict: '',
     });
 
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
 
     useEffect(() => {
-        if(params.data[0]['value']!=='' && Object.values(queryLabels).every(value => value !== '')){
+        const len = Object.values(queryLabels).length
+        const firstPartValid = Object.values(queryLabels).slice(0, len - 3).every((value: string) => value !== '');
+
+        const lastPartValid = Object.values(queryLabels).slice(len - 3).some((value: string) => value !== '');
+
+        if (params.data[0]['value'] !== '' && firstPartValid && lastPartValid) {
             console.log('start')
         }
 
@@ -137,7 +150,10 @@ function TableEdit(params: any) {
             id === 'accplan2' ||
             id.startsWith('balPre') ||
             id.startsWith('balEff') ||
-            id.startsWith('balPreUnit')) {
+            id.startsWith('balPreUnit') ||
+            id === 'sxSupport' ||
+            id === 'conflict' ||
+            id === 'dxSupport') {
 
             setQueryLabels(prevLabels => {
                 if (id.startsWith('balPre') ||
@@ -164,6 +180,24 @@ function TableEdit(params: any) {
                         return {...prevLabels, accplan1: action};
                     case 'accplan2':
                         return {...prevLabels, accplan2: action};
+                    case 'sxSupport':
+                        if (action === 'Support') {
+                            return {...prevLabels, sxSupport: ''};
+                        } else {
+                            return {...prevLabels, sxSupport: 'Support', conflict: ''};
+                        }
+                    case 'conflict':
+                        if (action === 'Conflict') {
+                            return {...prevLabels, conflict: ''};
+                        } else {
+                            return {...prevLabels, sxSupport: '', dxSupport: '', conflict: 'Conflict'};
+                        }
+                    case 'dxSupport':
+                        if (action === 'Support') {
+                            return {...prevLabels, dxSupport: ''};
+                        } else {
+                            return {...prevLabels, dxSupport: 'Support', conflict: ''};
+                        }
                     default:
                         return prevLabels;
                 }
@@ -194,6 +228,24 @@ function TableEdit(params: any) {
                         return {...prevLabels, accplan1: action};
                     case 'accplan2':
                         return {...prevLabels, accplan2: action};
+                    case 'sxSupport':
+                        if (action === 'Support') {
+                            return {...prevLabels, sxSupport: 'Support?'};
+                        } else {
+                            return {...prevLabels, sxSupport: 'Support', conflict: 'Conflict?'};
+                        }
+                    case 'conflict':
+                        if (action === 'Conflict') {
+                            return {...prevLabels, conflict: 'Conflict?'};
+                        } else {
+                            return {...prevLabels, sxSupport: 'Support?', dxSupport: 'Support?', conflict: 'Conflict'};
+                        }
+                    case 'dxSupport':
+                        if (action === 'Support') {
+                            return {...prevLabels, dxSupport: 'Support?'};
+                        } else {
+                            return {...prevLabels, dxSupport: 'Support', conflict: 'Conflict?'};
+                        }
                     default:
                         return prevLabels;
                 }
@@ -668,6 +720,76 @@ function TableEdit(params: any) {
                                 }
                             )}
                         </div>)
+                    } else if (0 === rowIndex && 'unit' === column.dataKey) {
+                        cellContent = (
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <IconButton
+                                    onClick={() => handleConfirm('sxSupport', labels['sxSupport'])}
+                                    sx={{
+                                        m: 1,
+                                        border: labels['sxSupport'] === 'Support?' || labels['sxSupport'] === 'Support' ? '1px solid' : '', borderRadius: '8px', padding: '8px',
+                                        borderColor: labels['sxSupport'] === 'Support?'
+                                            ? 'theme.palette.primary.main'
+                                            : labels['sxSupport'] === 'Support'
+                                                ? 'green' : '',
+                                        color: labels['sxSupport'] === 'Support?'
+                                            ? 'theme.palette.primary.main'
+                                            : labels['sxSupport'] === 'Support'
+                                                ? 'green' : '',
+                                    }}
+                                    disabled={inputs['plan1'] === undefined || inputs['plan2'] === undefined}
+                                >
+                                    <ArrowBackIosNewIcon/>
+                                    <Typography variant="button" display="block">{labels['sxSupport']}</Typography>
+                                </IconButton>
+                                <IconButton
+                                    onClick={() => handleConfirm('conflict', labels['conflict'])}
+                                    sx={{
+                                        m: 1,
+                                        border: labels['conflict'] === 'Conflict?' || labels['conflict'] === 'Conflict' ? '1px solid' : '', borderRadius: '8px', padding: '8px',
+                                        borderColor: labels['conflict'] === 'Conflict?'
+                                            ? 'theme.palette.primary.main'
+                                            : labels['conflict'] === 'Conflict'
+                                                ? 'red' : '',
+                                        color: labels['conflict'] === 'Conflict?'
+                                            ? 'theme.palette.primary.main'
+                                            : labels['conflict'] === 'Conflict'
+                                                ? 'red' : '',
+                                    }}
+                                    disabled={inputs['plan1'] === undefined || inputs['plan2'] === undefined}
+                                >
+                                    <ArrowBackIosNewIcon/>
+                                    <Typography variant="button" display="block">{labels['conflict']}</Typography>
+                                    <ArrowForwardIosIcon/>
+                                </IconButton>
+                                <IconButton
+                                    onClick={() => handleConfirm('dxSupport', labels['dxSupport'])}
+                                    sx={{
+                                        m: 1,
+                                        border: labels['dxSupport'] === 'Support?' || labels['dxSupport'] === 'Support' ? '1px solid' : '', borderRadius: '8px', padding: '8px',
+                                        borderColor: labels['dxSupport'] === 'Support?'
+                                            ? 'theme.palette.primary.main'
+                                            : labels['dxSupport'] === 'Support'
+                                                ? 'green' : '',
+                                        color: labels['dxSupport'] === 'Support?'
+                                            ? 'theme.palette.primary.main'
+                                            : labels['dxSupport'] === 'Support'
+                                                ? 'green' : '',
+                                    }}
+                                    disabled={inputs['plan1'] === undefined || inputs['plan2'] === undefined}
+                                >
+                                    <Typography variant="button" display="block">{labels['dxSupport']}</Typography>
+                                    <ArrowForwardIosIcon/>
+                                </IconButton>
+                            </Box>
+                        );
                     }
                     return (
                         <TableCell
