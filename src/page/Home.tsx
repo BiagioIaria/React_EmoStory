@@ -4,6 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import {Link} from "react-router-dom";
 import {useEffect, useRef, useState} from "react";
 import axios from "axios";
+import {variables} from "../endPoint";
 
 const themeChip = createTheme({
     components: {
@@ -37,8 +38,7 @@ function Home() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const endpointUrl = 'http://localhost:7200/repositories/emoStory?';
-                const query = `
+                 const query = `
                     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                     PREFIX : <http://www.purl.org/drammar#>
                     
@@ -48,7 +48,7 @@ function Home() {
                     }
                 `;
 
-                const response = await axios.get(endpointUrl, {
+                const response = await axios.get(variables.API_URL, {
                     params: {
                         query,
                     },

@@ -17,6 +17,8 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import {ColumnData, Data, initialColumns} from "./Edit";
+import axios from "axios";
+import {variables} from "../endPoint";
 
 interface Labels {
     [key: string]: any;
@@ -91,6 +93,7 @@ function TableEdit(params: any) {
 
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
+    const [triplesQuery, setTriplesQuery] = useState('');
 
     useEffect(() => {
         const len = Object.values(queryLabels).length
@@ -98,10 +101,38 @@ function TableEdit(params: any) {
 
         const lastPartValid = Object.values(queryLabels).slice(len - 3).some((value: string) => value !== '');
 
+        const prefixQuery = `
+        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        PREFIX : <http://www.purl.org/drammar#>
+        `
         if (params.data[0]['value'] !== '' && firstPartValid && lastPartValid) {
-            console.log('start')
-        }
+            if (triplesQuery === '') {
+                setTriplesQuery(`:` + params.data[0]['value'] + ` rdf:type :Unit .`)
+                const fetchData = async () => {
+                    try {
 
+                        const query = `${prefixQuery}
+                          INSERT DATA {
+                            :${params.data[0].value} rdf:type :Unit .
+                          }
+                        `;
+
+                        console.log(query)
+                        const res = await axios.post(variables.API_URL, query, {
+                            headers: {
+                                'Content-Type': 'application/sparql-update'
+                            }
+                        });
+                        console.log(res.data);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                };
+
+                fetchData().then();
+            }
+        }
+        // eslint-disable-next-line
     }, [params.data, queryLabels]);
 
     let template: string | any[] | readonly Sample[]
@@ -734,7 +765,9 @@ function TableEdit(params: any) {
                                     onClick={() => handleConfirm('sxSupport', labels['sxSupport'])}
                                     sx={{
                                         m: 1,
-                                        border: labels['sxSupport'] === 'Support?' || labels['sxSupport'] === 'Support' ? '1px solid' : '', borderRadius: '8px', padding: '8px',
+                                        border: labels['sxSupport'] === 'Support?' || labels['sxSupport'] === 'Support' ? '1px solid' : '',
+                                        borderRadius: '8px',
+                                        padding: '8px',
                                         borderColor: labels['sxSupport'] === 'Support?'
                                             ? 'theme.palette.primary.main'
                                             : labels['sxSupport'] === 'Support'
@@ -753,7 +786,9 @@ function TableEdit(params: any) {
                                     onClick={() => handleConfirm('conflict', labels['conflict'])}
                                     sx={{
                                         m: 1,
-                                        border: labels['conflict'] === 'Conflict?' || labels['conflict'] === 'Conflict' ? '1px solid' : '', borderRadius: '8px', padding: '8px',
+                                        border: labels['conflict'] === 'Conflict?' || labels['conflict'] === 'Conflict' ? '1px solid' : '',
+                                        borderRadius: '8px',
+                                        padding: '8px',
                                         borderColor: labels['conflict'] === 'Conflict?'
                                             ? 'theme.palette.primary.main'
                                             : labels['conflict'] === 'Conflict'
@@ -773,7 +808,9 @@ function TableEdit(params: any) {
                                     onClick={() => handleConfirm('dxSupport', labels['dxSupport'])}
                                     sx={{
                                         m: 1,
-                                        border: labels['dxSupport'] === 'Support?' || labels['dxSupport'] === 'Support' ? '1px solid' : '', borderRadius: '8px', padding: '8px',
+                                        border: labels['dxSupport'] === 'Support?' || labels['dxSupport'] === 'Support' ? '1px solid' : '',
+                                        borderRadius: '8px',
+                                        padding: '8px',
                                         borderColor: labels['dxSupport'] === 'Support?'
                                             ? 'theme.palette.primary.main'
                                             : labels['dxSupport'] === 'Support'
