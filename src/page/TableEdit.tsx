@@ -63,6 +63,12 @@ function createData(
     return {unit_b, preUnit, plan1, unit, plan2, effUnit, unit_n};
 }
 
+const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'C' || event.key === 'c') {
+        event.stopPropagation();
+    }
+};
+
 function TableEdit(params: any) {
     const [groups, setGroups] = useState([3]);
     const [labels, setLabels] = useState<Labels>({
@@ -450,6 +456,7 @@ function TableEdit(params: any) {
                                         value={inputs['value' + index + '_' + column.dataKey]?.input || ''}
                                         onChange={(e) => handleInputChange('value' + index + '_' + column.dataKey, 'input', e.target.value)}
                                         fullWidth
+                                        onKeyDown={handleKeyDown}
                                     />
                                 </MenuItem>
                                 <MenuItem>
@@ -616,6 +623,7 @@ function TableEdit(params: any) {
                                             value={inputs[keyLabel]?.input || ''}
                                             onChange={(e) => handleInputChange(keyLabel, 'input', e.target.value)}
                                             fullWidth
+                                            onKeyDown={handleKeyDown}
                                         />
                                     </MenuItem>
                                     <MenuItem>
@@ -649,6 +657,7 @@ function TableEdit(params: any) {
                                             value={inputs['goal' + keyLabel]?.input || ''}
                                             onChange={(e) => handleInputChange('goal' + keyLabel, 'input', e.target.value)}
                                             fullWidth
+                                            onKeyDown={handleKeyDown}
                                         />
                                     </MenuItem>
                                     <MenuItem>
@@ -683,6 +692,7 @@ function TableEdit(params: any) {
                                             value={inputs['agent' + keyLabel]?.input || ''}
                                             onChange={(e) => handleInputChange('agent' + keyLabel, 'input', e.target.value)}
                                             fullWidth
+                                            onKeyDown={handleKeyDown}
                                         />
                                     </MenuItem>
                                     <MenuItem>

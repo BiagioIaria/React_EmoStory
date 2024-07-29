@@ -82,6 +82,12 @@ function useParams() {
     return new URLSearchParams(useLocation().search);
 }
 
+const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'C' || event.key === 'c') {
+        event.stopPropagation();
+    }
+};
+
 function Edit() {
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
@@ -196,6 +202,7 @@ function Edit() {
                                             value={inputs[col.dataKey]?.input || ''}
                                             onChange={(e) => handleInputChange(col.dataKey, 'input', e.target.value)}
                                             fullWidth
+                                            onKeyDown={handleKeyDown}
                                         />
                                     </MenuItem>
                                     <MenuItem>
