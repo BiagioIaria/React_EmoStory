@@ -48,7 +48,7 @@ function Home() {
                     }
                 `;
 
-                const response = await axios.get(variables.API_URL, {
+                const response = await axios.get(variables.API_URL_GET, {
                     params: {
                         query,
                     },

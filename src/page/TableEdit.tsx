@@ -27,6 +27,7 @@ interface Labels {
 type AnchorEls = {
     [key: string]: HTMLElement | null;
 };
+
 type Inputs = {
     [key: string]: {
         input: string;
@@ -93,7 +94,7 @@ function TableEdit(params: any) {
 
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
-    const [triplesQuery, setTriplesQuery] = useState('');
+    const [triplesQuery, setTriplesQuery] = useState<Labels>({});
 
     useEffect(() => {
         const len = Object.values(queryLabels).length
@@ -106,30 +107,70 @@ function TableEdit(params: any) {
         PREFIX : <http://www.purl.org/drammar#>
         `
         if (params.data[0]['value'] !== '' && firstPartValid && lastPartValid) {
-            if (triplesQuery === '') {
-                setTriplesQuery(`:` + params.data[0]['value'] + ` rdf:type :Unit .`)
-                const fetchData = async () => {
-                    try {
+            const fetchDataInsert = async (t: string) => {
+                try {
 
-                        const query = `${prefixQuery}
+                    const query = `${prefixQuery}
                           INSERT DATA {
-                            :${params.data[0].value} rdf:type :Unit .
+                            :${params.data[0].value} rdf:type :` + t + ` .
                           }
                         `;
 
-                        console.log(query)
-                        const res = await axios.post(variables.API_URL, query, {
-                            headers: {
-                                'Content-Type': 'application/sparql-update'
-                            }
-                        });
-                        console.log(res.data);
-                    } catch (err) {
-                        console.error(err);
-                    }
-                };
+                    await axios.post(variables.API_URL_POST, query, {
+                        headers: {
+                            'Content-Type': 'application/sparql-update'
+                        }
+                    });
+                } catch (err) {
+                    console.error(err);
+                }
+            };
 
-                fetchData().then();
+            const fetchDataDelete = async (t: string) => {
+                try {
+
+                    const query = `${prefixQuery}
+                        DELETE {
+                          :${t} ?p ?o .
+                          ?s ?p :${t} .
+                          ?s :${t} ?o .
+                        }
+                        WHERE {
+                          {
+                            :${t} ?p ?o .
+                          }
+                          UNION
+                          {
+                            ?s ?p :${t} .
+                          }
+                          UNION
+                          {
+                            ?s :${t} ?o .
+                          }
+                        }
+                        `;
+
+                    await axios.post(variables.API_URL_POST, query, {
+                        headers: {
+                            'Content-Type': 'application/sparql-update'
+                        }
+                    });
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+
+            if (Object.values(triplesQuery).length === 0) {
+
+                setTriplesQuery({'Unit': params.data[0]['value']})
+                fetchDataInsert('Unit').then();
+
+            }else if(!Object.values(triplesQuery).includes(params.data[0]['value'])){
+
+                fetchDataDelete(triplesQuery['Unit']).then()
+                setTriplesQuery({'Unit': params.data[0]['value']})
+                fetchDataInsert('Unit').then();
+
             }
         }
         // eslint-disable-next-line
