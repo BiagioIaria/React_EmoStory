@@ -111,6 +111,7 @@ function TableEdit(params: any) {
         const prefixQuery = `
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
         PREFIX : <http://www.purl.org/drammar#>
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         `
         if (params.data[0]['value'] !== '' && firstPartValid && lastPartValid) {
             const fetchDataInsert = async (t: string) => {
@@ -119,6 +120,7 @@ function TableEdit(params: any) {
                     const query = `${prefixQuery}
                           INSERT DATA {
                             :${params.data[0].value} rdf:type :` + t + ` .
+                            :${params.data[0].value} rdfs:comment "${params.data[0].value}" .
                           }
                         `;
 

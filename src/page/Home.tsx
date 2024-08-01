@@ -1,8 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
 import {Box, Chip, createTheme, IconButton, Menu, MenuItem, Stack, ThemeProvider} from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {Link} from "react-router-dom";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import axios from "axios";
 import {variables} from "../endPoint";
 
@@ -23,22 +24,20 @@ const themeChip = createTheme({
 });
 
 function Home() {
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEls, setAnchorEls] = useState([]);
     const [unit, setUnit] = useState([]);
-    const menuOpen = Boolean(anchorEl);
-    const iconButtonRef = useRef(null);
 
     function setUnitQuery(data: any) {
-        const elabData = data.map((item: any) => {
-            return item['Unit']['value']
+        const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return item['Unit']['value'];
         });
-        setUnit(elabData)
+        setUnit(elabData);
     }
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                 const query = `
+                const query = `
                     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                     PREFIX : <http://www.purl.org/drammar#>
                     
@@ -57,21 +56,62 @@ function Home() {
                     },
                 });
 
-                setUnitQuery(response.data['results']['bindings'])
+                setUnitQuery(response.data['results']['bindings']);
             } catch (err) {
-                console.log(err)
+                console.log(err);
             }
         };
 
         fetchData().then();
     }, []);
 
-    const handleClick = (event: any) => {
-        setAnchorEl(event.currentTarget);
+    const handleClick = (event: any, index: number) => {
+        const newAnchorEls: any = anchorEls.slice();
+        newAnchorEls[index] = event.currentTarget;
+        setAnchorEls(newAnchorEls);
     };
 
-    const handleClose = () => {
-        setAnchorEl(null);
+    const handleClose = (index: number) => {
+        const newAnchorEls: any = anchorEls.slice();
+        newAnchorEls[index] = null;
+        setAnchorEls(newAnchorEls);
+    };
+
+    const handleDeleteUnit = async (unit: string) => {
+        try {
+            const query = `
+                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX : <http://www.purl.org/drammar#>
+                       
+                        DELETE {
+                          :${unit} ?p ?o .
+                          ?s ?p :${unit} .
+                          ?s :${unit} ?o .
+                        }
+                        WHERE {
+                          {
+                            :${unit} ?p ?o .
+                          }
+                          UNION
+                          {
+                            ?s ?p :${unit} .
+                          }
+                          UNION
+                          {
+                            ?s :${unit} ?o .
+                          }
+                        }
+                        `;
+
+            await axios.post(variables.API_URL_POST, query, {
+                headers: {
+                    'Content-Type': 'application/sparql-update'
+                }
+            });
+
+        } catch (error) {
+            console.error('Errore durante l\'esecuzione della query SPARQL:', error);
+        }
     };
 
     return (
@@ -80,20 +120,41 @@ function Home() {
                 <ThemeProvider theme={themeChip}>
                     <Stack direction="row" spacing={1}>
                         {unit.map((item, index) => (
-                            <Chip key={'Unit' + index} label={item} style={{ marginTop: '0.8em' }}/>
+                            <div key={'Unit' + index}>
+                                <Chip onClick={(event) => handleClick(event, index)} label={item}
+                                      style={{marginTop: '0.8em'}}/>
+                                <Menu
+                                    anchorEl={anchorEls[index]}
+                                    open={Boolean(anchorEls[index])}
+                                    onClose={() => handleClose(index)}
+                                    anchorOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'right',
+                                    }}
+                                    transformOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'left',
+                                    }}
+                                >
+                                    <Box sx={{display: 'flex', flexDirection: 'row', p: 1}}>
+                                        <MenuItem onClick={() => { handleDeleteUnit(item).then(); handleClose(index); }}>
+                                            <DeleteIcon sx={{mr: 1}}/> Delete
+                                        </MenuItem>
+                                    </Box>
+                                </Menu>
+                            </div>
                         ))}
                         <IconButton
                             aria-label="add"
                             size="large"
-                            onClick={handleClick}
-                            ref={iconButtonRef}
+                            onClick={(event) => handleClick(event, unit.length)}
                         >
                             <AddIcon fontSize="inherit"/>
                         </IconButton>
                         <Menu
-                            anchorEl={anchorEl}
-                            open={menuOpen}
-                            onClose={handleClose}
+                            anchorEl={anchorEls[unit.length]}
+                            open={Boolean(anchorEls[unit.length])}
+                            onClose={() => handleClose(unit.length)}
                             anchorOrigin={{
                                 vertical: 'top',
                                 horizontal: 'right',
@@ -104,17 +165,17 @@ function Home() {
                             }}
                         >
                             <Box sx={{display: 'flex', flexDirection: 'row', p: 1}}>
-                                <MenuItem onClick={handleClose}>
+                                <MenuItem onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=1' style={{textDecoration: 'none', color: 'inherit'}}>
                                         <EditIcon sx={{mr: 1}}/> Edit 1
                                     </Link>
                                 </MenuItem>
-                                <MenuItem onClick={handleClose}>
+                                <MenuItem onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=2' style={{textDecoration: 'none', color: 'inherit'}}>
                                         <EditIcon sx={{mr: 1}}/> Edit 2
                                     </Link>
                                 </MenuItem>
-                                <MenuItem onClick={handleClose}>
+                                <MenuItem onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=3' style={{textDecoration: 'none', color: 'inherit'}}>
                                         <EditIcon sx={{mr: 1}}/> Edit 3
                                     </Link>
