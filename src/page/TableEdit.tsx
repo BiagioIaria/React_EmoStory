@@ -101,7 +101,6 @@ function TableEdit(params: any) {
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
     const [triplesQuery, setTriplesQuery] = useState<Labels>({});
-
     useEffect(() => {
         const len = Object.values(queryLabels).length
         const firstPartValid = Object.values(queryLabels).slice(0, len - 3).every((value: string) => value !== '');
@@ -121,6 +120,8 @@ function TableEdit(params: any) {
                           INSERT DATA {
                             :${params.data[0].value} rdf:type :` + t + ` .
                             :${params.data[0].value} rdfs:comment "${params.data[0].value}" .
+                            :Timeline_${params.data[0]['value']} rdf:type :Timeline .
+                            :Timeline_${params.data[0]['value']} rdfs:comment "${params.data[0].value}" .
                           }
                         `;
 
@@ -170,13 +171,24 @@ function TableEdit(params: any) {
 
             if (Object.values(triplesQuery).length === 0) {
 
-                setTriplesQuery({'Unit': params.data[0]['value']})
+                setTriplesQuery(
+                    {
+                        Unit: params.data[0]['value'],
+                        Timeline: `Timeline_${params.data[0]['value']}`
+                    }
+                )
                 fetchDataInsert('Unit').then();
 
-            }else if(!Object.values(triplesQuery).includes(params.data[0]['value'])){
+            } else if (!Object.values(triplesQuery).includes(params.data[0]['value'])) {
 
                 fetchDataDelete(triplesQuery['Unit']).then()
-                setTriplesQuery({'Unit': params.data[0]['value']})
+                fetchDataDelete(triplesQuery['Timeline']).then()
+                setTriplesQuery(
+                    {
+                        Unit: params.data[0]['value'],
+                        Timeline: `Timeline_${params.data[0]['value']}`
+                    }
+                )
                 fetchDataInsert('Unit').then();
 
             }

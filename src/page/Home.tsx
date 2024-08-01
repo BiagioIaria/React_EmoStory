@@ -26,6 +26,7 @@ const themeChip = createTheme({
 function Home() {
     const [anchorEls, setAnchorEls] = useState([]);
     const [unit, setUnit] = useState([]);
+    const [stateDelete, setStateDelete] = useState('');
 
     function setUnitQuery(data: any) {
         const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
@@ -63,7 +64,7 @@ function Home() {
         };
 
         fetchData().then();
-    }, []);
+    }, [stateDelete]);
 
     const handleClick = (event: any, index: number) => {
         const newAnchorEls: any = anchorEls.slice();
@@ -82,33 +83,31 @@ function Home() {
             const query = `
                         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                         PREFIX : <http://www.purl.org/drammar#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                        
                         DELETE {
-                          :${unit} ?p ?o .
-                          ?s ?p :${unit} .
-                          ?s :${unit} ?o .
+                          ?individual ?p ?o .
+                          ?s ?p2 ?individual .
                         }
                         WHERE {
-                          {
-                            :${unit} ?p ?o .
+                          ?individual rdfs:comment "${unit}" .
+                          OPTIONAL {
+                            ?individual ?p ?o .
                           }
-                          UNION
-                          {
-                            ?s ?p :${unit} .
-                          }
-                          UNION
-                          {
-                            ?s :${unit} ?o .
+                          OPTIONAL {
+                            ?s ?p2 ?individual .
                           }
                         }
+
                         `;
 
-            await axios.post(variables.API_URL_POST, query, {
+            const res = await axios.post(variables.API_URL_POST, query, {
                 headers: {
                     'Content-Type': 'application/sparql-update'
                 }
             });
 
+            setStateDelete(String(res) + '_' + unit)
         } catch (error) {
             console.error('Errore durante l\'esecuzione della query SPARQL:', error);
         }
