@@ -115,15 +115,53 @@ function TableEdit(params: any) {
         if (params.data[0]['value'] !== '' && firstPartValid && lastPartValid) {
             const fetchDataInsert = async (t: string) => {
                 try {
-
-                    const query = `${prefixQuery}
+                    let query
+                    const unit = params.data[0].value.replace(/ /g, '_')
+                    if (t === 'Unit') {
+                        query = `${prefixQuery}
                           INSERT DATA {
-                            :${params.data[0].value} rdf:type :` + t + ` .
-                            :${params.data[0].value} rdfs:comment "${params.data[0].value}" .
-                            :Timeline_${params.data[0]['value']} rdf:type :Timeline .
-                            :Timeline_${params.data[0]['value']} rdfs:comment "${params.data[0].value}" .
+                            :${unit} rdf:type :` + t + ` .
+                            :${unit} rdfs:comment "${unit}" .
+                            :Timeline_${unit} rdf:type :Timeline .
+                            :Timeline_${unit} rdfs:comment "${unit}" .
+                            :Effect_${unit} rdf:type :ConsistentStateSet .
+                            :Effect_${unit} rdfs:comment "${unit}".
+                            :Timeline_${unit} :hasTimelineEffect :Effect_${unit}.
+                            :Precondition_${unit} rdf:type :ConsistentStateSet .
+                            :Precondition_${unit} rdfs:comment "${unit}".
+                            :Timeline_${unit} :hasTimelinePrecondition :Precondition_${unit} .
                           }
                         `;
+                    } else if (t === 'Plan') {
+
+                        const plan1 = queryLabels['plan1']
+                        const plan2 = queryLabels['plan2']
+                        let conflict = ''
+                        if (queryLabels['conflict'] !== '') {
+                            conflict =
+                                `:${plan1} :inConflictWith :${plan2} .
+                                 :${plan2} :inConflictWith :${plan1} .`
+                        } else {
+                            if (queryLabels['sxSupport'] !== '') {
+                                conflict = conflict + `:${plan2} :inSupportOf :${plan1} \n.`
+                            }
+                            if (queryLabels['dxSupport'] !== '') {
+                                conflict = conflict + `:${plan1} :inSupportOf :${plan2} .`
+                            }
+                        }
+                        query = `${prefixQuery}
+                          INSERT DATA {
+                            :${plan1} rdf:type :DirectlyExecutablePlan.
+                            :${plan1} rdfs:comment "${unit}" .
+                            :${plan2} rdf:type :DirectlyExecutablePlan.
+                            :${plan2} rdfs:comment "${unit}" .
+                            :${plan1} :isMotivationFor :${unit} .
+                            :${plan2} :isMotivationFor :${unit} .
+                            ${conflict}
+                          }
+                        `;
+                    }
+
 
                     await axios.post(variables.API_URL_POST, query, {
                         headers: {
@@ -169,28 +207,69 @@ function TableEdit(params: any) {
                 }
             };
 
+            let conflict = ''
+            if (queryLabels['conflict'] !== '') {
+                conflict = queryLabels['conflict']
+
+            } else {
+                conflict = queryLabels['sxSupport'] + '_' + queryLabels['dxSupport']
+
+            }
             if (Object.values(triplesQuery).length === 0) {
 
                 setTriplesQuery(
                     {
                         Unit: params.data[0]['value'],
-                        Timeline: `Timeline_${params.data[0]['value']}`
+                        Timeline: `Timeline_${params.data[0]['value']}`,
+                        Effect: `Effect_${params.data[0]['value']}`,
+                        Precondition: `Precondition_${params.data[0]['value']}`
                     }
                 )
+
                 fetchDataInsert('Unit').then();
+                setTriplesQuery(
+                    {
+                        ...triplesQuery,
+                        Plan1: queryLabels['plan1'],
+                        Plan2: queryLabels['plan2'],
+                        Conflict: conflict,
+                    }
+                )
+                fetchDataInsert('Plan').then();
 
             } else if (!Object.values(triplesQuery).includes(params.data[0]['value'])) {
-
                 fetchDataDelete(triplesQuery['Unit']).then()
                 fetchDataDelete(triplesQuery['Timeline']).then()
+                fetchDataDelete(triplesQuery['Effect']).then()
+                fetchDataDelete(triplesQuery['Precondition']).then()
                 setTriplesQuery(
                     {
                         Unit: params.data[0]['value'],
-                        Timeline: `Timeline_${params.data[0]['value']}`
+                        Timeline: `Timeline_${params.data[0]['value']}`,
+                        Effect: `Effect_${params.data[0]['value']}`,
+                        Precondition: `Precondition_${params.data[0]['value']}`
                     }
                 )
                 fetchDataInsert('Unit').then();
 
+            } else if (
+                !Object.values(triplesQuery).includes(queryLabels['plan1']) ||
+                !Object.values(triplesQuery).includes(queryLabels['plan2']) ||
+                !Object.values(triplesQuery).includes(conflict)
+            ) {
+
+                fetchDataDelete(triplesQuery['Plan1']).then()
+                fetchDataDelete(triplesQuery['Plan2']).then()
+
+                setTriplesQuery(
+                    {
+                        ...triplesQuery,
+                        Plan1: queryLabels['plan1'],
+                        Plan2: queryLabels['plan2'],
+                        Conflict: conflict,
+                    }
+                )
+                fetchDataInsert('Plan').then();
             }
         }
         // eslint-disable-next-line
