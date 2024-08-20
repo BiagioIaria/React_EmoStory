@@ -149,6 +149,7 @@ function TableEdit(params: any) {
                                 conflict = conflict + `:${plan1} :inSupportOf :${plan2} .`
                             }
                         }
+
                         query = `${prefixQuery}
                           INSERT DATA {
                             :${plan1} rdf:type :DirectlyExecutablePlan.
