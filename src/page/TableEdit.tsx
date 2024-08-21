@@ -133,10 +133,22 @@ function TableEdit(params: any) {
                           }
                         `;
                     } else if (t === 'Plan') {
-
+                        console.log(queryLabels['accplan1'])
                         const plan1 = queryLabels['plan1']
                         const plan2 = queryLabels['plan2']
                         conflict = ''
+                        accomplished1 = ''
+                        accomplished2 = ''
+                        if( queryLabels['accplan1'] === 'Accomplished'){
+                            accomplished1 =`:${plan1} :accomplished true .`
+                        }else{
+                            accomplished1 =`:${plan1} :accomplished false .`
+                        }
+                        if( queryLabels['accplan2'] === 'Accomplished'){
+                            accomplished2 =`:${plan2} :accomplished true .`
+                        }else{
+                            accomplished2 =`:${plan2} :accomplished false .`
+                        }
                         if (queryLabels['conflict'] !== '') {
                             conflict =
                                 `:${plan1} :inConflictWith :${plan2} .
@@ -149,7 +161,7 @@ function TableEdit(params: any) {
                             } else {
                                 conflict =
                                     `:${plan1} :inSupportOf :${plan2} .
-                                    :${plan2} :inSupportOf :${plan1} .`
+                                     :${plan2} :inSupportOf :${plan1} .`
                             }
                         }
                         query = `${prefixQuery}
@@ -161,6 +173,8 @@ function TableEdit(params: any) {
                             :${plan1} :isMotivationFor :${unit} .
                             :${plan2} :isMotivationFor :${unit} .
                             ${conflict}
+                            ${accomplished1}
+                            ${accomplished2}
                           }
                         `;
                     }
@@ -209,6 +223,9 @@ function TableEdit(params: any) {
                 }
             };
 
+            let accomplished1: any = queryLabels['accplan1'] === 'Accomplished';
+            let accomplished2: any = queryLabels['accplan2'] === 'Accomplished';
+
             let conflict = ''
             if (queryLabels['conflict'] !== '') {
                 conflict = queryLabels['conflict']
@@ -217,6 +234,7 @@ function TableEdit(params: any) {
                 conflict = queryLabels['sxSupport'] + '_' + queryLabels['dxSupport']
 
             }
+
             if (Object.values(triplesQuery).length === 0) {
 
                 setTriplesQuery(
@@ -227,6 +245,8 @@ function TableEdit(params: any) {
                         Precondition: `Precondition_${params.data[0]['value']}`,
                         Plan1: queryLabels['plan1'],
                         Plan2: queryLabels['plan2'],
+                        Accomplished1: accomplished1,
+                        Accomplished2: accomplished2,
                         Conflict: conflict,
                     }
                 )
@@ -258,7 +278,9 @@ function TableEdit(params: any) {
             } else if (
                 !Object.values(triplesQuery).includes(queryLabels['plan1']) ||
                 !Object.values(triplesQuery).includes(queryLabels['plan2']) ||
-                !Object.values(triplesQuery).includes(conflict)
+                !Object.values(triplesQuery).includes(conflict) ||
+                triplesQuery['Accomplished1'] !== accomplished1 ||
+                triplesQuery['Accomplished2'] !== accomplished2
             ) {
 
                 fetchDataDelete(triplesQuery['Plan1']).then(
@@ -272,6 +294,8 @@ function TableEdit(params: any) {
                         Plan1: queryLabels['plan1'],
                         Plan2: queryLabels['plan2'],
                         Conflict: conflict,
+                        Accomplished1: accomplished1,
+                        Accomplished2: accomplished2,
                     }
                 )
 
