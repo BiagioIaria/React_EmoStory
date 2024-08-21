@@ -113,10 +113,20 @@ function TableEdit(params: any) {
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         `
         if (params.data[0]['value'] !== '' && firstPartValid && lastPartValid) {
+
+            const unit = params.data[0].value.replace(/ /g, '_')
+            const plan1 = queryLabels['plan1'].replace(/ /g, '_')
+            const plan2 = queryLabels['plan2'].replace(/ /g, '_')
+            const goal1 = queryLabels['goalplan1'].replace(/ /g, '_')
+            const goal2 = queryLabels['goalplan2'].replace(/ /g, '_')
+            const agent1 = queryLabels['agentplan1'].replace(/ /g, '_')
+            const agent2 = queryLabels['agentplan2'].replace(/ /g, '_')
+
+
             const fetchDataInsert = async (t: string) => {
                 try {
                     let query
-                    const unit = params.data[0].value.replace(/ /g, '_')
+
                     if (t === 'Unit') {
                         query = `${prefixQuery}
                           INSERT DATA {
@@ -133,21 +143,18 @@ function TableEdit(params: any) {
                           }
                         `;
                     } else if (t === 'Plan') {
-                        console.log(queryLabels['accplan1'])
-                        const plan1 = queryLabels['plan1']
-                        const plan2 = queryLabels['plan2']
                         conflict = ''
                         accomplished1 = ''
                         accomplished2 = ''
-                        if( queryLabels['accplan1'] === 'Accomplished'){
-                            accomplished1 =`:${plan1} :accomplished true .`
-                        }else{
-                            accomplished1 =`:${plan1} :accomplished false .`
+                        if (queryLabels['accplan1'] === 'Accomplished') {
+                            accomplished1 = `:${plan1} :accomplished true .`
+                        } else {
+                            accomplished1 = `:${plan1} :accomplished false .`
                         }
-                        if( queryLabels['accplan2'] === 'Accomplished'){
-                            accomplished2 =`:${plan2} :accomplished true .`
-                        }else{
-                            accomplished2 =`:${plan2} :accomplished false .`
+                        if (queryLabels['accplan2'] === 'Accomplished') {
+                            accomplished2 = `:${plan2} :accomplished true .`
+                        } else {
+                            accomplished2 = `:${plan2} :accomplished false .`
                         }
                         if (queryLabels['conflict'] !== '') {
                             conflict =
@@ -175,6 +182,24 @@ function TableEdit(params: any) {
                             ${conflict}
                             ${accomplished1}
                             ${accomplished2}
+                          }
+                        `;
+                    } else if (t === 'Goal') {
+
+                        query = `${prefixQuery}
+                          INSERT DATA {
+                            :${goal1} rdf:type :Goal.
+                            :${goal1} rdfs:comment "${unit}" .
+                            :${goal1}_schema rdf:type :GoalSchema.
+                            :${goal1}_schema rdfs:comment "${unit}" .
+                            :${goal1}_schema :describes :${goal1} .
+                            :${goal2} rdf:type :Goal.
+                            :${goal2} rdfs:comment "${unit}" .
+                            :${goal2}_schema rdf:type :GoalSchema.
+                            :${goal2}_schema rdfs:comment "${unit}" .
+                            :${goal2}_schema :describes :${goal2} .
+                            :${goal1} :isAchievedBy :${plan1} .
+                            :${goal2} :isAchievedBy :${plan2} .
                           }
                         `;
                     }
@@ -239,23 +264,27 @@ function TableEdit(params: any) {
 
                 setTriplesQuery(
                     {
-                        Unit: params.data[0]['value'],
-                        Timeline: `Timeline_${params.data[0]['value']}`,
-                        Effect: `Effect_${params.data[0]['value']}`,
-                        Precondition: `Precondition_${params.data[0]['value']}`,
-                        Plan1: queryLabels['plan1'],
-                        Plan2: queryLabels['plan2'],
+                        Unit: unit,
+                        Timeline: `Timeline_${unit}`,
+                        Effect: `Effect_${unit}`,
+                        Precondition: `Precondition_${unit}`,
+                        Plan1: plan1,
+                        Plan2: plan2,
                         Accomplished1: accomplished1,
                         Accomplished2: accomplished2,
                         Conflict: conflict,
+                        Goal1: goal1,
+                        Goal2: goal2
                     }
                 )
 
                 fetchDataInsert('Unit').then(
-                    () => fetchDataInsert('Plan').then()
+                    () => fetchDataInsert('Plan').then(
+                        () => fetchDataInsert('Goal').then()
+                    )
                 );
 
-            } else if (!Object.values(triplesQuery).includes(params.data[0]['value'])) {
+            } else if (!Object.values(triplesQuery).includes(unit)) {
                 fetchDataDelete(triplesQuery['Unit']).then(
                     () => fetchDataDelete(triplesQuery['Timeline']).then(
                         () => fetchDataDelete(triplesQuery['Effect']).then(
@@ -267,17 +296,17 @@ function TableEdit(params: any) {
                 setTriplesQuery(
                     {
                         ...triplesQuery,
-                        Unit: params.data[0]['value'],
-                        Timeline: `Timeline_${params.data[0]['value']}`,
-                        Effect: `Effect_${params.data[0]['value']}`,
-                        Precondition: `Precondition_${params.data[0]['value']}`
+                        Unit: unit,
+                        Timeline: `Timeline_${unit}`,
+                        Effect: `Effect_${unit}`,
+                        Precondition: `Precondition_${unit}`
                     }
                 )
                 ;
 
             } else if (
-                !Object.values(triplesQuery).includes(queryLabels['plan1']) ||
-                !Object.values(triplesQuery).includes(queryLabels['plan2']) ||
+                !Object.values(triplesQuery).includes(plan1) ||
+                !Object.values(triplesQuery).includes(plan2) ||
                 !Object.values(triplesQuery).includes(conflict) ||
                 triplesQuery['Accomplished1'] !== accomplished1 ||
                 triplesQuery['Accomplished2'] !== accomplished2
@@ -291,11 +320,33 @@ function TableEdit(params: any) {
                 setTriplesQuery(
                     {
                         ...triplesQuery,
-                        Plan1: queryLabels['plan1'],
-                        Plan2: queryLabels['plan2'],
+                        Plan1: plan1,
+                        Plan2: plan2,
                         Conflict: conflict,
                         Accomplished1: accomplished1,
                         Accomplished2: accomplished2,
+                    }
+                )
+
+            } else if (
+                !Object.values(triplesQuery).includes(goal1) ||
+                !Object.values(triplesQuery).includes(goal2)
+            ) {
+
+                fetchDataDelete(triplesQuery['Goal1']).then(
+                    () => fetchDataDelete(triplesQuery['Goal2']).then(
+                        () => fetchDataDelete(triplesQuery['Goal1'] + '_schema').then(
+                            () => fetchDataDelete(triplesQuery['Goal2'] + '_schema').then(
+                                () => fetchDataInsert('Goal').then()
+                            )
+                        )
+                    )
+                )
+                setTriplesQuery(
+                    {
+                        ...triplesQuery,
+                        Goal1: goal1,
+                        Goal2: goal2
                     }
                 )
 
