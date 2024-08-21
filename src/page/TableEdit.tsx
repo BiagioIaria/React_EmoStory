@@ -101,6 +101,45 @@ function TableEdit(params: any) {
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
     const [inputs, setInputs] = useState<Inputs>({});
     const [triplesQuery, setTriplesQuery] = useState<Labels>({});
+    const [emotion, setEmotion] = useState([]);
+
+    function setEmotionQuery(data: any) {
+        const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return item['Emotion']['value'];
+        });
+        setEmotion(elabData);
+    }
+
+    useEffect(() => {
+        const fetchDataEmo = async () => {
+            try {
+                const query = `
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX : <http://www.purl.org/drammar#>
+                    
+                    SELECT (STRAFTER(STR(?individuo), "#")AS ?Emotion)
+                    WHERE {
+                      ?individuo rdf:type :ExternalRefEmotionType .
+                    }
+                `;
+
+                const response = await axios.get(variables.API_URL_GET, {
+                    params: {
+                        query,
+                    },
+                    headers: {
+                        'Accept': 'application/sparql-results+json',
+                    },
+                });
+                setEmotionQuery(response.data['results']['bindings']);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        fetchDataEmo().then()
+        // eslint-disable-next-line
+    }, []);
+
     useEffect(() => {
         const len = Object.values(queryLabels).length
         const firstPartValid = Object.values(queryLabels).slice(0, len - 3).every((value: string) => value !== '');
@@ -177,6 +216,18 @@ function TableEdit(params: any) {
                             :${plan1} rdfs:comment "${unit}" .
                             :${plan2} rdf:type :DirectlyExecutablePlan.
                             :${plan2} rdfs:comment "${unit}" .
+                            :precondition_${plan1} rdf:type :DirectlyExecutablePlan.
+                            :precondition_${plan1} rdfs:comment "${unit}" .
+                            :precondition_${plan1} :isPlanPreconditionOf :${plan1}.
+                            :effect_${plan1} rdf:type :DirectlyExecutablePlan.
+                            :effect_${plan1} rdfs:comment "${unit}" .
+                            :effect_${plan1} :isPlanEffectOf :${plan1}.
+                            :precondition_${plan2} rdf:type :ConsistentStateSet.
+                            :precondition_${plan2} rdfs:comment "${unit}" .
+                            :precondition_${plan2} :isPlanPreconditionOf :${plan2}.
+                            :effect_${plan2} rdf:type :ConsistentStateSet.
+                            :effect_${plan2} rdfs:comment "${unit}" .
+                            :effect_${plan2} :isPlanEffectOf :${plan2} .
                             :${plan1} :isMotivationFor :${unit} .
                             :${plan2} :isMotivationFor :${unit} .
                             ${conflict}
@@ -200,6 +251,18 @@ function TableEdit(params: any) {
                             :${goal2}_schema :describes :${goal2} .
                             :${goal1} :isAchievedBy :${plan1} .
                             :${goal2} :isAchievedBy :${plan2} .
+                          }
+                        `;
+                    } else if (t === 'Agent') {
+
+                        query = `${prefixQuery}
+                          INSERT DATA {
+                            :${agent1} rdf:type :Agent.
+                            :${agent1} rdfs:comment "${unit}" .
+                            :${agent2} rdf:type :Agent.
+                            :${agent2} rdfs:comment "${unit}" .
+                            :${agent1} :hasGoal :${goal1}.
+                            :${agent2} :hasGoal :${goal2}.
                           }
                         `;
                     }
@@ -265,30 +328,31 @@ function TableEdit(params: any) {
                 setTriplesQuery(
                     {
                         Unit: unit,
-                        Timeline: `Timeline_${unit}`,
-                        Effect: `Effect_${unit}`,
-                        Precondition: `Precondition_${unit}`,
                         Plan1: plan1,
                         Plan2: plan2,
                         Accomplished1: accomplished1,
                         Accomplished2: accomplished2,
                         Conflict: conflict,
                         Goal1: goal1,
-                        Goal2: goal2
+                        Goal2: goal2,
+                        Agent1: agent1,
+                        Agent2: agent2
                     }
                 )
 
                 fetchDataInsert('Unit').then(
                     () => fetchDataInsert('Plan').then(
-                        () => fetchDataInsert('Goal').then()
+                        () => fetchDataInsert('Goal').then(
+                            () => fetchDataInsert('Agent').then()
+                        )
                     )
                 );
 
             } else if (!Object.values(triplesQuery).includes(unit)) {
                 fetchDataDelete(triplesQuery['Unit']).then(
-                    () => fetchDataDelete(triplesQuery['Timeline']).then(
-                        () => fetchDataDelete(triplesQuery['Effect']).then(
-                            () => fetchDataDelete(triplesQuery['Precondition']).then(
+                    () => fetchDataDelete('Timeline_' + triplesQuery['Unit']).then(
+                        () => fetchDataDelete('Effect_' + triplesQuery['Unit']).then(
+                            () => fetchDataDelete('Precondition_' + triplesQuery['Unit']).then(
                                 () => fetchDataInsert('Unit').then()))
                     )
                 )
@@ -297,9 +361,6 @@ function TableEdit(params: any) {
                     {
                         ...triplesQuery,
                         Unit: unit,
-                        Timeline: `Timeline_${unit}`,
-                        Effect: `Effect_${unit}`,
-                        Precondition: `Precondition_${unit}`
                     }
                 )
                 ;
@@ -314,7 +375,15 @@ function TableEdit(params: any) {
 
                 fetchDataDelete(triplesQuery['Plan1']).then(
                     () => fetchDataDelete(triplesQuery['Plan2']).then(
-                        () => fetchDataInsert('Plan').then()
+                        () => fetchDataDelete('precondition_' + triplesQuery['Plan1']).then(
+                            () => fetchDataDelete('precondition_' + triplesQuery['Plan2']).then(
+                                () => fetchDataDelete('effect_' + triplesQuery['Plan1']).then(
+                                    () => fetchDataDelete('effect_' + triplesQuery['Plan2']).then(
+                                        () => fetchDataInsert('Plan').then()
+                                    )
+                                )
+                            )
+                        )
                     )
                 )
                 setTriplesQuery(
@@ -347,6 +416,24 @@ function TableEdit(params: any) {
                         ...triplesQuery,
                         Goal1: goal1,
                         Goal2: goal2
+                    }
+                )
+
+            } else if (
+                !Object.values(triplesQuery).includes(agent1) ||
+                !Object.values(triplesQuery).includes(agent2)
+            ) {
+
+                fetchDataDelete(triplesQuery['Agent1']).then(
+                    () => fetchDataDelete(triplesQuery['Agent2']).then(
+                        () => fetchDataInsert('Agent').then()
+                    )
+                )
+                setTriplesQuery(
+                    {
+                        ...triplesQuery,
+                        Agent1: agent1,
+                        Agent2: agent2
                     }
                 )
 
