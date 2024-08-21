@@ -136,20 +136,22 @@ function TableEdit(params: any) {
 
                         const plan1 = queryLabels['plan1']
                         const plan2 = queryLabels['plan2']
-                        let conflict = ''
+                        conflict = ''
                         if (queryLabels['conflict'] !== '') {
                             conflict =
                                 `:${plan1} :inConflictWith :${plan2} .
                                  :${plan2} :inConflictWith :${plan1} .`
                         } else {
-                            if (queryLabels['sxSupport'] !== '') {
-                                conflict = conflict + `:${plan2} :inSupportOf :${plan1} \n.`
-                            }
-                            if (queryLabels['dxSupport'] !== '') {
-                                conflict = conflict + `:${plan1} :inSupportOf :${plan2} .`
+                            if (queryLabels['sxSupport'] === '') {
+                                conflict = `:${plan1} :inSupportOf :${plan2} .`
+                            } else if (queryLabels['dxSupport'] === '') {
+                                conflict = `:${plan2} :inSupportOf :${plan1} .`
+                            } else {
+                                conflict =
+                                    `:${plan1} :inSupportOf :${plan2} .
+                                    :${plan2} :inSupportOf :${plan1} .`
                             }
                         }
-
                         query = `${prefixQuery}
                           INSERT DATA {
                             :${plan1} rdf:type :DirectlyExecutablePlan.
@@ -162,7 +164,6 @@ function TableEdit(params: any) {
                           }
                         `;
                     }
-
 
                     await axios.post(variables.API_URL_POST, query, {
                         headers: {
@@ -223,35 +224,36 @@ function TableEdit(params: any) {
                         Unit: params.data[0]['value'],
                         Timeline: `Timeline_${params.data[0]['value']}`,
                         Effect: `Effect_${params.data[0]['value']}`,
-                        Precondition: `Precondition_${params.data[0]['value']}`
-                    }
-                )
-
-                fetchDataInsert('Unit').then();
-                setTriplesQuery(
-                    {
-                        ...triplesQuery,
+                        Precondition: `Precondition_${params.data[0]['value']}`,
                         Plan1: queryLabels['plan1'],
                         Plan2: queryLabels['plan2'],
                         Conflict: conflict,
                     }
                 )
-                fetchDataInsert('Plan').then();
+
+                fetchDataInsert('Unit').then(
+                    () => fetchDataInsert('Plan').then()
+                );
 
             } else if (!Object.values(triplesQuery).includes(params.data[0]['value'])) {
-                fetchDataDelete(triplesQuery['Unit']).then()
-                fetchDataDelete(triplesQuery['Timeline']).then()
-                fetchDataDelete(triplesQuery['Effect']).then()
-                fetchDataDelete(triplesQuery['Precondition']).then()
+                fetchDataDelete(triplesQuery['Unit']).then(
+                    () => fetchDataDelete(triplesQuery['Timeline']).then(
+                        () => fetchDataDelete(triplesQuery['Effect']).then(
+                            () => fetchDataDelete(triplesQuery['Precondition']).then(
+                                () => fetchDataInsert('Unit').then()))
+                    )
+                )
+
                 setTriplesQuery(
                     {
+                        ...triplesQuery,
                         Unit: params.data[0]['value'],
                         Timeline: `Timeline_${params.data[0]['value']}`,
                         Effect: `Effect_${params.data[0]['value']}`,
                         Precondition: `Precondition_${params.data[0]['value']}`
                     }
                 )
-                fetchDataInsert('Unit').then();
+                ;
 
             } else if (
                 !Object.values(triplesQuery).includes(queryLabels['plan1']) ||
@@ -259,9 +261,11 @@ function TableEdit(params: any) {
                 !Object.values(triplesQuery).includes(conflict)
             ) {
 
-                fetchDataDelete(triplesQuery['Plan1']).then()
-                fetchDataDelete(triplesQuery['Plan2']).then()
-
+                fetchDataDelete(triplesQuery['Plan1']).then(
+                    () => fetchDataDelete(triplesQuery['Plan2']).then(
+                        () => fetchDataInsert('Plan').then()
+                    )
+                )
                 setTriplesQuery(
                     {
                         ...triplesQuery,
@@ -270,7 +274,7 @@ function TableEdit(params: any) {
                         Conflict: conflict,
                     }
                 )
-                fetchDataInsert('Plan').then();
+
             }
         }
         // eslint-disable-next-line
