@@ -265,6 +265,31 @@ function TableEdit(params: any) {
                             :${agent2} :hasGoal :${goal2}.
                           }
                         `;
+                    } else if (t === 'Emotion') {
+
+                        let tripleEmo = ''
+                        emotion.forEach((elem) => {
+                            tripleEmo = tripleEmo +
+                                `:${elem}_${agent1} rdf:type :Emotion.
+                                 :${elem}_${agent2} rdf:type :Emotion.
+                                 :${elem}_${agent1} rdfs:comment "${unit}" .
+                                 :${elem}_${agent2} rdfs:comment "${unit}" .
+                                 :${elem}_${agent1} :isEmotionOf :${agent1}
+                                 :${elem}_${agent2} :isEmotionOf :${agent2}
+                                 :${elem}_ES rdf:type :EmotionSchema.
+                                 :${elem}_ES rdfs:comment "${unit}" .
+                                 :${elem}_ES :hasEmotionType :${elem}
+                                 :${elem}_ES :describes :${elem}_${agent1}
+                                 :${elem}_ES :describes :${elem}_${agent2}
+                                 
+                                 `
+                        })
+
+                        query = `${prefixQuery}
+                          INSERT DATA {
+                            ${tripleEmo}
+                          }
+                        `;
                     }
 
                     await axios.post(variables.API_URL_POST, query, {
@@ -343,7 +368,9 @@ function TableEdit(params: any) {
                 fetchDataInsert('Unit').then(
                     () => fetchDataInsert('Plan').then(
                         () => fetchDataInsert('Goal').then(
-                            () => fetchDataInsert('Agent').then()
+                            () => fetchDataInsert('Agent').then(
+                                () => fetchDataInsert('Emotion').then()
+                            )
                         )
                     )
                 );
@@ -426,7 +453,17 @@ function TableEdit(params: any) {
 
                 fetchDataDelete(triplesQuery['Agent1']).then(
                     () => fetchDataDelete(triplesQuery['Agent2']).then(
-                        () => fetchDataInsert('Agent').then()
+                        () => {
+                            emotion.forEach((elem) => {
+                                fetchDataDelete(elem + '_' + triplesQuery['Agent1']).then(
+                                    () => fetchDataDelete(elem + '_' + triplesQuery['Agent2']).then()
+                                )
+                            })
+
+                        }
+                    ).then(() => fetchDataInsert('Agent').then(
+                            () => fetchDataInsert('Emotion').then()
+                        )
                     )
                 )
                 setTriplesQuery(
