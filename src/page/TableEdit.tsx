@@ -292,26 +292,81 @@ function TableEdit(params: any) {
                         `;
                     } else if (t === 'Value') {
 
-                        let tripleValue1 = ''
-                        value_1.forEach((elem) => {
-                            tripleValue1 = tripleValue1 +
+                        let tripleValue = ''
+
+                        value_1.forEach((elem, index) => {
+                            const balPreKey = `balPre${index}_plan1`;
+                            const balEffKey = `balEff${index}_plan1`;
+                            const balPreUnitKey = `balPreUnit${index}_preUnit`;
+
+                            tripleValue = tripleValue +
                                 `:${elem}_atStake rdf:type :Value.
+                                 :${elem}_atStake :atStake true.
                                  :${elem}_atStake rdfs:comment "${unit}" .
                                  :${elem}_atStake :isValueEngagedOf :${agent1} .
                                  :${elem}_inBalance rdf:type :Value.
+                                 :${elem}_inBalance :atStake true.
                                  :${elem}_inBalance rdfs:comment "${unit}" .
                                  :${elem}_inBalance :isValueEngagedOf :${agent1} .
                                  :${elem}_schema rdf:type :ValueSchema.
                                  :${elem}_schema rdfs:comment "${unit}" .
                                  :${elem}_schema :describes :${elem}_atStake .
                                  :${elem}_schema :describes :${elem}_inBalance .
+                                 :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} rdf:type :SetMember .
+                                 :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} rdfs:comment "${unit}" .
+                                 :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} :hasData :${elem}_${queryLabels[balPreUnitKey]} .
+                                 :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} :isMemberOf :Precondition_${unit} .                         
+                                 :Precondition_${plan1}_${elem}_${queryLabels[balPreKey]} rdf:type :SetMember.
+                                 :Precondition_${plan1}_${elem}_${queryLabels[balPreKey]} rdfs:comment "${unit}" .
+                                 :Precondition_${plan1}_${elem}_${queryLabels[balPreKey]} :hasData :${elem}_${queryLabels[balPreKey]} .
+                                 :Precondition_${plan1}_${elem}_${queryLabels[balPreKey]} :isMemberOf :precondition_${plan1}.                                                        
+                                 :Effect_${plan1}_${elem}_${queryLabels[balEffKey]} rdf:type :SetMember.
+                                 :Effect_${plan1}_${elem}_${queryLabels[balEffKey]} rdfs:comment "${unit}" .
+                                 :Effect_${plan1}_${elem}_${queryLabels[balEffKey]} :hasData :${elem}_${queryLabels[balEffKey]} .
+                                 :Effect_${plan1}_${elem}_${queryLabels[balEffKey]} :isMemberOf :effect_${plan1}.   
                                  
                                  `
+
+                        })
+
+                        value_2.forEach((elem, index) => {
+                            const balPreKey = `balPre${index}_plan2`;
+                            const balEffKey = `balEff${index}_plan2`;
+                            const balPreUnitKey = `balPreUnit${index}_preUnit`;
+
+                            tripleValue = tripleValue +
+                                `:${elem}_atStake rdf:type :Value.
+                                 :${elem}_atStake :atStake true.
+                                 :${elem}_atStake rdfs:comment "${unit}" .
+                                 :${elem}_atStake :isValueEngagedOf :${agent2} .
+                                 :${elem}_inBalance rdf:type :Value.
+                                 :${elem}_inBalance :atStake true.
+                                 :${elem}_inBalance rdfs:comment "${unit}" .
+                                 :${elem}_inBalance :isValueEngagedOf :${agent2} .
+                                 :${elem}_schema rdf:type :ValueSchema.
+                                 :${elem}_schema rdfs:comment "${unit}" .
+                                 :${elem}_schema :describes :${elem}_atStake .
+                                 :${elem}_schema :describes :${elem}_inBalance .
+                                 :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} rdf:type :SetMember .
+                                 :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} rdfs:comment "${unit}" .
+                                 :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} :hasData :${elem}_${queryLabels[balPreUnitKey]} .
+                                 :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} :isMemberOf :Precondition_${unit} .                         
+                                 :Precondition_${plan2}_${elem}_${queryLabels[balPreKey]} rdf:type :SetMember.
+                                 :Precondition_${plan2}_${elem}_${queryLabels[balPreKey]} rdfs:comment "${unit}" .
+                                 :Precondition_${plan2}_${elem}_${queryLabels[balPreKey]} :hasData :${elem}_${queryLabels[balPreKey]} .
+                                 :Precondition_${plan2}_${elem}_${queryLabels[balPreKey]} :isMemberOf :precondition_${plan2}.                                                        
+                                 :Effect_${plan2}_${elem}_${queryLabels[balEffKey]} rdf:type :SetMember.
+                                 :Effect_${plan2}_${elem}_${queryLabels[balEffKey]} rdfs:comment "${unit}" .
+                                 :Effect_${plan2}_${elem}_${queryLabels[balEffKey]} :hasData :${elem}_${queryLabels[balEffKey]} .
+                                 :Effect_${plan2}_${elem}_${queryLabels[balEffKey]} :isMemberOf :effect_${plan2}.   
+                                 
+                                 `
+
                         })
 
                         query = `${prefixQuery}
                           INSERT DATA {
-                            ${tripleValue1}
+                            ${tripleValue}
                           }
                         `;
                     }
@@ -389,7 +444,7 @@ function TableEdit(params: any) {
                 }
             }
 
-            const value_2 = []
+            const value_2: any[] = []
             const regexPlan2 = /^value\d+_plan2$/;
 
             for (const key in queryLabels) {
