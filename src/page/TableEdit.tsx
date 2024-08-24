@@ -290,6 +290,30 @@ function TableEdit(params: any) {
                             ${tripleEmo}
                           }
                         `;
+                    } else if (t === 'Value') {
+
+                        let tripleValue1 = ''
+                        value_1.forEach((elem) => {
+                            tripleValue1 = tripleValue1 +
+                                `:${elem}_atStake rdf:type :Value.
+                                 :${elem}_atStake rdfs:comment "${unit}" .
+                                 :${elem}_atStake :isValueEngagedOf :${agent1} .
+                                 :${elem}_inBalance rdf:type :Value.
+                                 :${elem}_inBalance rdfs:comment "${unit}" .
+                                 :${elem}_inBalance :isValueEngagedOf :${agent1} .
+                                 :${elem}_schema rdf:type :ValueSchema.
+                                 :${elem}_schema rdfs:comment "${unit}" .
+                                 :${elem}_schema :describes :${elem}_atStake .
+                                 :${elem}_schema :describes :${elem}_inBalance .
+                                 
+                                 `
+                        })
+
+                        query = `${prefixQuery}
+                          INSERT DATA {
+                            ${tripleValue1}
+                          }
+                        `;
                     }
 
                     await axios.post(variables.API_URL_POST, query, {
@@ -346,6 +370,40 @@ function TableEdit(params: any) {
             } else {
                 conflict = queryLabels['sxSupport'] + '_' + queryLabels['dxSupport']
 
+            }
+
+            const value_1: any[] = []
+            const regexPlan1 = /^value\d+_plan1$/;
+
+            for (const key in queryLabels) {
+                const match = regexPlan1.exec(key);
+                if (match) {
+                    const number = match[0][5];
+                    const balPreKey = `balPre${number}_plan1`;
+                    const balEffKey = `balEff${number}_plan1`;
+                    const balPreUnitKey = `balPreUnit${number}_preUnit`;
+
+                    if (queryLabels.hasOwnProperty(balPreKey) && queryLabels.hasOwnProperty(balEffKey) && queryLabels.hasOwnProperty(balPreUnitKey)) {
+                        value_1.push(queryLabels[key]);
+                    }
+                }
+            }
+
+            const value_2 = []
+            const regexPlan2 = /^value\d+_plan2$/;
+
+            for (const key in queryLabels) {
+                const match = regexPlan2.exec(key);
+                if (match) {
+                    const number = match[0][5];
+                    const balPreKey = `balPre${number}_plan2`;
+                    const balEffKey = `balEff${number}_plan2`;
+                    const balPreUnitKey = `balPreUnit${number}_preUnit`;
+
+                    if (queryLabels.hasOwnProperty(balPreKey) && queryLabels.hasOwnProperty(balEffKey) && queryLabels.hasOwnProperty(balPreUnitKey)) {
+                        value_2.push(queryLabels[key]);
+                    }
+                }
             }
 
             if (Object.values(triplesQuery).length === 0) {
@@ -473,6 +531,10 @@ function TableEdit(params: any) {
                         Agent2: agent2
                     }
                 )
+            } else if (
+                !Object.values(triplesQuery).includes(value_1) ||
+                !Object.values(triplesQuery).includes(value_2)
+            ) {
 
             }
         }
