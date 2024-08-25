@@ -219,10 +219,10 @@ function TableEdit(params: any) {
                             :${plan1} rdfs:comment "${unit}" .
                             :${plan2} rdf:type :DirectlyExecutablePlan.
                             :${plan2} rdfs:comment "${unit}" .
-                            :precondition_${plan1} rdf:type :DirectlyExecutablePlan.
+                            :precondition_${plan1} rdf:type :ConsistentStateSet.
                             :precondition_${plan1} rdfs:comment "${unit}" .
                             :precondition_${plan1} :isPlanPreconditionOf :${plan1}.
-                            :effect_${plan1} rdf:type :DirectlyExecutablePlan.
+                            :effect_${plan1} rdf:type :ConsistentStateSet.
                             :effect_${plan1} rdfs:comment "${unit}" .
                             :effect_${plan1} :isPlanEffectOf :${plan1}.
                             :precondition_${plan2} rdf:type :ConsistentStateSet.
@@ -323,43 +323,43 @@ function TableEdit(params: any) {
 
                         let tripleValue = '';
 
-                        const generateTriples = (values: any[], agent: any, plan: string) => {
+                        const generateTriples = (values: any[], agent: any, plan: string, p: any) => {
                             values.forEach((elem, index) => {
                                 const balPreKey = `balPre${index}_plan${plan}`;
                                 const balEffKey = `balEff${index}_plan${plan}`;
                                 const balPreUnitKey = `balPreUnit${index}_preUnit`;
 
                                 tripleValue += `
-                                :${elem}_atStake rdf:type :Value.
-                                :${elem}_atStake :atStake true.
-                                :${elem}_atStake rdfs:comment "${unit}".
-                                :${elem}_atStake :isValueEngagedOf :${agent}.
-                                :${elem}_inBalance rdf:type :Value.
-                                :${elem}_inBalance :atStake false.
-                                :${elem}_inBalance rdfs:comment "${unit}".
-                                :${elem}_inBalance :isValueEngagedOf :${agent}.
-                                :${elem}_schema rdf:type :ValueSchema.
-                                :${elem}_schema rdfs:comment "${unit}".
-                                :${elem}_schema :describes :${elem}_atStake.
-                                :${elem}_schema :describes :${elem}_inBalance.
-                                :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} rdf:type :SetMember.
-                                :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} rdfs:comment "${unit}".
-                                :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} :hasData :${elem}_${queryLabels[balPreUnitKey]}.
-                                :Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]} :isMemberOf :Precondition_${unit}.
-                                :Precondition_${plan}_${elem}_${queryLabels[balPreKey]} rdf:type :SetMember.
-                                :Precondition_${plan}_${elem}_${queryLabels[balPreKey]} rdfs:comment "${unit}".
-                                :Precondition_${plan}_${elem}_${queryLabels[balPreKey]} :hasData :${elem}_${queryLabels[balPreKey]}.
-                                :Precondition_${plan}_${elem}_${queryLabels[balPreKey]} :isMemberOf :precondition_${plan}.
-                                :Effect_${plan}_${elem}_${queryLabels[balEffKey]} rdf:type :SetMember.
-                                :Effect_${plan}_${elem}_${queryLabels[balEffKey]} rdfs:comment "${unit}".
-                                :Effect_${plan}_${elem}_${queryLabels[balEffKey]} :hasData :${elem}_${queryLabels[balEffKey]}.
-                                :Effect_${plan}_${elem}_${queryLabels[balEffKey]} :isMemberOf :effect_${plan}.
+                                :${elem['value']}_atStake rdf:type :Value.
+                                :${elem['value']}_atStake :atStake true.
+                                :${elem['value']}_atStake rdfs:comment "${unit}".
+                                :${elem['value']}_atStake :isValueEngagedOf :${agent}.
+                                :${elem['value']}_inBalance rdf:type :Value.
+                                :${elem['value']}_inBalance :atStake false.
+                                :${elem['value']}_inBalance rdfs:comment "${unit}".
+                                :${elem['value']}_inBalance :isValueEngagedOf :${agent}.
+                                :${elem['value']}_schema rdf:type :ValueSchema.
+                                :${elem['value']}_schema rdfs:comment "${unit}".
+                                :${elem['value']}_schema :describes :${elem['value']}_atStake.
+                                :${elem['value']}_schema :describes :${elem['value']}_inBalance.
+                                :Precondition_${unit}_${elem['value']}_${queryLabels[balPreUnitKey]} rdf:type :SetMember.
+                                :Precondition_${unit}_${elem['value']}_${queryLabels[balPreUnitKey]} rdfs:comment "${unit}".
+                                :Precondition_${unit}_${elem['value']}_${queryLabels[balPreUnitKey]} :hasData :${elem['value']}_${queryLabels[balPreUnitKey]}.
+                                :Precondition_${unit}_${elem['value']}_${queryLabels[balPreUnitKey]} :isMemberOf :Precondition_${unit}.
+                                :Precondition_${p}_${elem['value']}_${queryLabels[balPreKey]} rdf:type :SetMember.
+                                :Precondition_${p}_${elem['value']}_${queryLabels[balPreKey]} rdfs:comment "${unit}".
+                                :Precondition_${p}_${elem['value']}_${queryLabels[balPreKey]} :hasData :${elem['value']}_${queryLabels[balPreKey]}.
+                                :Precondition_${p}_${elem['value']}_${queryLabels[balPreKey]} :isMemberOf :precondition_${p}.
+                                :Effect_${p}_${elem['value']}_${queryLabels[balEffKey]} rdf:type :SetMember.
+                                :Effect_${p}_${elem['value']}_${queryLabels[balEffKey]} rdfs:comment "${unit}".
+                                :Effect_${p}_${elem['value']}_${queryLabels[balEffKey]} :hasData :${elem['value']}_${queryLabels[balEffKey]}.
+                                :Effect_${p}_${elem['value']}_${queryLabels[balEffKey]} :isMemberOf :effect_${p}.
                             `;
                             });
                         }
 
-                        generateTriples(value_1, agent1, '1');
-                        generateTriples(value_2, agent2, '2');
+                        generateTriples(value_1, agent1, '1', plan1);
+                        generateTriples(value_2, agent2, '2', plan2);
 
 
                         const sendBatchQuery = async (batch: string) => {
@@ -387,28 +387,28 @@ function TableEdit(params: any) {
                 }
             };
 
-            const fetchDataDelete = async (t: string) => {
-                try {
+            const fetchDataDelete = async (u: string) => {
 
-                    const query = `${prefixQuery}
+                try {
+                    const query = `
+                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX : <http://www.purl.org/drammar#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                       
                         DELETE {
-                          :${t} ?p ?o .
-                          ?s ?p :${t} .
-                          ?s :${t} ?o .
+                          ?individual ?p ?o .
+                          ?s ?p2 ?individual .
                         }
                         WHERE {
-                          {
-                            :${t} ?p ?o .
+                          ?individual rdfs:comment "${u}" .
+                          OPTIONAL {
+                            ?individual ?p ?o .
                           }
-                          UNION
-                          {
-                            ?s ?p :${t} .
-                          }
-                          UNION
-                          {
-                            ?s :${t} ?o .
+                          OPTIONAL {
+                            ?s ?p2 ?individual .
                           }
                         }
+
                         `;
 
                     await axios.post(variables.API_URL_POST, query, {
@@ -445,7 +445,12 @@ function TableEdit(params: any) {
                     const balPreUnitKey = `balPreUnit${number}_preUnit`;
 
                     if (queryLabels.hasOwnProperty(balPreKey) && queryLabels.hasOwnProperty(balEffKey) && queryLabels.hasOwnProperty(balPreUnitKey)) {
-                        value_1.push(queryLabels[key]);
+                        value_1.push({
+                            value: queryLabels[key],
+                            balPre: queryLabels[balPreKey],
+                            balEff: queryLabels[balEffKey],
+                            balPreUnit: queryLabels[balPreUnitKey]
+                        });
                     }
                 }
             }
@@ -462,7 +467,12 @@ function TableEdit(params: any) {
                     const balPreUnitKey = `balPreUnit${number}_preUnit`;
 
                     if (queryLabels.hasOwnProperty(balPreKey) && queryLabels.hasOwnProperty(balEffKey) && queryLabels.hasOwnProperty(balPreUnitKey)) {
-                        value_2.push(queryLabels[key]);
+                        value_2.push({
+                            value: queryLabels[key],
+                            balPre: queryLabels[balPreKey],
+                            balEff: queryLabels[balEffKey],
+                            balPreUnit: queryLabels[balPreUnitKey]
+                        });
                     }
                 }
             }
@@ -498,161 +508,38 @@ function TableEdit(params: any) {
                     )
                 );
 
-            } else if (!Object.values(triplesQuery).includes(unit)) {
+            } else  {
                 fetchDataDelete(triplesQuery['Unit']).then(
-                    () => fetchDataDelete('Timeline_' + triplesQuery['Unit']).then(
-                        () => fetchDataDelete('Effect_' + triplesQuery['Unit']).then(
-                            () => fetchDataDelete('Precondition_' + triplesQuery['Unit']).then(
-                                () => fetchDataInsert('Unit').then()))
-                    )
-                )
-
-                setTriplesQuery(
-                    {
-                        ...triplesQuery,
-                        Unit: unit,
-                    }
-                )
-                ;
-
-            } else if (
-                !Object.values(triplesQuery).includes(plan1) ||
-                !Object.values(triplesQuery).includes(plan2) ||
-                !Object.values(triplesQuery).includes(conflict) ||
-                triplesQuery['Accomplished1'] !== accomplished1 ||
-                triplesQuery['Accomplished2'] !== accomplished2
-            ) {
-
-                fetchDataDelete(triplesQuery['Plan1']).then(
-                    () => fetchDataDelete(triplesQuery['Plan2']).then(
-                        () => fetchDataDelete('precondition_' + triplesQuery['Plan1']).then(
-                            () => fetchDataDelete('precondition_' + triplesQuery['Plan2']).then(
-                                () => fetchDataDelete('effect_' + triplesQuery['Plan1']).then(
-                                    () => fetchDataDelete('effect_' + triplesQuery['Plan2']).then(
-                                        () => fetchDataInsert('Plan').then()
+                    () => fetchDataInsert('Unit').then(
+                        () => fetchDataInsert('Plan').then(
+                            () => fetchDataInsert('Goal').then(
+                                () => fetchDataInsert('Agent').then(
+                                    () => fetchDataInsert('Emotion').then(
+                                        () => fetchDataInsert('Value').then()
                                     )
                                 )
                             )
                         )
                     )
                 )
+
                 setTriplesQuery(
                     {
-                        ...triplesQuery,
+                        Unit: unit,
                         Plan1: plan1,
                         Plan2: plan2,
-                        Conflict: conflict,
                         Accomplished1: accomplished1,
                         Accomplished2: accomplished2,
-                    }
-                )
-
-            } else if (
-                !Object.values(triplesQuery).includes(goal1) ||
-                !Object.values(triplesQuery).includes(goal2)
-            ) {
-
-                fetchDataDelete(triplesQuery['Goal1']).then(
-                    () => fetchDataDelete(triplesQuery['Goal2']).then(
-                        () => fetchDataDelete(triplesQuery['Goal1'] + '_schema').then(
-                            () => fetchDataDelete(triplesQuery['Goal2'] + '_schema').then(
-                                () => fetchDataInsert('Goal').then()
-                            )
-                        )
-                    )
-                )
-                setTriplesQuery(
-                    {
-                        ...triplesQuery,
+                        Conflict: conflict,
                         Goal1: goal1,
-                        Goal2: goal2
-                    }
-                )
-
-            } else if (
-                !Object.values(triplesQuery).includes(agent1) ||
-                !Object.values(triplesQuery).includes(agent2)
-            ) {
-
-                fetchDataDelete(triplesQuery['Agent1']).then(
-                    () => fetchDataDelete(triplesQuery['Agent2']).then(
-                        () => {
-                            emotion.forEach((elem) => {
-                                fetchDataDelete(elem + '_' + triplesQuery['Agent1']).then(
-                                    () => fetchDataDelete(elem + '_' + triplesQuery['Agent2']).then()
-                                )
-                            })
-
-                        }
-                    ).then(() => fetchDataInsert('Agent').then(
-                            () => fetchDataInsert('Emotion').then()
-                        )
-                    )
-                )
-                setTriplesQuery(
-                    {
-                        ...triplesQuery,
+                        Goal2: goal2,
                         Agent1: agent1,
-                        Agent2: agent2
-                    }
-                )
-            } else if (
-                triplesQuery['Value1'] !== value_1 ||
-                triplesQuery['Value2'] !== value_2
-            ) {
-                const V1 = async () => {
-                    value_1.forEach((elem, index) => {
-                        const balPreKey = `balPre${index}_plan1`;
-                        const balEffKey = `balEff${index}_plan1`;
-                        const balPreUnitKey = `balPreUnit${index}_preUnit`;
-
-                        fetchDataDelete(elem + '_atStake').then(
-                            () => fetchDataDelete(elem + '_inBalance').then(
-                                () => fetchDataDelete(elem + '_schema').then(
-                                    () => fetchDataDelete(`Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]}`).then(
-                                        () => fetchDataDelete(`Precondition_${plan1}_${elem}_${queryLabels[balPreKey]}`).then(
-                                            () => fetchDataDelete(`Effect_${plan1}_${elem}_${queryLabels[balEffKey]}`).then()
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    })
-                }
-
-                const V2 = async () => {
-                    value_2.forEach((elem, index) => {
-                        const balPreKey = `balPre${index}_plan2`;
-                        const balEffKey = `balEff${index}_plan2`;
-                        const balPreUnitKey = `balPreUnit${index}_preUnit`;
-
-                        fetchDataDelete(elem + '_atStake').then(
-                            () => fetchDataDelete(elem + '_inBalance').then(
-                                () => fetchDataDelete(elem + '_schema').then(
-                                    () => fetchDataDelete(`Precondition_${unit}_${elem}_${queryLabels[balPreUnitKey]}`).then(
-                                        () => fetchDataDelete(`Precondition_${plan2}_${elem}_${queryLabels[balPreKey]}`).then(
-                                            () => fetchDataDelete(`Effect_${plan2}_${elem}_${queryLabels[balEffKey]}`).then()
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    })
-                }
-
-                V1().then(
-                    () => V2().then(
-                        () => fetchDataInsert('Value').then()
-                    )
-                )
-
-                setTriplesQuery(
-                    {
-                        ...triplesQuery,
+                        Agent2: agent2,
                         Value1: value_1,
                         Value2: value_2
                     }
                 )
+
             }
         }
         // eslint-disable-next-line
