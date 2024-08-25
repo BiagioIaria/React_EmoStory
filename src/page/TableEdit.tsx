@@ -157,34 +157,14 @@ function TableEdit(params: any) {
             const goal2 = queryLabels['goalplan2'].replace(/ /g, '_')
             const agent1 = queryLabels['agentplan1'].replace(/ /g, '_')
             const agent2 = queryLabels['agentplan2'].replace(/ /g, '_')
+            const comment = unit + '_' + params['idTableEdit']
 
 
             const fetchDataInsert = async (t: string) => {
                 try {
                     let query
 
-                    if (t === 'Unit') {
-                        query = `${prefixQuery}
-                          INSERT DATA {
-                            :${unit} rdf:type :` + t + ` .
-                            :${unit} rdfs:comment "${unit}" .
-                            :Timeline_${unit} rdf:type :Timeline .
-                            :Timeline_${unit} rdfs:comment "${unit}" .
-                            :Effect_${unit} rdf:type :ConsistentStateSet .
-                            :Effect_${unit} rdfs:comment "${unit}".
-                            :Timeline_${unit} :hasTimelineEffect :Effect_${unit}.
-                            :Precondition_${unit} rdf:type :ConsistentStateSet .
-                            :Precondition_${unit} rdfs:comment "${unit}".
-                            :Timeline_${unit} :hasTimelinePrecondition :Precondition_${unit} .
-                          }
-                        `;
-
-                        await axios.post(variables.API_URL_POST, query, {
-                            headers: {
-                                'Content-Type': 'application/sparql-update'
-                            }
-                        });
-                    } else if (t === 'Plan') {
+                    if (t === 'Plan') {
                         conflict = ''
                         accomplished1 = ''
                         accomplished2 = ''
@@ -215,20 +195,20 @@ function TableEdit(params: any) {
                         }
                         const triplePlan = `
                             :${plan1} rdf:type :DirectlyExecutablePlan.
-                            :${plan1} rdfs:comment "${unit}" .
+                            :${plan1} rdfs:comment "${comment}" .
                             :${plan2} rdf:type :DirectlyExecutablePlan.
-                            :${plan2} rdfs:comment "${unit}" .
+                            :${plan2} rdfs:comment "${comment}" .
                             :precondition_${plan1} rdf:type :ConsistentStateSet.
-                            :precondition_${plan1} rdfs:comment "${unit}" .
+                            :precondition_${plan1} rdfs:comment "${comment}" .
                             :precondition_${plan1} :isPlanPreconditionOf :${plan1}.
                             :effect_${plan1} rdf:type :ConsistentStateSet.
-                            :effect_${plan1} rdfs:comment "${unit}" .
+                            :effect_${plan1} rdfs:comment "${comment}" .
                             :effect_${plan1} :isPlanEffectOf :${plan1}.
                             :precondition_${plan2} rdf:type :ConsistentStateSet.
-                            :precondition_${plan2} rdfs:comment "${unit}" .
+                            :precondition_${plan2} rdfs:comment "${comment}" .
                             :precondition_${plan2} :isPlanPreconditionOf :${plan2}.
                             :effect_${plan2} rdf:type :ConsistentStateSet.
-                            :effect_${plan2} rdfs:comment "${unit}" .
+                            :effect_${plan2} rdfs:comment "${comment}" .
                             :effect_${plan2} :isPlanEffectOf :${plan2} .
                             :${plan1} :isMotivationFor :Timeline_${unit} .
                             :${plan2} :isMotivationFor :Timeline_${unit} .
@@ -261,14 +241,14 @@ function TableEdit(params: any) {
                         query = `${prefixQuery}
                           INSERT DATA {
                             :${goal1} rdf:type :Goal.
-                            :${goal1} rdfs:comment "${unit}" .
+                            :${goal1} rdfs:comment "${comment}" .
                             :${goal1}_schema rdf:type :GoalSchema.
-                            :${goal1}_schema rdfs:comment "${unit}" .
+                            :${goal1}_schema rdfs:comment "${comment}" .
                             :${goal1}_schema :describes :${goal1} .
                             :${goal2} rdf:type :Goal.
-                            :${goal2} rdfs:comment "${unit}" .
+                            :${goal2} rdfs:comment "${comment}" .
                             :${goal2}_schema rdf:type :GoalSchema.
-                            :${goal2}_schema rdfs:comment "${unit}" .
+                            :${goal2}_schema rdfs:comment "${comment}" .
                             :${goal2}_schema :describes :${goal2} .
                             :${goal1} :isAchievedBy :${plan1} .
                             :${goal2} :isAchievedBy :${plan2} .
@@ -285,9 +265,9 @@ function TableEdit(params: any) {
                         query = `${prefixQuery}
                           INSERT DATA {
                             :${agent1} rdf:type :Agent.
-                            :${agent1} rdfs:comment "${unit}" .
+                            :${agent1} rdfs:comment "${comment}" .
                             :${agent2} rdf:type :Agent.
-                            :${agent2} rdfs:comment "${unit}" .
+                            :${agent2} rdfs:comment "${comment}" .
                             :${agent1} :hasGoal :${goal1}.
                             :${agent2} :hasGoal :${goal2}.
                             :${agent1} :intends :${plan1}.
@@ -307,12 +287,12 @@ function TableEdit(params: any) {
                             tripleEmo = tripleEmo +
                                 `:${elem}_${agent1} rdf:type :Emotion.
                                  :${elem}_${agent2} rdf:type :Emotion.
-                                 :${elem}_${agent1} rdfs:comment "${unit}" .
-                                 :${elem}_${agent2} rdfs:comment "${unit}" .
+                                 :${elem}_${agent1} rdfs:comment "${comment}" .
+                                 :${elem}_${agent2} rdfs:comment "${comment}" .
                                  :${elem}_${agent1} :isEmotionOf :${agent1}
                                  :${elem}_${agent2} :isEmotionOf :${agent2}
                                  :${elem}_ES rdf:type :EmotionSchema.
-                                 :${elem}_ES rdfs:comment "${unit}" .
+                                 :${elem}_ES rdfs:comment "${comment}" .
                                  :${elem}_ES :hasEmotionType :${elem}
                                  :${elem}_ES :describes :${elem}_${agent1}
                                  :${elem}_ES :describes :${elem}_${agent2}
@@ -342,26 +322,26 @@ function TableEdit(params: any) {
                                 tripleValue += `
                                 :${elem['value']}_atStake rdf:type :Value.
                                 :${elem['value']}_atStake :atStake true.
-                                :${elem['value']}_atStake rdfs:comment "${unit}".
+                                :${elem['value']}_atStake rdfs:comment "${comment}".
                                 :${elem['value']}_atStake :isValueEngagedOf :${agent}.
                                 :${elem['value']}_inBalance rdf:type :Value.
                                 :${elem['value']}_inBalance :atStake false.
-                                :${elem['value']}_inBalance rdfs:comment "${unit}".
+                                :${elem['value']}_inBalance rdfs:comment "${comment}".
                                 :${elem['value']}_inBalance :isValueEngagedOf :${agent}.
                                 :${elem['value']}_schema rdf:type :ValueSchema.
-                                :${elem['value']}_schema rdfs:comment "${unit}".
+                                :${elem['value']}_schema rdfs:comment "${comment}".
                                 :${elem['value']}_schema :describes :${elem['value']}_atStake.
                                 :${elem['value']}_schema :describes :${elem['value']}_inBalance.
                                 :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} rdf:type :SetMember.
-                                :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} rdfs:comment "${unit}".
+                                :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} rdfs:comment "${comment}".
                                 :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} :hasData :${elem['value']}_${elem['balPreUnit']}.
                                 :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} :isMemberOf :Precondition_${unit}.
                                 :Precondition_${p}_${elem['value']}_${elem['balPre']} rdf:type :SetMember.
-                                :Precondition_${p}_${elem['value']}_${elem['balPre']} rdfs:comment "${unit}".
+                                :Precondition_${p}_${elem['value']}_${elem['balPre']} rdfs:comment "${comment}".
                                 :Precondition_${p}_${elem['value']}_${elem['balPre']} :hasData :${elem['value']}_${elem['balPre']}.
                                 :Precondition_${p}_${elem['value']}_${elem['balPre']} :isMemberOf :precondition_${p}.
                                 :Effect_${p}_${elem['value']}_${elem['balEff']} rdf:type :SetMember.
-                                :Effect_${p}_${elem['value']}_${elem['balEff']} rdfs:comment "${unit}".
+                                :Effect_${p}_${elem['value']}_${elem['balEff']} rdfs:comment "${comment}".
                                 :Effect_${p}_${elem['value']}_${elem['balEff']} :hasData :${elem['value']}_${elem['balEff']}.
                                 :Effect_${p}_${elem['value']}_${elem['balEff']} :isMemberOf :effect_${p}.
                             `;
@@ -397,7 +377,7 @@ function TableEdit(params: any) {
                 }
             };
 
-            const fetchDataDelete = async (u: string) => {
+            const fetchDataDelete = async () => {
 
                 try {
                     const query = `
@@ -410,7 +390,7 @@ function TableEdit(params: any) {
                           ?s ?p2 ?individual .
                         }
                         WHERE {
-                          ?individual rdfs:comment "${u}" .
+                          ?individual rdfs:comment "${comment}" .
                           OPTIONAL {
                             ?individual ?p ?o .
                           }
@@ -506,27 +486,23 @@ function TableEdit(params: any) {
                     }
                 )
 
-                fetchDataInsert('Unit').then(
-                    () => fetchDataInsert('Plan').then(
-                        () => fetchDataInsert('Goal').then(
-                            () => fetchDataInsert('Agent').then(
-                                () => fetchDataInsert('Emotion').then(
-                                    () => fetchDataInsert('Value').then()
-                                )
+                fetchDataInsert('Plan').then(
+                    () => fetchDataInsert('Goal').then(
+                        () => fetchDataInsert('Agent').then(
+                            () => fetchDataInsert('Emotion').then(
+                                () => fetchDataInsert('Value').then()
                             )
                         )
                     )
                 );
 
-            } else  {
-                fetchDataDelete(triplesQuery['Unit']).then(
-                    () => fetchDataInsert('Unit').then(
-                        () => fetchDataInsert('Plan').then(
-                            () => fetchDataInsert('Goal').then(
-                                () => fetchDataInsert('Agent').then(
-                                    () => fetchDataInsert('Emotion').then(
-                                        () => fetchDataInsert('Value').then()
-                                    )
+            } else {
+                fetchDataDelete().then(
+                    () => fetchDataInsert('Plan').then(
+                        () => fetchDataInsert('Goal').then(
+                            () => fetchDataInsert('Agent').then(
+                                () => fetchDataInsert('Emotion').then(
+                                    () => fetchDataInsert('Value').then()
                                 )
                             )
                         )
