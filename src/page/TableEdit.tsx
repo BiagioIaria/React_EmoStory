@@ -213,8 +213,7 @@ function TableEdit(params: any) {
                                      :${plan2} :inSupportOf :${plan1} .`
                             }
                         }
-                        query = `${prefixQuery}
-                          INSERT DATA {
+                        const triplePlan = `
                             :${plan1} rdf:type :DirectlyExecutablePlan.
                             :${plan1} rdfs:comment "${unit}" .
                             :${plan2} rdf:type :DirectlyExecutablePlan.
@@ -231,19 +230,31 @@ function TableEdit(params: any) {
                             :effect_${plan2} rdf:type :ConsistentStateSet.
                             :effect_${plan2} rdfs:comment "${unit}" .
                             :effect_${plan2} :isPlanEffectOf :${plan2} .
-                            :${plan1} :isMotivationFor :${unit} .
-                            :${plan2} :isMotivationFor :${unit} .
+                            :${plan1} :isMotivationFor :Timeline_${unit} .
+                            :${plan2} :isMotivationFor :Timeline_${unit} .
                             ${conflict}
                             ${accomplished1}
                             ${accomplished2}
-                          }
-                        `;
+                        `
 
-                        await axios.post(variables.API_URL_POST, query, {
-                            headers: {
-                                'Content-Type': 'application/sparql-update'
-                            }
-                        });
+                        const sendBatchQuery = async (batch: string) => {
+                            const query = `${prefixQuery}
+                                                   INSERT DATA {
+                                                     ${batch}
+                                                   }`;
+                            await axios.post(variables.API_URL_POST, query, {
+                                headers: {
+                                    'Content-Type': 'application/sparql-update'
+                                }
+                            });
+                        }
+
+                        const BATCH_SIZE = 4;
+                        const triples = triplePlan.split('\n'); // Divide le triple per riga
+                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                            await sendBatchQuery(batch);
+                        }
 
                     } else if (t === 'Goal') {
 
