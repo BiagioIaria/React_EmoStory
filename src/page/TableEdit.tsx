@@ -290,6 +290,8 @@ function TableEdit(params: any) {
                             :${agent2} rdfs:comment "${unit}" .
                             :${agent1} :hasGoal :${goal1}.
                             :${agent2} :hasGoal :${goal2}.
+                            :${agent1} :intends :${plan1}.
+                            :${agent2} :intends :${plan2}.
                           }
                         `;
 
@@ -334,11 +336,8 @@ function TableEdit(params: any) {
 
                         let tripleValue = '';
 
-                        const generateTriples = (values: any[], agent: any, plan: string, p: any) => {
-                            values.forEach((elem, index) => {
-                                const balPreKey = `balPre${index}_plan${plan}`;
-                                const balEffKey = `balEff${index}_plan${plan}`;
-                                const balPreUnitKey = `balPreUnit${index}_preUnit`;
+                        const generateTriples = (values: any[], agent: any, p: any) => {
+                            values.forEach((elem) => {
 
                                 tripleValue += `
                                 :${elem['value']}_atStake rdf:type :Value.
@@ -353,24 +352,24 @@ function TableEdit(params: any) {
                                 :${elem['value']}_schema rdfs:comment "${unit}".
                                 :${elem['value']}_schema :describes :${elem['value']}_atStake.
                                 :${elem['value']}_schema :describes :${elem['value']}_inBalance.
-                                :Precondition_${unit}_${elem['value']}_${queryLabels[balPreUnitKey]} rdf:type :SetMember.
-                                :Precondition_${unit}_${elem['value']}_${queryLabels[balPreUnitKey]} rdfs:comment "${unit}".
-                                :Precondition_${unit}_${elem['value']}_${queryLabels[balPreUnitKey]} :hasData :${elem['value']}_${queryLabels[balPreUnitKey]}.
-                                :Precondition_${unit}_${elem['value']}_${queryLabels[balPreUnitKey]} :isMemberOf :Precondition_${unit}.
-                                :Precondition_${p}_${elem['value']}_${queryLabels[balPreKey]} rdf:type :SetMember.
-                                :Precondition_${p}_${elem['value']}_${queryLabels[balPreKey]} rdfs:comment "${unit}".
-                                :Precondition_${p}_${elem['value']}_${queryLabels[balPreKey]} :hasData :${elem['value']}_${queryLabels[balPreKey]}.
-                                :Precondition_${p}_${elem['value']}_${queryLabels[balPreKey]} :isMemberOf :precondition_${p}.
-                                :Effect_${p}_${elem['value']}_${queryLabels[balEffKey]} rdf:type :SetMember.
-                                :Effect_${p}_${elem['value']}_${queryLabels[balEffKey]} rdfs:comment "${unit}".
-                                :Effect_${p}_${elem['value']}_${queryLabels[balEffKey]} :hasData :${elem['value']}_${queryLabels[balEffKey]}.
-                                :Effect_${p}_${elem['value']}_${queryLabels[balEffKey]} :isMemberOf :effect_${p}.
+                                :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} rdf:type :SetMember.
+                                :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} rdfs:comment "${unit}".
+                                :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} :hasData :${elem['value']}_${elem['balPreUnit']}.
+                                :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} :isMemberOf :Precondition_${unit}.
+                                :Precondition_${p}_${elem['value']}_${elem['balPre']} rdf:type :SetMember.
+                                :Precondition_${p}_${elem['value']}_${elem['balPre']} rdfs:comment "${unit}".
+                                :Precondition_${p}_${elem['value']}_${elem['balPre']} :hasData :${elem['value']}_${elem['balPre']}.
+                                :Precondition_${p}_${elem['value']}_${elem['balPre']} :isMemberOf :precondition_${p}.
+                                :Effect_${p}_${elem['value']}_${elem['balEff']} rdf:type :SetMember.
+                                :Effect_${p}_${elem['value']}_${elem['balEff']} rdfs:comment "${unit}".
+                                :Effect_${p}_${elem['value']}_${elem['balEff']} :hasData :${elem['value']}_${elem['balEff']}.
+                                :Effect_${p}_${elem['value']}_${elem['balEff']} :isMemberOf :effect_${p}.
                             `;
                             });
                         }
 
-                        generateTriples(value_1, agent1, '1', plan1);
-                        generateTriples(value_2, agent2, '2', plan2);
+                        generateTriples(value_1, agent1, plan1);
+                        generateTriples(value_2, agent2, plan2);
 
 
                         const sendBatchQuery = async (batch: string) => {
