@@ -495,7 +495,6 @@ function TableEdit(params: any) {
                         )
                     )
                 );
-
             } else {
                 fetchDataDelete().then(
                     () => fetchDataInsert('Plan').then(
