@@ -1,6 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import TableEdit from "./TableEdit";
-import {Button, Input, Menu, MenuItem, Table, TableContainer, TableHead, TextField} from '@mui/material';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Input,
+    Menu,
+    MenuItem,
+    Table,
+    TableContainer,
+    TableHead,
+    TextField
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import Paper from "@mui/material/Paper";
 import TableRow from "@mui/material/TableRow";
@@ -102,6 +113,8 @@ function Edit() {
         {id: 1, value: ''},
     ]);
     const [unitQuery, setUnitQuery] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
     let params = useParams();
     const temp = params.get("temp");
@@ -309,6 +322,23 @@ function Edit() {
         </TableRow>
     );
 
+    const handleClickInference = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get('http://localhost:8080/api/inference/run', {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log('Risposta:', response.data);
+        } catch (error) {
+            console.error('Errore:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className='edit'>
             <Paper style={{display: 'flex', flexDirection: 'column', height: '630px'}}>
@@ -344,6 +374,24 @@ function Edit() {
                     <AddIcon/>
                 </Button>
             </div>
+            <Box textAlign="center" mt={5}>
+                <Button
+                    variant="contained"
+                    onClick={handleClickInference}
+                    style={{
+                        backgroundColor: 'lightyellow',
+                        color: 'black',
+                    }}
+                    disabled={loading}
+                >
+                    Do Inference
+                </Button>
+                {loading && (
+                    <Box mt={2}>
+                        <CircularProgress/>
+                    </Box>
+                )}
+            </Box>
         </div>
     );
 }

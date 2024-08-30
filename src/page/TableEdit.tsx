@@ -378,34 +378,55 @@ function TableEdit(params: any) {
             };
 
             const fetchDataDelete = async () => {
-
                 try {
-                    const query = `
-                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    // Prima query: cancellazione del commento se ci sono altri commenti
+                    const deleteCommentQuery = `
                         PREFIX : <http://www.purl.org/drammar#>
                         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                       
+            
                         DELETE {
-                          ?individual ?p ?o .
-                          ?s ?p2 ?individual .
+                          ?individual rdfs:comment "${comment}" .
                         }
                         WHERE {
                           ?individual rdfs:comment "${comment}" .
-                          OPTIONAL {
-                            ?individual ?p ?o .
-                          }
-                          OPTIONAL {
-                            ?s ?p2 ?individual .
-                          }
+                          FILTER(EXISTS { ?individual rdfs:comment ?otherComment . FILTER(?otherComment != "${comment}") })
                         }
+                    `;
 
-                        `;
-
-                    await axios.post(variables.API_URL_POST, query, {
+                    const deleteCommentResponse = await axios.post(variables.API_URL_POST, deleteCommentQuery, {
                         headers: {
                             'Content-Type': 'application/sparql-update'
                         }
                     });
+
+                    // Se la prima query non ha cancellato nulla, esegui la seconda query
+                    if (!deleteCommentResponse.data.includes("deleted")) {
+                        const deleteIndividualQuery = `
+                            PREFIX : <http://www.purl.org/drammar#>
+                            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            
+                            DELETE {
+                              ?individual ?p ?o .
+                              ?s ?p2 ?individual .
+                            }
+                            WHERE {
+                              ?individual rdfs:comment "${comment}" .
+                              FILTER(NOT EXISTS { ?individual rdfs:comment ?otherComment . FILTER(?otherComment != "${comment}") })
+                              OPTIONAL {
+                                ?individual ?p ?o .
+                              }
+                              OPTIONAL {
+                                ?s ?p2 ?individual .
+                              }
+                            }
+                        `;
+
+                        await axios.post(variables.API_URL_POST, deleteIndividualQuery, {
+                            headers: {
+                                'Content-Type': 'application/sparql-update'
+                            }
+                        });
+                    }
                 } catch (err) {
                     console.error(err);
                 }
@@ -1253,7 +1274,6 @@ function TableEdit(params: any) {
             </React.Fragment>
         );
     };
-
 
     return (
         <TableBody>

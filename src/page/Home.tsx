@@ -90,7 +90,8 @@ function Home() {
                           ?s ?p2 ?individual .
                         }
                         WHERE {
-                          ?individual rdfs:comment "${unit}" .
+                          ?individual rdfs:comment ?comment.
+                          FILTER(STRSTARTS(?comment, "${unit}"))
                           OPTIONAL {
                             ?individual ?p ?o .
                           }
