@@ -7,6 +7,7 @@ import Home from "./page/Home";
 import {Box, Container, Grid} from "@mui/material";
 
 import Edit from "./page/Edit";
+import Import from "./page/import";
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
                     <Route path="/" element={<Home/>}/>
                     <Route path="/help" element={<Help/>}/>
                     <Route path="/edit" element={<Edit/>}/>
+                    <Route path="/import" element={<Import/>}/>
                 </Routes>
             </article>
             {Footer()}

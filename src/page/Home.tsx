@@ -1,6 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import {Box, Chip, createTheme, IconButton, Menu, MenuItem, Stack, ThemeProvider} from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
+import ArchiveIcon from '@mui/icons-material/Archive';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {Link} from "react-router-dom";
 import {useEffect, useState} from "react";
@@ -137,7 +138,10 @@ function Home() {
                                     }}
                                 >
                                     <Box sx={{display: 'flex', flexDirection: 'row', p: 1}}>
-                                        <MenuItem onClick={() => { handleDeleteUnit(item).then(); handleClose(index); }}>
+                                        <MenuItem onClick={() => {
+                                            handleDeleteUnit(item).then();
+                                            handleClose(index);
+                                        }}>
                                             <DeleteIcon sx={{mr: 1}}/> Delete
                                         </MenuItem>
                                     </Box>
@@ -164,20 +168,26 @@ function Home() {
                                 horizontal: 'left',
                             }}
                         >
-                            <Box sx={{display: 'flex', flexDirection: 'row', p: 1}}>
-                                <MenuItem onClick={() => handleClose(unit.length)}>
+                            <Box sx={{display: 'flex', flexWrap: 'wrap', p: 1}}>
+                                <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=1' style={{textDecoration: 'none', color: 'inherit'}}>
                                         <EditIcon sx={{mr: 1}}/> Edit 1
                                     </Link>
                                 </MenuItem>
-                                <MenuItem onClick={() => handleClose(unit.length)}>
+                                <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=2' style={{textDecoration: 'none', color: 'inherit'}}>
                                         <EditIcon sx={{mr: 1}}/> Edit 2
                                     </Link>
                                 </MenuItem>
-                                <MenuItem onClick={() => handleClose(unit.length)}>
+                                <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=3' style={{textDecoration: 'none', color: 'inherit'}}>
                                         <EditIcon sx={{mr: 1}}/> Edit 3
+                                    </Link>
+                                </MenuItem>
+                                <MenuItem sx={{flexBasis: '100%', display: 'flex', justifyContent: 'center', mt: 2}}
+                                          onClick={() => handleClose(unit.length)}>
+                                    <Link to='/import' style={{textDecoration: 'none', color: 'inherit'}}>
+                                        <ArchiveIcon sx={{mr: 1}}/> Import
                                     </Link>
                                 </MenuItem>
                             </Box>
