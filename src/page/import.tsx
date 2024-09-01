@@ -46,6 +46,66 @@ function Import() {
                     result[cleanKey] = [];
                 }
                 result[cleanKey].push({a: a.trim(), v: v.trim()});
+            } else if (cleanKey === 'hasGoal') {
+                const [a, g] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({a: a.trim(), g: g.trim()});
+            } else if (cleanKey === 'intends') {
+                const [a, p] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({a: a.trim(), p: p.trim()});
+            } else if (cleanKey === 'achieves') {
+                const [p, g] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({p: p.trim(), g: g.trim()});
+            } else if (cleanKey === 'hasPrecondition') {
+                const [pu, s] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({pu: pu.trim(), s: s.trim()});
+            } else if (cleanKey === 'hasEffect') {
+                const [pu, s] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({pu: pu.trim(), s: s.trim()});
+            } else if (cleanKey === 'atStakeInSet') {
+                const [v, s] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({v: v.trim(), s: s.trim()});
+            } else if (cleanKey === 'inBalanceInSet') {
+                const [v, s] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({v: v.trim(), s: s.trim()});
+            } else if (cleanKey === 'isMotivationFor') {
+                const [p, u] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({p: p.trim(), u: u.trim()});
+            } else if (cleanKey === 'inConflictWith') {
+                const [p1, p2] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({p1: p1.trim(), p2: p2.trim()});
+            } else if (cleanKey === 'inSupportOf') {
+                const [p1, p2] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({p1: p1.trim(), p2: p2.trim()});
             } else {
                 if (!result[cleanKey]) {
                     result[cleanKey] = [];
