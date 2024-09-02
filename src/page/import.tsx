@@ -316,6 +316,7 @@ function Import() {
                                 for (let j = 0; j < kb['achieves'].length; j++) {
                                     if (kb['achieves'][j]['p'] === plan) {
                                         goal = kb['achieves'][j]['g']
+                                        break
                                     }
                                 }
 
@@ -343,12 +344,12 @@ function Import() {
 
                         if (Object.keys(kb).includes('Agent')) {
                             for (let agentIndex = 0; agentIndex < kb['Agent'].length; agentIndex++) {
-                                let agente = kb['Agent'][agentIndex];
-                                let piano = '';
+                                let agent = kb['Agent'][agentIndex];
+                                let plan = '';
 
                                 for (let intendIndex = 0; intendIndex < kb['intends'].length; intendIndex++) {
-                                    if (kb['intends'][intendIndex]['a'] === agente) {
-                                        piano = kb['intends'][intendIndex]['p'];
+                                    if (kb['intends'][intendIndex]['a'] === agent) {
+                                        plan = kb['intends'][intendIndex]['p'];
                                         break;
                                     }
                                 }
@@ -357,13 +358,13 @@ function Import() {
 
                                 emotion.forEach((elem) => {
                                     tempTriple += `
-                                    :${elem}_${agente} rdf:type :Emotion.
-                                    ${comments(commentIndex, piano, agente)}
-                                    :${elem}_${agente} :isEmotionOf :${agente}.
+                                    :${elem}_${agent} rdf:type :Emotion.
+                                    ${comments(commentIndex, plan, `${elem}_${agent}`)}
+                                    :${elem}_${agent} :isEmotionOf :${agent}.
                                     :${elem}_ES rdf:type :EmotionSchema.
-                                    ${comments(commentIndex, piano, agente)}
+                                    ${comments(commentIndex, plan, `${elem}_ES`)}
                                     :${elem}_ES :hasEmotionType :${elem}.
-                                    :${elem}_ES :describes :${elem}_${agente}.
+                                    :${elem}_ES :describes :${elem}_${agent}.
                                     `;
                                 });
 
