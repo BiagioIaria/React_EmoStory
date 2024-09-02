@@ -1,12 +1,339 @@
 import {Box, Button, Typography, Stack} from '@mui/material';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import axios from "axios";
+import {variables} from "../endPoint";
 
 function Import() {
-    const [kb, setKb] = useState({});
+    const [kb, setKb] = useState<any>({});
     const [fileName, setFileName] = useState<string | null>(null);
-    console.log(kb)
+
+    useEffect(() => {
+        if (Object.keys(kb).length !== 0) {
+
+            const prefixQuery = `
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX : <http://www.purl.org/drammar#>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>`
+
+            const unit = kb['Unit'][0].replace(/ /g, '_')
+
+            const sendBatchQuery = async (batch: string) => {
+                const query = `${prefixQuery}
+                                                   INSERT DATA {
+                                                     ${batch}
+                                                   }`;
+
+
+                await axios.post(variables.API_URL_POST, query, {
+                    headers: {
+                        'Content-Type': 'application/sparql-update'
+                    }
+                });
+            }
+
+            const fetchDataInsert = async (t: string) => {
+                function comments(commentIndex: any, plan: any, elem: any) {
+                    let comment = ''
+                    for (let j = 0; j < commentIndex[plan].length; j++) {
+                        comment += `:${elem} rdfs:comment "${commentIndex[plan][j]}" .
+                        
+                                    `
+                    }
+                    return comment;
+                }
+
+                try {
+                    let commentIndex: any = {}
+                    let comment
+                    let index = 0
+                    if (Object.keys(kb).includes('inConflictWith')) {
+
+                        for (let i = 0; i < kb['inConflictWith'].length; i++) {
+                            comment = `${unit}_${index}`
+                            index += 1
+
+                            const plan1 = kb['inConflictWith'][i]['p1']
+                            const plan2 = kb['inConflictWith'][i]['p2']
+
+                            if (Object.keys(commentIndex).includes(plan1)) {
+                                commentIndex[plan1].push(comment)
+                            } else {
+                                commentIndex[plan1] = [comment]
+                            }
+                            if (Object.keys(commentIndex).includes(plan2)) {
+                                commentIndex[plan2].push(comment)
+                            } else {
+                                commentIndex[plan2] = [comment]
+                            }
+                        }
+
+                    } else if (Object.keys(kb).includes('inSupportOf')) {
+
+                        for (let i = 0; i < kb['inSupportOf'].length; i++) {
+                            comment = `${unit}_${index}`
+                            index += 1
+
+                            const plan1 = kb['inSupportOf'][i]['p1']
+                            const plan2 = kb['inSupportOf'][i]['p2']
+
+                            if (Object.keys(commentIndex).includes(plan1)) {
+                                commentIndex[plan1].push(comment)
+                            } else {
+                                commentIndex[plan1] = [comment]
+                            }
+                            if (Object.keys(commentIndex).includes(plan2)) {
+                                commentIndex[plan2].push(comment)
+                            } else {
+                                commentIndex[plan2] = [comment]
+                            }
+                        }
+
+                    }
+                    if (t === 'Unit') {
+                        const tripleUnit = `
+                            :${unit} rdf:type :Unit .
+                            :${unit} rdfs:comment "${unit}" .
+                            :Timeline_${unit} rdf:type :Timeline .
+                            :Timeline_${unit} rdfs:comment "${unit}" .
+                            :Effect_${unit} rdf:type :ConsistentStateSet .
+                            :Effect_${unit} rdfs:comment "${unit}".
+                            :Timeline_${unit} :hasTimelineEffect :Effect_${unit}.
+                            :Precondition_${unit} rdf:type :ConsistentStateSet .
+                            :Precondition_${unit} rdfs:comment "${unit}".
+                            :Timeline_${unit} :hasTimelinePrecondition :Precondition_${unit} .
+                        `;
+
+
+                        const BATCH_SIZE = 4;
+                        const triples = tripleUnit.split('\n'); // Divide le triple per riga
+                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                            await sendBatchQuery(batch);
+                        }
+
+                    } else if (t === 'Plan') {
+
+                        let triplePlan = ``
+                        let plan1
+                        let plan2
+                        let conflict
+                        let accomplished1
+                        let accomplished2
+
+                        if (Object.keys(kb).includes('inConflictWith')) {
+
+                            for (let i = 0; i < kb['inConflictWith'].length; i++) {
+
+                                plan1 = kb['inConflictWith'][i]['p1']
+                                plan2 = kb['inConflictWith'][i]['p2']
+
+                                conflict = `:${plan1} :inConflictWith :${plan2}
+                                            :${plan2} :inConflictWith :${plan1}`
+
+
+                                if (kb['accomplished'].includes(plan1)) {
+                                    accomplished1 = `:${plan1} :accomplished true .`
+                                } else {
+                                    accomplished1 = `:${plan1} :accomplished false .`
+                                }
+
+                                if (kb['accomplished'].includes(plan2)) {
+                                    accomplished2 = `:${plan2} :accomplished true .`
+                                } else {
+                                    accomplished2 = `:${plan2} :accomplished false .`
+                                }
+
+                                triplePlan += `
+                                :${plan1} rdf:type :DirectlyExecutablePlan.
+                                ${comments(commentIndex, plan1, plan1)}
+                                :${plan2} rdf:type :DirectlyExecutablePlan.
+                                ${comments(commentIndex, plan2, plan2)}
+                                :precondition_${plan1} rdf:type :ConsistentStateSet.
+                                ${comments(commentIndex, plan1, `precondition_${plan1}`)}
+                                :precondition_${plan1} :isPlanPreconditionOf :${plan1}.
+                                :effect_${plan1} rdf:type :ConsistentStateSet.
+                                ${comments(commentIndex, plan1, `effect_${plan1}`)}
+                                :effect_${plan1} :isPlanEffectOf :${plan1}.
+                                :precondition_${plan2} rdf:type :ConsistentStateSet.
+                                ${comments(commentIndex, plan2, `precondition_${plan2}`)}
+                                :precondition_${plan2} :isPlanPreconditionOf :${plan2}.
+                                :effect_${plan2} rdf:type :ConsistentStateSet.
+                                ${comments(commentIndex, plan2, `effect_${plan2}`)}
+                                :effect_${plan2} :isPlanEffectOf :${plan2} .
+                                :${plan1} :isMotivationFor :Timeline_${unit} .
+                                :${plan2} :isMotivationFor :Timeline_${unit} .
+                                ${conflict}
+                                ${accomplished1}
+                                ${accomplished2}
+                                
+                                `
+                            }
+                        } else if (Object.keys(kb).includes('inSupportOf')) {
+
+                            for (let i = 0; i < kb['inSupportOf'].length; i++) {
+
+                                plan1 = kb['inSupportOf'][i]['p1']
+                                plan2 = kb['inSupportOf'][i]['p2']
+
+                                conflict = `:${plan1} :inSupportOf :${plan2}`
+
+                                if (kb['accomplished'].includes(plan1)) {
+                                    accomplished1 = `:${plan1} :accomplished true .`
+                                } else {
+                                    accomplished1 = `:${plan1} :accomplished false .`
+                                }
+
+                                if (kb['accomplished'].includes(plan2)) {
+                                    accomplished2 = `:${plan2} :accomplished true .`
+                                } else {
+                                    accomplished2 = `:${plan2} :accomplished false .`
+                                }
+
+                                triplePlan += `
+                                :${plan1} rdf:type :DirectlyExecutablePlan.
+                                ${comments(commentIndex, plan1, plan1)}
+                                :${plan2} rdf:type :DirectlyExecutablePlan.
+                                ${comments(commentIndex, plan2, plan2)}
+                                :precondition_${plan1} rdf:type :ConsistentStateSet.
+                                ${comments(commentIndex, plan1, `precondition_${plan1}`)}
+                                :precondition_${plan1} :isPlanPreconditionOf :${plan1}.
+                                :effect_${plan1} rdf:type :ConsistentStateSet.
+                                ${comments(commentIndex, plan1, `effect_${plan1}`)}
+                                :effect_${plan1} :isPlanEffectOf :${plan1}.
+                                :precondition_${plan2} rdf:type :ConsistentStateSet.
+                                ${comments(commentIndex, plan2, `precondition_${plan2}`)}
+                                :precondition_${plan2} :isPlanPreconditionOf :${plan2}.
+                                :effect_${plan2} rdf:type :ConsistentStateSet.
+                                ${comments(commentIndex, plan2, `effect_{plan2}`)}
+                                :effect_${plan2} :isPlanEffectOf :${plan2} .
+                                :${plan1} :isMotivationFor :Timeline_${unit} .
+                                :${plan2} :isMotivationFor :Timeline_${unit} .
+                                ${conflict}
+                                ${accomplished1}
+                                ${accomplished2}
+                                
+                                `
+                            }
+                        }
+
+
+                        const BATCH_SIZE = 4;
+                        const triples = triplePlan.split('\n'); // Divide le triple per riga
+                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                            await sendBatchQuery(batch);
+                        }
+
+                    } else if (t === 'Goal') {
+
+                        let tripleGoal = ``
+                        let goal
+                        let plan
+
+                        if (Object.keys(kb).includes('achieves')) {
+
+                            for (let i = 0; i < kb['achieves'].length; i++) {
+                                plan = kb['achieves'][i]['p']
+                                goal = kb['achieves'][i]['g']
+                                for (let j = 0; j < commentIndex[plan].length; j++) {
+                                    comment += `:${plan} rdfs:comment "${commentIndex[plan][j]}" .
+                                    `
+                                }
+
+                                tripleGoal += `
+                                :${goal} rdf:type :Goal.
+                                ${comments(commentIndex, plan, goal)}
+                                :${goal}_schema rdf:type :GoalSchema.
+                                ${comments(commentIndex, plan, `${goal}_schema`)}
+                                :${goal}_schema :describes :${goal} .                           
+                                :${goal} :isAchievedBy :${plan} .
+                                
+                                `
+                            }
+                        }
+
+
+                        const BATCH_SIZE = 4;
+                        const triples = tripleGoal.split('\n'); // Divide le triple per riga
+                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                            await sendBatchQuery(batch);
+                        }
+
+                    } else if (t === 'Agent') {
+
+                        let tripleAgent = ``
+                        let goal
+                        let plan
+                        let agent
+
+                        if (Object.keys(kb).includes('intends')) {
+
+                            for (let i = 0; i < kb['intends'].length; i++) {
+                                agent = kb['intends'][i]['a']
+                                plan = kb['intends'][i]['p']
+                                goal = ''
+                                for (let j = 0; j < kb['achieves'].length; j++) {
+                                    if (kb['achieves'][j]['p'] === plan) {
+                                        goal = kb['achieves'][j]['g']
+                                    }
+                                }
+
+                                tripleAgent += `
+                                :${agent} rdf:type :Agent.
+                                ${comments(commentIndex, plan, agent)}
+                                :${agent} :hasGoal :${goal}.                                
+                                :${agent} :intends :${plan}.                                
+                                
+                                `
+                            }
+                        }
+
+
+                        const BATCH_SIZE = 4;
+                        const triples = tripleAgent.split('\n'); // Divide le triple per riga
+                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                            await sendBatchQuery(batch);
+                        }
+
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+
+            if (Object.keys(kb).includes('Unit')) {
+                fetchDataInsert('Unit').then(
+                    () => {
+                        if (Object.keys(kb).includes('Plan')) {
+                            fetchDataInsert('Plan').then(
+                                () => {
+                                    if (Object.keys(kb).includes('Goal')) {
+                                        fetchDataInsert('Goal').then(
+                                            () => {
+                                                if (Object.keys(kb).includes('Agent')) {
+                                                    fetchDataInsert('Agent').then(
+                                                        () => {
+
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                )
+            }
+        }
+        // eslint-disable-next-line
+    }, [kb]);
     const handleFileUpload = (event: any) => {
         const file = event.target.files[0];
         readFile(file);
