@@ -8,6 +8,44 @@ import {variables} from "../endPoint";
 function Import() {
     const [kb, setKb] = useState<any>({});
     const [fileName, setFileName] = useState<string | null>(null);
+    const [emotion, setEmotion] = useState([]);
+
+    function setEmotionQuery(data: any) {
+        const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return item['Emotion']['value'];
+        });
+        setEmotion(elabData);
+    }
+
+    useEffect(() => {
+        const fetchDataEmo = async () => {
+            try {
+                const query = `
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX : <http://www.purl.org/drammar#>
+                    
+                    SELECT (STRAFTER(STR(?individuo), "#")AS ?Emotion)
+                    WHERE {
+                      ?individuo rdf:type :ExternalRefEmotionType .
+                    }
+                `;
+
+                const response = await axios.get(variables.API_URL_GET, {
+                    params: {
+                        query,
+                    },
+                    headers: {
+                        'Accept': 'application/sparql-results+json',
+                    },
+                });
+                setEmotionQuery(response.data['results']['bindings']);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        fetchDataEmo().then()
+        // eslint-disable-next-line
+    }, []);
 
     useEffect(() => {
         if (Object.keys(kb).length !== 0) {
@@ -299,6 +337,48 @@ function Import() {
                             await sendBatchQuery(batch);
                         }
 
+                    } else if (t === 'Emotion') {
+
+                        let tripleEmo = ``;
+
+                        if (Object.keys(kb).includes('Agent')) {
+                            for (let agentIndex = 0; agentIndex < kb['Agent'].length; agentIndex++) {
+                                let agente = kb['Agent'][agentIndex];
+                                let piano = '';
+
+                                for (let intendIndex = 0; intendIndex < kb['intends'].length; intendIndex++) {
+                                    if (kb['intends'][intendIndex]['a'] === agente) {
+                                        piano = kb['intends'][intendIndex]['p'];
+                                        break;
+                                    }
+                                }
+
+                                let tempTriple = '';
+
+                                emotion.forEach((elem) => {
+                                    tempTriple += `
+                                    :${elem}_${agente} rdf:type :Emotion.
+                                    ${comments(commentIndex, piano, agente)}
+                                    :${elem}_${agente} :isEmotionOf :${agente}.
+                                    :${elem}_ES rdf:type :EmotionSchema.
+                                    ${comments(commentIndex, piano, agente)}
+                                    :${elem}_ES :hasEmotionType :${elem}.
+                                    :${elem}_ES :describes :${elem}_${agente}.
+                                    `;
+                                });
+
+                                tripleEmo += tempTriple;
+                            }
+                        }
+
+                        const BATCH_SIZE = 4;
+                        const triples = tripleEmo.split('\n'); // Divide le triple per riga
+                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                            await sendBatchQuery(batch);
+                        }
+
+
                     }
 
                 } catch (err) {
@@ -318,7 +398,13 @@ function Import() {
                                                 if (Object.keys(kb).includes('Agent')) {
                                                     fetchDataInsert('Agent').then(
                                                         () => {
+                                                            if (Object.keys(kb).includes('Agent')) {
+                                                                fetchDataInsert('Emotion').then(
+                                                                    () => {
 
+                                                                    }
+                                                                )
+                                                            }
                                                         }
                                                     )
                                                 }
