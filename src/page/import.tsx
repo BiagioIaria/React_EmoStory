@@ -388,6 +388,14 @@ function Import() {
 
                                 if (Object.keys(kb).includes('Value')) {
                                     for (let valueIndex = 0; valueIndex < kb['Value'].length; valueIndex++) {
+                                        const planComment = (elem: string, p: any) => {
+                                            let c = ''
+                                            for (let planIndex = 0; planIndex < p.length; planIndex++) {
+                                                c += comments(commentIndex, p[planIndex], elem)
+                                            }
+                                            return c
+                                        }
+
                                         let value = kb['Value'][valueIndex];
 
                                         for (let hasValueIndex = 0; hasValueIndex < kb['hasValue'].length; hasValueIndex++) {
@@ -416,6 +424,14 @@ function Import() {
                                                 if (kb['hasPrecondition'][k]['s'] === stake[stakeIndex]) {
                                                     if (kb['hasPrecondition'][k]['pu'] !== unit) {
                                                         plans.push(kb['hasPrecondition'][k]['pu'])
+                                                    } else {
+                                                        tripleValue += `
+                                                        :Precondition_${unit}_${value}_atStake rdf:type :SetMember.
+                                                        ${planComment(`Precondition_${unit}_${value}_atStake`, plans)}
+                                                        :Precondition_${unit}_${value}_atStake :hasData :${value}_atStake.
+                                                        :Precondition_${unit}_${value}_atStake :isMemberOf :Precondition_${unit}.
+                                                        
+                                                        `
                                                     }
                                                 }
                                             }
@@ -423,6 +439,14 @@ function Import() {
                                                 if (kb['hasEffect'][k]['s'] === stake[stakeIndex]) {
                                                     if (kb['hasEffect'][k]['pu'] !== unit) {
                                                         plans.push(kb['hasEffect'][k]['pu'])
+                                                    } else {
+                                                        tripleValue += `
+                                                        :Effect_${unit}_${value}_atStake rdf:type :SetMember.
+                                                        ${planComment(`Effect_${unit}_${value}_atStake`, plans)}
+                                                        :Effect_${unit}_${value}_atStake :hasData :${value}_atStake.
+                                                        :Effect_${unit}_${value}_atStake :isMemberOf :Effect_${unit}.
+                                                        
+                                                        `
                                                     }
                                                 }
                                             }
@@ -433,6 +457,14 @@ function Import() {
                                                 if (kb['hasPrecondition'][k]['s'] === balance[balanceIndex]) {
                                                     if (kb['hasPrecondition'][k]['pu'] !== unit) {
                                                         plans.push(kb['hasPrecondition'][k]['pu'])
+                                                    } else {
+                                                        tripleValue += `
+                                                        :Precondition_${unit}_${value}_inBalance rdf:type :SetMember.
+                                                        ${planComment(`Precondition_${unit}_${value}_inBalance`, plans)}
+                                                        :Precondition_${unit}_${value}_inBalance :hasData :${value}_inBalance.
+                                                        :Precondition_${unit}_${value}_inBalance :isMemberOf :Precondition_${unit}.
+                                                        
+                                                        `
                                                     }
                                                 }
                                             }
@@ -440,20 +472,20 @@ function Import() {
                                                 if (kb['hasEffect'][k]['s'] === balance[balanceIndex]) {
                                                     if (kb['hasEffect'][k]['pu'] !== unit) {
                                                         plans.push(kb['hasEffect'][k]['pu'])
+                                                    } else {
+                                                        tripleValue += `
+                                                        :Effect_${unit}_${value}_inBalance rdf:type :SetMember.
+                                                        ${planComment(`Effect_${unit}_${value}_inBalance`, plans)}
+                                                        :Effect_${unit}_${value}_inBalance :hasData :${value}_inBalance.
+                                                        :Effect_${unit}_${value}_inBalance :isMemberOf :Effect_${unit}.
+                                                        
+                                                        `
                                                     }
                                                 }
                                             }
                                         }
 
                                         plans = Array.from(new Set(plans))
-
-                                        const planComment = (elem: string, p: any) => {
-                                            let c = ''
-                                            for (let planIndex = 0; planIndex < p.length; planIndex++) {
-                                                c += comments(commentIndex, p[planIndex], elem)
-                                            }
-                                            return c
-                                        }
 
                                         const planPreEff = (p: any, stake: any, balance: any) => {
                                             let c = ''
@@ -490,7 +522,7 @@ function Import() {
                                                     }
                                                 }
 
-                                                if(stakeEffPlan !== '' && stakePrePlan !== ''){
+                                                if (stakeEffPlan !== '' && stakePrePlan !== '') {
                                                     c += `
                                                     :Precondition_${p[planIndex]}_${value}_${stakePrePlan} rdf:type :SetMember.
                                                     ${comments(commentIndex, p[planIndex], `Precondition_${p[planIndex]}_${value}_${stakePrePlan}`)}
