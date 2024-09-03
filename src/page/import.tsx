@@ -490,16 +490,18 @@ function Import() {
                                                     }
                                                 }
 
-                                                c += `
-                                                :Precondition_${p[planIndex]}_${value}_${stakePrePlan} rdf:type :SetMember.
-                                                ${comments(commentIndex, p[planIndex], `Precondition_${p[planIndex]}_${value}_${stakePrePlan}`)}
-                                                :Precondition_${p[planIndex]}_${value}_${stakePrePlan} :hasData :${value}_${stakePrePlan}.
-                                                :Precondition_${p[planIndex]}_${value}_${stakePrePlan} :isMemberOf :precondition_${p[planIndex]}.
-                                                :Effect_${p[planIndex]}_${value}_${stakeEffPlan} rdf:type :SetMember.
-                                                ${comments(commentIndex, p[planIndex], `Effect_${p[planIndex]}_${value}_${stakeEffPlan}`)}
-                                                :Effect_${p[planIndex]}_${value}_${stakeEffPlan} :hasData :${value}_${stakeEffPlan}.
-                                                :Effect_${p[planIndex]}_${value}_${stakeEffPlan} :isMemberOf :effect_${p[planIndex]}.
-                                                `
+                                                if(stakeEffPlan !== '' && stakePrePlan !== ''){
+                                                    c += `
+                                                    :Precondition_${p[planIndex]}_${value}_${stakePrePlan} rdf:type :SetMember.
+                                                    ${comments(commentIndex, p[planIndex], `Precondition_${p[planIndex]}_${value}_${stakePrePlan}`)}
+                                                    :Precondition_${p[planIndex]}_${value}_${stakePrePlan} :hasData :${value}_${stakePrePlan}.
+                                                    :Precondition_${p[planIndex]}_${value}_${stakePrePlan} :isMemberOf :precondition_${p[planIndex]}.
+                                                    :Effect_${p[planIndex]}_${value}_${stakeEffPlan} rdf:type :SetMember.
+                                                    ${comments(commentIndex, p[planIndex], `Effect_${p[planIndex]}_${value}_${stakeEffPlan}`)}
+                                                    :Effect_${p[planIndex]}_${value}_${stakeEffPlan} :hasData :${value}_${stakeEffPlan}.
+                                                    :Effect_${p[planIndex]}_${value}_${stakeEffPlan} :isMemberOf :effect_${p[planIndex]}.
+                                                    `
+                                                }
                                             }
                                             return c
                                         }
