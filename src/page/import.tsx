@@ -1,4 +1,4 @@
-import {Box, Button, Typography, Stack} from '@mui/material';
+import {Box, Button, Typography, Stack, CircularProgress} from '@mui/material';
 import React, {useEffect, useState} from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -9,6 +9,7 @@ function Import() {
     const [kb, setKb] = useState<any>({});
     const [fileName, setFileName] = useState<string | null>(null);
     const [emotion, setEmotion] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     function setEmotionQuery(data: any) {
         const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
@@ -48,89 +49,89 @@ function Import() {
     }, []);
 
     useEffect(() => {
-        if (Object.keys(kb).length !== 0) {
+            if (Object.keys(kb).length !== 0) {
 
-            const prefixQuery = `
+                const prefixQuery = `
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
             PREFIX : <http://www.purl.org/drammar#>
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>`
 
-            const unit = kb['Unit'][0].replace(/ /g, '_')
+                const unit = kb['Unit'][0].replace(/ /g, '_')
 
-            const sendBatchQuery = async (batch: string) => {
-                const query = `${prefixQuery}
+                const sendBatchQuery = async (batch: string) => {
+                    const query = `${prefixQuery}
                                                    INSERT DATA {
                                                      ${batch}
                                                    }`;
 
 
-                await axios.post(variables.API_URL_POST, query, {
-                    headers: {
-                        'Content-Type': 'application/sparql-update'
-                    }
-                });
-            }
-
-            const fetchDataInsert = async (t: string) => {
-                function comments(commentIndex: any, plan: any, elem: any) {
-                    let comment = ''
-                    for (let j = 0; j < commentIndex[plan].length; j++) {
-                        comment += `:${elem} rdfs:comment "${commentIndex[plan][j]}" .
-                        
-                                    `
-                    }
-                    return comment;
+                    await axios.post(variables.API_URL_POST, query, {
+                        headers: {
+                            'Content-Type': 'application/sparql-update'
+                        }
+                    });
                 }
 
-                try {
-                    let commentIndex: any = {}
-                    let comment
-                    let index = 0
-                    if (Object.keys(kb).includes('inConflictWith')) {
-
-                        for (let i = 0; i < kb['inConflictWith'].length; i++) {
-                            comment = `${unit}_${index}`
-                            index += 1
-
-                            const plan1 = kb['inConflictWith'][i]['p1']
-                            const plan2 = kb['inConflictWith'][i]['p2']
-
-                            if (Object.keys(commentIndex).includes(plan1)) {
-                                commentIndex[plan1].push(comment)
-                            } else {
-                                commentIndex[plan1] = [comment]
+                const fetchDataInsert = async (t: string) => {
+                        function comments(commentIndex: any, plan: any, elem: any) {
+                            let comment = ''
+                            for (let j = 0; j < commentIndex[plan].length; j++) {
+                                comment += `:${elem} rdfs:comment "${commentIndex[plan][j]}" .
+                        
+                                    `
                             }
-                            if (Object.keys(commentIndex).includes(plan2)) {
-                                commentIndex[plan2].push(comment)
-                            } else {
-                                commentIndex[plan2] = [comment]
-                            }
+                            return comment;
                         }
 
-                    } else if (Object.keys(kb).includes('inSupportOf')) {
+                        try {
+                            let commentIndex: any = {}
+                            let comment
+                            let index = 0
+                            if (Object.keys(kb).includes('inConflictWith')) {
 
-                        for (let i = 0; i < kb['inSupportOf'].length; i++) {
-                            comment = `${unit}_${index}`
-                            index += 1
+                                for (let i = 0; i < kb['inConflictWith'].length; i++) {
+                                    comment = `${unit}_${index}`
+                                    index += 1
 
-                            const plan1 = kb['inSupportOf'][i]['p1']
-                            const plan2 = kb['inSupportOf'][i]['p2']
+                                    const plan1 = kb['inConflictWith'][i]['p1']
+                                    const plan2 = kb['inConflictWith'][i]['p2']
 
-                            if (Object.keys(commentIndex).includes(plan1)) {
-                                commentIndex[plan1].push(comment)
-                            } else {
-                                commentIndex[plan1] = [comment]
+                                    if (Object.keys(commentIndex).includes(plan1)) {
+                                        commentIndex[plan1].push(comment)
+                                    } else {
+                                        commentIndex[plan1] = [comment]
+                                    }
+                                    if (Object.keys(commentIndex).includes(plan2)) {
+                                        commentIndex[plan2].push(comment)
+                                    } else {
+                                        commentIndex[plan2] = [comment]
+                                    }
+                                }
+
+                            } else if (Object.keys(kb).includes('inSupportOf')) {
+
+                                for (let i = 0; i < kb['inSupportOf'].length; i++) {
+                                    comment = `${unit}_${index}`
+                                    index += 1
+
+                                    const plan1 = kb['inSupportOf'][i]['p1']
+                                    const plan2 = kb['inSupportOf'][i]['p2']
+
+                                    if (Object.keys(commentIndex).includes(plan1)) {
+                                        commentIndex[plan1].push(comment)
+                                    } else {
+                                        commentIndex[plan1] = [comment]
+                                    }
+                                    if (Object.keys(commentIndex).includes(plan2)) {
+                                        commentIndex[plan2].push(comment)
+                                    } else {
+                                        commentIndex[plan2] = [comment]
+                                    }
+                                }
+
                             }
-                            if (Object.keys(commentIndex).includes(plan2)) {
-                                commentIndex[plan2].push(comment)
-                            } else {
-                                commentIndex[plan2] = [comment]
-                            }
-                        }
-
-                    }
-                    if (t === 'Unit') {
-                        const tripleUnit = `
+                            if (t === 'Unit') {
+                                const tripleUnit = `
                             :${unit} rdf:type :Unit .
                             :${unit} rdfs:comment "${unit}" .
                             :Timeline_${unit} rdf:type :Timeline .
@@ -144,46 +145,46 @@ function Import() {
                         `;
 
 
-                        const BATCH_SIZE = 4;
-                        const triples = tripleUnit.split('\n'); // Divide le triple per riga
-                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
-                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
-                            await sendBatchQuery(batch);
-                        }
+                                const BATCH_SIZE = 4;
+                                const triples = tripleUnit.split('\n'); // Divide le triple per riga
+                                for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                                    const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                                    await sendBatchQuery(batch);
+                                }
 
-                    } else if (t === 'Plan') {
+                            } else if (t === 'Plan') {
 
-                        let triplePlan = ``
-                        let plan1
-                        let plan2
-                        let conflict
-                        let accomplished1
-                        let accomplished2
+                                let triplePlan = ``
+                                let plan1
+                                let plan2
+                                let conflict
+                                let accomplished1
+                                let accomplished2
 
-                        if (Object.keys(kb).includes('inConflictWith')) {
+                                if (Object.keys(kb).includes('inConflictWith')) {
 
-                            for (let i = 0; i < kb['inConflictWith'].length; i++) {
+                                    for (let i = 0; i < kb['inConflictWith'].length; i++) {
 
-                                plan1 = kb['inConflictWith'][i]['p1']
-                                plan2 = kb['inConflictWith'][i]['p2']
+                                        plan1 = kb['inConflictWith'][i]['p1']
+                                        plan2 = kb['inConflictWith'][i]['p2']
 
-                                conflict = `:${plan1} :inConflictWith :${plan2}
+                                        conflict = `:${plan1} :inConflictWith :${plan2}
                                             :${plan2} :inConflictWith :${plan1}`
 
 
-                                if (kb['accomplished'].includes(plan1)) {
-                                    accomplished1 = `:${plan1} :accomplished true .`
-                                } else {
-                                    accomplished1 = `:${plan1} :accomplished false .`
-                                }
+                                        if (kb['accomplished'].includes(plan1)) {
+                                            accomplished1 = `:${plan1} :accomplished true .`
+                                        } else {
+                                            accomplished1 = `:${plan1} :accomplished false .`
+                                        }
 
-                                if (kb['accomplished'].includes(plan2)) {
-                                    accomplished2 = `:${plan2} :accomplished true .`
-                                } else {
-                                    accomplished2 = `:${plan2} :accomplished false .`
-                                }
+                                        if (kb['accomplished'].includes(plan2)) {
+                                            accomplished2 = `:${plan2} :accomplished true .`
+                                        } else {
+                                            accomplished2 = `:${plan2} :accomplished false .`
+                                        }
 
-                                triplePlan += `
+                                        triplePlan += `
                                 :${plan1} rdf:type :DirectlyExecutablePlan.
                                 ${comments(commentIndex, plan1, plan1)}
                                 :${plan2} rdf:type :DirectlyExecutablePlan.
@@ -207,29 +208,29 @@ function Import() {
                                 ${accomplished2}
                                 
                                 `
-                            }
-                        } else if (Object.keys(kb).includes('inSupportOf')) {
+                                    }
+                                } else if (Object.keys(kb).includes('inSupportOf')) {
 
-                            for (let i = 0; i < kb['inSupportOf'].length; i++) {
+                                    for (let i = 0; i < kb['inSupportOf'].length; i++) {
 
-                                plan1 = kb['inSupportOf'][i]['p1']
-                                plan2 = kb['inSupportOf'][i]['p2']
+                                        plan1 = kb['inSupportOf'][i]['p1']
+                                        plan2 = kb['inSupportOf'][i]['p2']
 
-                                conflict = `:${plan1} :inSupportOf :${plan2}`
+                                        conflict = `:${plan1} :inSupportOf :${plan2}`
 
-                                if (kb['accomplished'].includes(plan1)) {
-                                    accomplished1 = `:${plan1} :accomplished true .`
-                                } else {
-                                    accomplished1 = `:${plan1} :accomplished false .`
-                                }
+                                        if (kb['accomplished'].includes(plan1)) {
+                                            accomplished1 = `:${plan1} :accomplished true .`
+                                        } else {
+                                            accomplished1 = `:${plan1} :accomplished false .`
+                                        }
 
-                                if (kb['accomplished'].includes(plan2)) {
-                                    accomplished2 = `:${plan2} :accomplished true .`
-                                } else {
-                                    accomplished2 = `:${plan2} :accomplished false .`
-                                }
+                                        if (kb['accomplished'].includes(plan2)) {
+                                            accomplished2 = `:${plan2} :accomplished true .`
+                                        } else {
+                                            accomplished2 = `:${plan2} :accomplished false .`
+                                        }
 
-                                triplePlan += `
+                                        triplePlan += `
                                 :${plan1} rdf:type :DirectlyExecutablePlan.
                                 ${comments(commentIndex, plan1, plan1)}
                                 :${plan2} rdf:type :DirectlyExecutablePlan.
@@ -253,34 +254,34 @@ function Import() {
                                 ${accomplished2}
                                 
                                 `
-                            }
-                        }
-
-
-                        const BATCH_SIZE = 4;
-                        const triples = triplePlan.split('\n'); // Divide le triple per riga
-                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
-                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
-                            await sendBatchQuery(batch);
-                        }
-
-                    } else if (t === 'Goal') {
-
-                        let tripleGoal = ``
-                        let goal
-                        let plan
-
-                        if (Object.keys(kb).includes('achieves')) {
-
-                            for (let i = 0; i < kb['achieves'].length; i++) {
-                                plan = kb['achieves'][i]['p']
-                                goal = kb['achieves'][i]['g']
-                                for (let j = 0; j < commentIndex[plan].length; j++) {
-                                    comment += `:${plan} rdfs:comment "${commentIndex[plan][j]}" .
-                                    `
+                                    }
                                 }
 
-                                tripleGoal += `
+
+                                const BATCH_SIZE = 4;
+                                const triples = triplePlan.split('\n'); // Divide le triple per riga
+                                for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                                    const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                                    await sendBatchQuery(batch);
+                                }
+
+                            } else if (t === 'Goal') {
+
+                                let tripleGoal = ``
+                                let goal
+                                let plan
+
+                                if (Object.keys(kb).includes('achieves')) {
+
+                                    for (let i = 0; i < kb['achieves'].length; i++) {
+                                        plan = kb['achieves'][i]['p']
+                                        goal = kb['achieves'][i]['g']
+                                        for (let j = 0; j < commentIndex[plan].length; j++) {
+                                            comment += `:${plan} rdfs:comment "${commentIndex[plan][j]}" .
+                                    `
+                                        }
+
+                                        tripleGoal += `
                                 :${goal} rdf:type :Goal.
                                 ${comments(commentIndex, plan, goal)}
                                 :${goal}_schema rdf:type :GoalSchema.
@@ -289,75 +290,75 @@ function Import() {
                                 :${goal} :isAchievedBy :${plan} .
                                 
                                 `
-                            }
-                        }
-
-
-                        const BATCH_SIZE = 4;
-                        const triples = tripleGoal.split('\n'); // Divide le triple per riga
-                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
-                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
-                            await sendBatchQuery(batch);
-                        }
-
-                    } else if (t === 'Agent') {
-
-                        let tripleAgent = ``
-                        let goal
-                        let plan
-                        let agent
-
-                        if (Object.keys(kb).includes('intends')) {
-
-                            for (let i = 0; i < kb['intends'].length; i++) {
-                                agent = kb['intends'][i]['a']
-                                plan = kb['intends'][i]['p']
-                                goal = ''
-                                for (let j = 0; j < kb['achieves'].length; j++) {
-                                    if (kb['achieves'][j]['p'] === plan) {
-                                        goal = kb['achieves'][j]['g']
-                                        break
                                     }
                                 }
 
-                                tripleAgent += `
+
+                                const BATCH_SIZE = 4;
+                                const triples = tripleGoal.split('\n'); // Divide le triple per riga
+                                for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                                    const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                                    await sendBatchQuery(batch);
+                                }
+
+                            } else if (t === 'Agent') {
+
+                                let tripleAgent = ``
+                                let goal
+                                let plan
+                                let agent
+
+                                if (Object.keys(kb).includes('intends')) {
+
+                                    for (let i = 0; i < kb['intends'].length; i++) {
+                                        agent = kb['intends'][i]['a']
+                                        plan = kb['intends'][i]['p']
+                                        goal = ''
+                                        for (let j = 0; j < kb['achieves'].length; j++) {
+                                            if (kb['achieves'][j]['p'] === plan) {
+                                                goal = kb['achieves'][j]['g']
+                                                break
+                                            }
+                                        }
+
+                                        tripleAgent += `
                                 :${agent} rdf:type :Agent.
                                 ${comments(commentIndex, plan, agent)}
                                 :${agent} :hasGoal :${goal}.                                
                                 :${agent} :intends :${plan}.                                
                                 
                                 `
-                            }
-                        }
-
-
-                        const BATCH_SIZE = 4;
-                        const triples = tripleAgent.split('\n'); // Divide le triple per riga
-                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
-                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
-                            await sendBatchQuery(batch);
-                        }
-
-                    } else if (t === 'Emotion') {
-
-                        let tripleEmo = ``;
-
-                        if (Object.keys(kb).includes('Agent')) {
-                            for (let agentIndex = 0; agentIndex < kb['Agent'].length; agentIndex++) {
-                                let agent = kb['Agent'][agentIndex];
-                                let plan = '';
-
-                                for (let intendIndex = 0; intendIndex < kb['intends'].length; intendIndex++) {
-                                    if (kb['intends'][intendIndex]['a'] === agent) {
-                                        plan = kb['intends'][intendIndex]['p'];
-                                        break;
                                     }
                                 }
 
-                                let tempTriple = '';
 
-                                emotion.forEach((elem) => {
-                                    tempTriple += `
+                                const BATCH_SIZE = 4;
+                                const triples = tripleAgent.split('\n'); // Divide le triple per riga
+                                for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                                    const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                                    await sendBatchQuery(batch);
+                                }
+
+                            } else if (t === 'Emotion') {
+
+                                let tripleEmo = ``;
+
+                                if (Object.keys(kb).includes('Agent')) {
+                                    for (let agentIndex = 0; agentIndex < kb['Agent'].length; agentIndex++) {
+                                        let agent = kb['Agent'][agentIndex];
+                                        let plan = '';
+
+                                        for (let intendIndex = 0; intendIndex < kb['intends'].length; intendIndex++) {
+                                            if (kb['intends'][intendIndex]['a'] === agent) {
+                                                plan = kb['intends'][intendIndex]['p'];
+                                                break;
+                                            }
+                                        }
+
+                                        let tempTriple = '';
+
+                                        emotion.forEach((elem) => {
+                                            tempTriple += `
                                     :${elem}_${agent} rdf:type :Emotion.
                                     ${comments(commentIndex, plan, `${elem}_${agent}`)}
                                     :${elem}_${agent} :isEmotionOf :${agent}.
@@ -366,61 +367,223 @@ function Import() {
                                     :${elem}_ES :hasEmotionType :${elem}.
                                     :${elem}_ES :describes :${elem}_${agent}.
                                     `;
-                                });
+                                        });
 
-                                tripleEmo += tempTriple;
-                            }
-                        }
-
-                        const BATCH_SIZE = 4;
-                        const triples = tripleEmo.split('\n'); // Divide le triple per riga
-                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
-                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
-                            await sendBatchQuery(batch);
-                        }
-
-
-                    }
-
-                } catch (err) {
-                    console.error(err);
-                }
-            };
-
-            if (Object.keys(kb).includes('Unit')) {
-                fetchDataInsert('Unit').then(
-                    () => {
-                        if (Object.keys(kb).includes('Plan')) {
-                            fetchDataInsert('Plan').then(
-                                () => {
-                                    if (Object.keys(kb).includes('Goal')) {
-                                        fetchDataInsert('Goal').then(
-                                            () => {
-                                                if (Object.keys(kb).includes('Agent')) {
-                                                    fetchDataInsert('Agent').then(
-                                                        () => {
-                                                            if (Object.keys(kb).includes('Agent')) {
-                                                                fetchDataInsert('Emotion').then(
-                                                                    () => {
-
-                                                                    }
-                                                                )
-                                                            }
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        )
+                                        tripleEmo += tempTriple;
                                     }
                                 }
-                            )
+
+                                const BATCH_SIZE = 4;
+                                const triples = tripleEmo.split('\n'); // Divide le triple per riga
+                                for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                                    const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                                    await sendBatchQuery(batch);
+                                }
+
+
+                            } else if (t === 'Value') {
+                                let tripleValue = ``;
+                                let agent
+                                let plans: any = []
+
+                                if (Object.keys(kb).includes('Value')) {
+                                    for (let valueIndex = 0; valueIndex < kb['Value'].length; valueIndex++) {
+                                        let value = kb['Value'][valueIndex];
+
+                                        for (let hasValueIndex = 0; hasValueIndex < kb['hasValue'].length; hasValueIndex++) {
+                                            if (kb['hasValue'][hasValueIndex]['v'] === value) {
+                                                agent = kb['hasValue'][hasValueIndex]['a'];
+                                                break;
+                                            }
+                                        }
+
+                                        let stake = []
+                                        for (let stakeInSetIndex = 0; stakeInSetIndex < kb['atStakeInSet'].length; stakeInSetIndex++) {
+                                            if (kb['atStakeInSet'][stakeInSetIndex]['v'] === value) {
+                                                stake.push(kb['atStakeInSet'][stakeInSetIndex]['s'])
+                                            }
+                                        }
+
+                                        let balance = []
+                                        for (let balanceInSetIndex = 0; balanceInSetIndex < kb['inBalanceInSet'].length; balanceInSetIndex++) {
+                                            if (kb['inBalanceInSet'][balanceInSetIndex]['v'] === value) {
+                                                balance.push(kb['inBalanceInSet'][balanceInSetIndex]['s'])
+                                            }
+                                        }
+
+                                        for (let stakeIndex = 0; stakeIndex < stake.length; stakeIndex++) {
+                                            for (let k = 0; k < kb['hasPrecondition'].length; k++) {
+                                                if (kb['hasPrecondition'][k]['s'] === stake[stakeIndex]) {
+                                                    if (kb['hasPrecondition'][k]['pu'] !== unit) {
+                                                        plans.push(kb['hasPrecondition'][k]['pu'])
+                                                    }
+                                                }
+                                            }
+                                            for (let k = 0; k < kb['hasEffect'].length; k++) {
+                                                if (kb['hasEffect'][k]['s'] === stake[stakeIndex]) {
+                                                    if (kb['hasEffect'][k]['pu'] !== unit) {
+                                                        plans.push(kb['hasEffect'][k]['pu'])
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        for (let balanceIndex = 0; balanceIndex < balance.length; balanceIndex++) {
+                                            for (let k = 0; k < kb['hasPrecondition'].length; k++) {
+                                                if (kb['hasPrecondition'][k]['s'] === balance[balanceIndex]) {
+                                                    if (kb['hasPrecondition'][k]['pu'] !== unit) {
+                                                        plans.push(kb['hasPrecondition'][k]['pu'])
+                                                    }
+                                                }
+                                            }
+                                            for (let k = 0; k < kb['hasEffect'].length; k++) {
+                                                if (kb['hasEffect'][k]['s'] === balance[balanceIndex]) {
+                                                    if (kb['hasEffect'][k]['pu'] !== unit) {
+                                                        plans.push(kb['hasEffect'][k]['pu'])
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        plans = Array.from(new Set(plans))
+
+                                        const planComment = (elem: string, p: any) => {
+                                            let c = ''
+                                            for (let planIndex = 0; planIndex < p.length; planIndex++) {
+                                                c += comments(commentIndex, p[planIndex], elem)
+                                            }
+                                            return c
+                                        }
+
+                                        const planPreEff = (p: any, stake: any, balance: any) => {
+                                            let c = ''
+                                            for (let planIndex = 0; planIndex < p.length; planIndex++) {
+                                                let stakePrePlan = ''
+                                                let stakeEffPlan = ''
+                                                for (let stakeIndex = 0; stakeIndex < stake.length; stakeIndex++) {
+                                                    for (let k = 0; k < kb['hasPrecondition'].length; k++) {
+                                                        if (kb['hasPrecondition'][k]['s'] === stake[stakeIndex] &&
+                                                            kb['hasPrecondition'][k]['pu'] === p[planIndex]) {
+                                                            stakePrePlan = 'atStake'
+                                                        }
+                                                    }
+                                                    for (let k = 0; k < kb['hasEffect'].length; k++) {
+                                                        if (kb['hasEffect'][k]['s'] === stake[stakeIndex] &&
+                                                            kb['hasEffect'][k]['pu'] === p[planIndex]) {
+                                                            stakeEffPlan = 'atStake'
+                                                        }
+                                                    }
+                                                }
+
+                                                for (let balanceIndex = 0; balanceIndex < balance.length; balanceIndex++) {
+                                                    for (let k = 0; k < kb['hasPrecondition'].length; k++) {
+                                                        if (kb['hasPrecondition'][k]['s'] === balance[balanceIndex] &&
+                                                            kb['hasPrecondition'][k]['pu'] === p[planIndex]) {
+                                                            stakePrePlan = 'inBalance'
+                                                        }
+                                                    }
+                                                    for (let k = 0; k < kb['hasEffect'].length; k++) {
+                                                        if (kb['hasEffect'][k]['s'] === balance[balanceIndex] &&
+                                                            kb['hasEffect'][k]['pu'] === p[planIndex]) {
+                                                            stakeEffPlan = 'inBalance'
+                                                        }
+                                                    }
+                                                }
+
+                                                c += `
+                                                :Precondition_${p[planIndex]}_${value}_${stakePrePlan} rdf:type :SetMember.
+                                                ${comments(commentIndex, p[planIndex], `Precondition_${p[planIndex]}_${value}_${stakePrePlan}`)}
+                                                :Precondition_${p[planIndex]}_${value}_${stakePrePlan} :hasData :${value}_${stakePrePlan}.
+                                                :Precondition_${p[planIndex]}_${value}_${stakePrePlan} :isMemberOf :precondition_${p[planIndex]}.
+                                                :Effect_${p[planIndex]}_${value}_${stakeEffPlan} rdf:type :SetMember.
+                                                ${comments(commentIndex, p[planIndex], `Effect_${p[planIndex]}_${value}_${stakeEffPlan}`)}
+                                                :Effect_${p[planIndex]}_${value}_${stakeEffPlan} :hasData :${value}_${stakeEffPlan}.
+                                                :Effect_${p[planIndex]}_${value}_${stakeEffPlan} :isMemberOf :effect_${p[planIndex]}.
+                                                `
+                                            }
+                                            return c
+                                        }
+
+                                        tripleValue += `
+                                            :${value}_atStake rdf:type :Value.
+                                            :${value}_atStake :atStake true.
+                                            ${planComment(`${value}_atStake`, plans)}
+                                            :${value}_atStake :isValueEngagedOf :${agent}.
+                                            :${value}_inBalance rdf:type :Value.
+                                            :${value}_inBalance :atStake false.
+                                            ${planComment(`${value}_inBalance`, plans)}
+                                            :${value}_inBalance :isValueEngagedOf :${agent}.
+                                            :${value}_schema rdf:type :ValueSchema.
+                                            ${planComment(`${value}_schema`, plans)}
+                                            :${value}_schema :describes :${value}_atStake.
+                                            :${value}_schema :describes :${value}_inBalance.
+                                            ${planPreEff(plans, stake, balance)}
+                                        `;
+
+                                    }
+                                }
+
+                                const BATCH_SIZE = 4;
+                                const triples = tripleValue.split('\n'); // Divide le triple per riga
+                                for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                                    const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                                    await sendBatchQuery(batch);
+                                }
+
+
+                            }
+                        } catch
+                            (err) {
+                            console.error(err);
                         }
                     }
-                )
+                ;
+
+                if (Object.keys(kb).includes('Unit')) {
+                    setLoading(true);
+                    fetchDataInsert('Unit').then(
+                        () => {
+                            if (Object.keys(kb).includes('Plan')) {
+                                fetchDataInsert('Plan').then(
+                                    () => {
+                                        if (Object.keys(kb).includes('Goal')) {
+                                            fetchDataInsert('Goal').then(
+                                                () => {
+                                                    if (Object.keys(kb).includes('Agent')) {
+                                                        fetchDataInsert('Agent').then(
+                                                            () => {
+                                                                if (Object.keys(kb).includes('Agent')) {
+                                                                    fetchDataInsert('Emotion').then(
+                                                                        () => {
+                                                                            if (Object.keys(kb).includes('Value')) {
+                                                                                fetchDataInsert('Value').then(
+                                                                                    () => {
+                                                                                        setLoading(false);
+                                                                                    }
+                                                                                )
+                                                                            }
+                                                                        }
+                                                                    )
+                                                                }
+                                                            }
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    )
+                }
             }
         }
+        ,
         // eslint-disable-next-line
-    }, [kb]);
+        [kb]
+    )
+    ;
     const handleFileUpload = (event: any) => {
         const file = event.target.files[0];
         readFile(file);
@@ -560,8 +723,13 @@ function Import() {
                     <Box sx={{marginTop: 2, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                         <CheckCircleIcon sx={{color: 'green', marginRight: 1}}/>
                         <Typography variant="body1">
-                            File <strong>{fileName}</strong> uploaded successfully!
+                            File <strong>{fileName}</strong> Uploaded successfully!
                         </Typography>
+                    </Box>
+                )}
+                {loading && (
+                    <Box sx={{display: 'flex', justifyContent: 'center', marginTop: 2}}>
+                        Uploading On Triple Store <CircularProgress sx={{margin: 1}}/>
                     </Box>
                 )}
             </Box>
