@@ -138,6 +138,11 @@ function Home() {
                                     }}
                                 >
                                     <Box sx={{display: 'flex', flexDirection: 'row', p: 1}}>
+                                        <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
+                                            <Link to={'/edit?temp=1&unit=' + item}  style={{textDecoration: 'none', color: 'inherit'}}>
+                                                <EditIcon sx={{mr: 1}}/> Edit
+                                            </Link>
+                                        </MenuItem>
                                         <MenuItem onClick={() => {
                                             handleDeleteUnit(item).then();
                                             handleClose(index);
@@ -171,17 +176,17 @@ function Home() {
                             <Box sx={{display: 'flex', flexWrap: 'wrap', p: 1}}>
                                 <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=1' style={{textDecoration: 'none', color: 'inherit'}}>
-                                        <EditIcon sx={{mr: 1}}/> Edit 1
+                                        <EditIcon sx={{mr: 1}}/> Temp 1
                                     </Link>
                                 </MenuItem>
                                 <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=2' style={{textDecoration: 'none', color: 'inherit'}}>
-                                        <EditIcon sx={{mr: 1}}/> Edit 2
+                                        <EditIcon sx={{mr: 1}}/> Temp 2
                                     </Link>
                                 </MenuItem>
                                 <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
                                     <Link to='/edit?temp=3' style={{textDecoration: 'none', color: 'inherit'}}>
-                                        <EditIcon sx={{mr: 1}}/> Edit 3
+                                        <EditIcon sx={{mr: 1}}/> Temp 3
                                     </Link>
                                 </MenuItem>
                                 <MenuItem sx={{flexBasis: '100%', display: 'flex', justifyContent: 'center', mt: 2}}

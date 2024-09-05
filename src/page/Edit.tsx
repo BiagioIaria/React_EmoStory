@@ -128,6 +128,63 @@ function Edit() {
 
     let params = useParams();
     const temp = params.get("temp");
+    const unitParam = params.get("unit");
+
+    useEffect(() => {
+        initialColumns = [
+            {
+                width: columnWidth,
+                label: 'Unit i-',
+                dataKey: 'unit_b',
+            },
+            {
+                width: columnWidth,
+                label: 'Preconditions Unit i',
+                dataKey: 'preUnit',
+            },
+            {
+                width: columnWidth,
+                label: '',
+                dataKey: 'plan1',
+            },
+            {
+                width: columnWidth,
+                label: 'Unit i',
+                dataKey: 'unit',
+            },
+            {
+                width: columnWidth,
+                label: '',
+                dataKey: 'plan2',
+            },
+            {
+                width: columnWidth,
+                label: 'Effects Unit i',
+                dataKey: 'effUnit',
+            },
+            {
+                width: columnWidth,
+                label: 'Unit i+',
+                dataKey: 'unit_n',
+            }
+        ];
+        if (unitParam !== null) {
+            setLabels(prevLabels => {
+                updateData('unit', unitParam)
+                initialColumns = initialColumns.map(column => ({
+                    ...column,
+                    label: column.label.replace('Unit i', unitParam)
+                }));
+                return {...prevLabels, unit: unitParam};
+            })
+        } else {
+            setLabels(prevLabels => {
+                updateData('unit', '')
+                return {...prevLabels, unit: 'Unit i'};
+            })
+        }
+        // eslint-disable-next-line
+    }, []);
 
     useEffect(() => {
         setTableEdits(prevTableEdits =>
@@ -350,7 +407,7 @@ function Edit() {
         setData(prevData => {
             const newData = [...prevData];
             // @ts-ignore
-            newData[0] = {...newData[0], save: true };
+            newData[0] = {...newData[0], save: true};
             return newData;
         });
         try {
@@ -407,12 +464,12 @@ function Edit() {
                 <Button
                     variant="contained"
                     color="success"
-                    startIcon={<SaveIcon />}
+                    startIcon={<SaveIcon/>}
                     onClick={() => {
                         setData(prevData => {
                             const newData = [...prevData];
                             // @ts-ignore
-                            newData[0] = { ...newData[0], save: true };
+                            newData[0] = {...newData[0], save: true};
                             return newData;
                         });
                     }}
@@ -421,13 +478,13 @@ function Edit() {
                 </Button>
                 {data[0]['save'] && (
                     <Box mt={2}>
-                        <CircularProgress />
+                        <CircularProgress/>
                     </Box>
                 )}
                 <Button
                     variant="contained"
                     onClick={handleClickInference}
-                    startIcon={<SaveIcon />}
+                    startIcon={<SaveIcon/>}
                     style={{
                         backgroundColor: 'lightyellow',
                         color: 'black',
@@ -438,7 +495,7 @@ function Edit() {
                 </Button>
                 {data[0]['save'] && loading && (
                     <Box mt={2}>
-                        <CircularProgress />
+                        <CircularProgress/>
                     </Box>
                 )}
             </Box>
@@ -446,4 +503,5 @@ function Edit() {
         </div>
     );
 }
+
 export default Edit;
