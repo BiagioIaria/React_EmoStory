@@ -64,10 +64,18 @@ function createData(
 }
 
 const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'C' || event.key === 'c') {
+    const letters = new Set([
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+    ]);
+
+    if (letters.has(event.key)) {
         event.stopPropagation();
     }
 };
+
 
 function TableEdit(params: any) {
     const [groups, setGroups] = useState([3]);
@@ -149,7 +157,10 @@ function TableEdit(params: any) {
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         `
 
-        if (params.data[0]['value'] !== '' && partValid && Object.values(queryLabels).some(value => value === "Support" || value === "Conflict")) {
+        if (params.data[0]['value'] !== ''
+            && partValid
+            && Object.values(queryLabels).some(value => value === "Support" || value === "Conflict")
+            && params.data[0]['save'] === true) {
             const unit = params.data[0].value.replace(/ /g, '_')
             const plan1 = queryLabels['plan1'].replace(/ /g, '_')
             const plan2 = queryLabels['plan2'].replace(/ /g, '_')
@@ -547,6 +558,8 @@ function TableEdit(params: any) {
                 )
 
             }
+            params.updateData(0)
+            params.updateData(params.idTableEdit + 1, triplesQuery)
         }
         // eslint-disable-next-line
     }, [params.data, queryLabels]);
@@ -967,20 +980,25 @@ function TableEdit(params: any) {
                                         </Button>
                                     </MenuItem>
                                 </Menu>
-                                <Button variant="outlined"
-                                        onDoubleClick={(e) => {
-                                            if (inputs[keyLabel] !== undefined) {
-                                                handleClick(e, keyLabel);
-                                            }
-                                        }}
-                                        onClick={(e) => {
-                                            if (inputs[keyLabel] === undefined) {
-                                                handleClick(e, keyLabel);
-                                            }
-                                        }}
-                                        sx={{m: 1}}>
-                                    {labels[keyLabel]}
-                                </Button>
+                                <Box display="flex" alignItems="center">
+                                    <Typography variant="body2" style={{marginRight: 8}}>
+                                        P Agent {keyLabel[keyLabel.length - 1]} Title
+                                    </Typography>
+                                    <Button variant="outlined"
+                                            onDoubleClick={(e) => {
+                                                if (inputs[keyLabel] !== undefined) {
+                                                    handleClick(e, keyLabel);
+                                                }
+                                            }}
+                                            onClick={(e) => {
+                                                if (inputs[keyLabel] === undefined) {
+                                                    handleClick(e, keyLabel);
+                                                }
+                                            }}
+                                            sx={{m: 1}}>
+                                        {labels[keyLabel]}
+                                    </Button>
+                                </Box>
                                 <Menu
                                     anchorEl={anchorEls[keyLabel]}
                                     open={Boolean(anchorEls[keyLabel])}
@@ -1001,20 +1019,25 @@ function TableEdit(params: any) {
                                         </Button>
                                     </MenuItem>
                                 </Menu>
-                                <Button variant="outlined"
-                                        onDoubleClick={(e) => {
-                                            if (inputs['goal' + keyLabel] !== undefined) {
-                                                handleClick(e, 'goal' + keyLabel);
-                                            }
-                                        }}
-                                        onClick={(e) => {
-                                            if (inputs['goal' + keyLabel] === undefined) {
-                                                handleClick(e, 'goal' + keyLabel)
-                                            }
-                                        }}
-                                        sx={{m: 1}}>
-                                    {labels['goal' + keyLabel]}
-                                </Button>
+                                <Box display="flex" alignItems="center">
+                                    <Typography variant="body2" style={{marginRight: 8}}>
+                                        G Plan Agent {keyLabel[keyLabel.length - 1]}
+                                    </Typography>
+                                    <Button variant="outlined"
+                                            onDoubleClick={(e) => {
+                                                if (inputs['goal' + keyLabel] !== undefined) {
+                                                    handleClick(e, 'goal' + keyLabel);
+                                                }
+                                            }}
+                                            onClick={(e) => {
+                                                if (inputs['goal' + keyLabel] === undefined) {
+                                                    handleClick(e, 'goal' + keyLabel)
+                                                }
+                                            }}
+                                            sx={{m: 1}}>
+                                        {labels['goal' + keyLabel]}
+                                    </Button>
+                                </Box>
                                 <Menu
                                     anchorEl={anchorEls['goal' + keyLabel]}
                                     open={Boolean(anchorEls['goal' + keyLabel])}
@@ -1036,20 +1059,25 @@ function TableEdit(params: any) {
                                         </Button>
                                     </MenuItem>
                                 </Menu>
-                                <Button variant="outlined"
-                                        onDoubleClick={(e) => {
-                                            if (inputs['agent' + keyLabel] !== undefined) {
-                                                handleClick(e, 'agent' + keyLabel);
-                                            }
-                                        }}
-                                        onClick={(e) => {
-                                            if (inputs['agent' + keyLabel] === undefined) {
-                                                handleClick(e, 'agent' + keyLabel)
-                                            }
-                                        }}
-                                        sx={{m: 1}}>
-                                    {labels['agent' + keyLabel]}
-                                </Button>
+                                <Box display="flex" alignItems="center">
+                                    <Typography variant="body2" style={{marginRight: 8}}>
+                                        Agent {keyLabel[keyLabel.length - 1]}
+                                    </Typography>
+                                    <Button variant="outlined"
+                                            onDoubleClick={(e) => {
+                                                if (inputs['agent' + keyLabel] !== undefined) {
+                                                    handleClick(e, 'agent' + keyLabel);
+                                                }
+                                            }}
+                                            onClick={(e) => {
+                                                if (inputs['agent' + keyLabel] === undefined) {
+                                                    handleClick(e, 'agent' + keyLabel)
+                                                }
+                                            }}
+                                            sx={{m: 1}}>
+                                        {labels['agent' + keyLabel]}
+                                    </Button>
+                                </Box>
                                 <Menu
                                     anchorEl={anchorEls['agent' + keyLabel]}
                                     open={Boolean(anchorEls['agent' + keyLabel])}

@@ -13,6 +13,7 @@ import {
     TextField
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import SaveIcon from '@mui/icons-material/Save';
 import Paper from "@mui/material/Paper";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
@@ -96,10 +97,18 @@ function useParams() {
 }
 
 const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'C' || event.key === 'c') {
+    const letters = new Set([
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+    ]);
+
+    if (letters.has(event.key)) {
         event.stopPropagation();
     }
 };
+
 
 function Edit() {
     const [anchorEls, setAnchorEls] = useState<AnchorEls>({});
@@ -109,9 +118,10 @@ function Edit() {
     });
 
     const [data, setData] = useState([
-        {id: 'unit', value: ''},
+        {id: 'unit', value: '', save: false, msgSave: ''},
         {id: 1, value: ''},
     ]);
+
     const [unitQuery, setUnitQuery] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -209,13 +219,26 @@ function Edit() {
         // eslint-disable-next-line
     }, [data[0]['value']]);
 
-    const updateData = (id: any, newValue: any) => {
-        setData((prevData) =>
-            prevData.map((item) =>
-                item.id === id ? {...item, value: newValue} : item
-            )
-        );
+    const updateData = (id: any, newValue?: any, msgSave?: string) => {
+        setData((prevData: any) => {
+            if (id === 0) {
+                return prevData.map((item: { msgSave: any; }, index: number) =>
+                    index === 0
+                        ? {
+                            ...item,
+                            save: false,
+                            msgSave: msgSave ?? item.msgSave,
+                        }
+                        : item
+                );
+            } else {
+                return prevData.map((item: { id: any; }) =>
+                    item.id === id ? {...item, value: newValue} : item
+                );
+            }
+        });
     };
+
 
     const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData}
                                                              temp={temp} idTableEdit={0}/>]);
@@ -324,6 +347,12 @@ function Edit() {
 
     const handleClickInference = async () => {
         setLoading(true);
+        setData(prevData => {
+            const newData = [...prevData];
+            // @ts-ignore
+            newData[0] = {...newData[0], save: true };
+            return newData;
+        });
         try {
             const response = await axios.get('http://localhost:8080/api/inference/run', {
                 headers: {
@@ -374,26 +403,47 @@ function Edit() {
                     <AddIcon/>
                 </Button>
             </div>
-            <Box textAlign="center" mt={5}>
+            <Box display="flex" justifyContent="center" mt={5} gap={2}>
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<SaveIcon />}
+                    onClick={() => {
+                        setData(prevData => {
+                            const newData = [...prevData];
+                            // @ts-ignore
+                            newData[0] = { ...newData[0], save: true };
+                            return newData;
+                        });
+                    }}
+                >
+                    Salva
+                </Button>
+                {data[0]['save'] && (
+                    <Box mt={2}>
+                        <CircularProgress />
+                    </Box>
+                )}
                 <Button
                     variant="contained"
                     onClick={handleClickInference}
+                    startIcon={<SaveIcon />}
                     style={{
                         backgroundColor: 'lightyellow',
                         color: 'black',
                     }}
                     disabled={loading}
                 >
-                    Do Inference
+                    Save and Do Inference
                 </Button>
-                {loading && (
+                {data[0]['save'] && loading && (
                     <Box mt={2}>
-                        <CircularProgress/>
+                        <CircularProgress />
                     </Box>
                 )}
             </Box>
+
         </div>
     );
 }
-
 export default Edit;
