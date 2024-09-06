@@ -118,6 +118,187 @@ function TableEdit(params: any) {
         setEmotion(elabData);
     }
 
+    function setUnitLabel(data: any, type: string) {
+        const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return item[type]['value'];
+        });
+
+        setLabels(prevLabels => {
+            if (type === 'Plan') {
+                const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                    if (item['a']['value'] === 'true') {
+                        return 'Accomplished'
+                    } else {
+                        return 'Unaccomplished'
+                    }
+                });
+                const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                    if (item['Conflict']['value'] === 'inConflictWith') {
+                        return 'Conflict'
+                    } else {
+                        return 'Conflict?'
+                    }
+                });
+
+                const elabDataSup = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                    if (item['Conflict']['value'] === 'inSupportOf') {
+                        return 'Support'
+                    } else {
+                        return 'Support?'
+                    }
+                });
+
+                return {
+                    ...prevLabels,
+                    plan1: elabData[0],
+                    plan2: elabData[1],
+                    accplan1: elabDataAcc[0],
+                    accplan2: elabDataAcc[1],
+                    conflict: elabDataCon[0],
+                    dxSupport: elabDataSup[0],
+                    sxSupport: elabDataSup[1]
+                };
+            } else if (type === 'Goal') {
+                return {
+                    ...prevLabels,
+                    goalplan1: elabData[0],
+                    goalplan2: elabData[1],
+
+                };
+            } else if (type === 'Agent') {
+                return {
+                    ...prevLabels,
+                    agentplan1: elabData[0],
+                    agentplan2: elabData[1],
+
+                };
+            }
+        })
+
+        setQueryLabels(prevLabels => {
+            if (type === 'Plan') {
+                const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                    if (item['a']['value'] === 'true') {
+                        return 'Accomplished'
+                    } else {
+                        return 'Unaccomplished'
+                    }
+                });
+                const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                    if (item['Conflict']['value'] === 'inConflictWith') {
+                        return 'Conflict'
+                    } else {
+                        return ''
+                    }
+                });
+                const elabDataSup = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                    if (item['Conflict']['value'] === 'inSupportOf') {
+                        return 'Support'
+                    } else {
+                        return ''
+                    }
+                });
+                return {
+                    ...prevLabels,
+                    plan1: elabData[0],
+                    plan2: elabData[1],
+                    accplan1: elabDataAcc[0],
+                    accplan2: elabDataAcc[1],
+                    conflict: elabDataCon[0],
+                    dxSupport: elabDataSup[0],
+                    sxSupport: elabDataSup[1]
+                };
+            } else if (type === 'Goal') {
+                return {
+                    ...prevLabels,
+                    goalplan1: elabData[0],
+                    goalplan2: elabData[1],
+
+                };
+            } else if (type === 'Agent') {
+                return {
+                    ...prevLabels,
+                    agentplan1: elabData[0],
+                    agentplan2: elabData[1],
+
+                };
+            }
+        })
+    }
+
+    useEffect(() => {
+        const unitParam = params.data[0]['value']
+        const editParam = params.edit
+
+        if (unitParam !== '' && editParam === '1') {
+            const fetchData = async (type: string) => {
+                const comment = unitParam + '_' + params.idTableEdit
+                try {
+                    let query = ``
+                    if (type === 'Plan') {
+                        query = `
+                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX : <http://www.purl.org/drammar#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                        
+                        SELECT (STRAFTER(STR(?p), "#")AS ?Plan) ?a (STRAFTER(STR(?s), "#")AS ?Conflict)
+                        WHERE {
+                            ?p rdf:type :Plan .
+                            ?p2 rdf:type :Plan .
+                            ?p :accomplished ?a .
+                            ?p ?s ?p2 .
+                            ?p rdfs:comment "Unit_Box_0" .
+                            ?p2 rdfs:comment "Unit_Box_0" .
+                        }
+                        `;
+                    } else if (type === 'Goal') {
+                        query = `
+                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX : <http://www.purl.org/drammar#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                        
+                        SELECT (STRAFTER(STR(?g), "#")AS ?Goal)
+                        WHERE {
+                          ?g rdf:type :Goal .
+                          ?g rdfs:comment "${comment}" .
+                        }
+                        `;
+                    } else if (type === 'Agent') {
+                        query = `
+                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX : <http://www.purl.org/drammar#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                        
+                        SELECT (STRAFTER(STR(?a), "#")AS ?Agent)
+                        WHERE {
+                          ?a rdf:type :Agent .
+                          ?a rdfs:comment "${comment}" .
+                        }
+                        `;
+                    }
+
+                    const response = await axios.get(variables.API_URL_GET, {
+                        params: {
+                            query,
+                        },
+                        headers: {
+                            'Accept': 'application/sparql-results+json',
+                        },
+                    });
+                    setUnitLabel(response.data['results']['bindings'], type);
+                } catch (err) {
+                    console.log(err);
+                }
+            };
+            fetchData('Plan').then(
+                () => fetchData('Goal').then(
+                    () => fetchData('Agent').then()
+                )
+            )
+        }
+        // eslint-disable-next-line
+    }, [params.data[0]['value']]);
+
     useEffect(() => {
         const fetchDataEmo = async () => {
             try {
@@ -951,7 +1132,7 @@ function TableEdit(params: any) {
                                             : labels['acc' + keyLabel] === 'Unaccomplished'
                                                 ? 'red' : 'theme.palette.primary.main'
                                     }}
-                                    disabled={inputs[keyLabel] === undefined}
+                                    disabled={labels['acc' + keyLabel] === 'accomplished?' && inputs[keyLabel] === undefined}
                                 >
                                     {labels['acc' + keyLabel]}
                                 </Button>
@@ -982,7 +1163,7 @@ function TableEdit(params: any) {
                                 </Menu>
                                 <Box display="flex" alignItems="center">
                                     <Typography variant="body2" style={{marginRight: 8}}>
-                                        P Agent {keyLabel[keyLabel.length - 1]} Title
+                                        P Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
                                     <Button variant="outlined"
                                             onDoubleClick={(e) => {
@@ -1225,7 +1406,7 @@ function TableEdit(params: any) {
                                             : labels['sxSupport'] === 'Support'
                                                 ? 'green' : '',
                                     }}
-                                    disabled={inputs['plan1'] === undefined || inputs['plan2'] === undefined}
+                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (labels['conflict'] === 'Conflict?' && labels['dxSupport'] === 'Support?' && labels['sxSupport'] === 'Support?')}
                                 >
                                     <ArrowBackIosNewIcon/>
                                     <Typography variant="button" display="block">{labels['sxSupport']}</Typography>
@@ -1246,7 +1427,7 @@ function TableEdit(params: any) {
                                             : labels['conflict'] === 'Conflict'
                                                 ? 'red' : '',
                                     }}
-                                    disabled={inputs['plan1'] === undefined || inputs['plan2'] === undefined}
+                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (labels['conflict'] === 'Conflict?' && labels['dxSupport'] === 'Support?' && labels['sxSupport'] === 'Support?')}
                                 >
                                     <ArrowBackIosNewIcon/>
                                     <Typography variant="button" display="block">{labels['conflict']}</Typography>
@@ -1268,7 +1449,7 @@ function TableEdit(params: any) {
                                             : labels['dxSupport'] === 'Support'
                                                 ? 'green' : '',
                                     }}
-                                    disabled={inputs['plan1'] === undefined || inputs['plan2'] === undefined}
+                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (labels['conflict'] === 'Conflict?' && labels['dxSupport'] === 'Support?' && labels['sxSupport'] === 'Support?')}
                                 >
                                     <Typography variant="button" display="block">{labels['dxSupport']}</Typography>
                                     <ArrowForwardIosIcon/>

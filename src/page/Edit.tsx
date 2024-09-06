@@ -129,6 +129,7 @@ function Edit() {
     let params = useParams();
     const temp = params.get("temp");
     const unitParam = params.get("unit");
+    const editParam = params.get("edit");
 
     useEffect(() => {
         initialColumns = [
@@ -189,7 +190,7 @@ function Edit() {
     useEffect(() => {
         setTableEdits(prevTableEdits =>
             prevTableEdits.map((edit, index) => (
-                <TableEdit key={edit.key} data={data} updateData={updateData} temp={temp} idTableEdit={index}/>
+                <TableEdit key={edit.key} data={data} updateData={updateData} edit={editParam} temp={temp} idTableEdit={index}/>
             ))
         );
         // eslint-disable-next-line
@@ -298,7 +299,7 @@ function Edit() {
 
 
     const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData}
-                                                             temp={temp} idTableEdit={0}/>]);
+                                                             edit={editParam} temp={temp} idTableEdit={0}/>]);
 
     const handleClick = (event: { currentTarget: any; }, id: any) => {
         setAnchorEls((prev) => ({...prev, [id]: event.currentTarget}));
@@ -342,7 +343,7 @@ function Edit() {
         setData([...data, newItem]);
         setTableEdits(prevTableEdits => [
             ...prevTableEdits,
-            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} temp={temp}/>
+            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} edit={editParam}temp={temp}/>
         ]);
     };
 
