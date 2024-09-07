@@ -123,6 +123,7 @@ function Edit() {
     ]);
 
     const [unitQuery, setUnitQuery] = useState('');
+    const [numberTableEdit, setNumberTableEdit] = useState<any>(0);
     const [loading, setLoading] = useState(false);
 
 
@@ -178,6 +179,19 @@ function Edit() {
                 }));
                 return {...prevLabels, unit: unitParam};
             })
+
+            setUnitQuery(unitParam)
+
+            const tableEdit = []
+            if (numberTableEdit !== 0) {
+                for (let i = 0; i <= Number(numberTableEdit[0]['number']['value']); i++) {
+                    tableEdit.push(
+                        <TableEdit key={'edit_' + i} data={data} updateData={updateData} edit={editParam} temp={temp}
+                                   idTableEdit={i}/>
+                    )
+                }
+            }
+            setTableEdits(tableEdit)
         } else {
             setLabels(prevLabels => {
                 updateData('unit', '')
@@ -185,12 +199,50 @@ function Edit() {
             })
         }
         // eslint-disable-next-line
+    }, [numberTableEdit]);
+
+    useEffect(() => {
+        const fetchDataNumber = async () => {
+            try {
+                const query = `
+                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                    
+                    SELECT ?number
+                    WHERE {
+                      ?individual rdfs:comment ?comment .
+                      FILTER regex(?comment, "^${unitParam}_\\\\d+$")
+                      BIND(xsd:integer(SUBSTR(?comment, STRLEN("${unitParam}_") + 1)) AS ?number)
+                    }
+                    ORDER BY DESC(?number)
+                    LIMIT 1
+                `;
+
+                const response = await axios.get(variables.API_URL_GET, {
+                    params: {
+                        query,
+                    },
+                    headers: {
+                        'Accept': 'application/sparql-results+json',
+                    },
+                });
+
+                setNumberTableEdit(response.data['results']['bindings'])
+
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        fetchDataNumber().then()
+        // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
         setTableEdits(prevTableEdits =>
             prevTableEdits.map((edit, index) => (
-                <TableEdit key={edit.key} data={data} updateData={updateData} edit={editParam} temp={temp} idTableEdit={index}/>
+                <TableEdit key={edit.key} data={data} updateData={updateData} edit={editParam} temp={temp}
+                           idTableEdit={index}/>
             ))
         );
         // eslint-disable-next-line
@@ -343,7 +395,7 @@ function Edit() {
         setData([...data, newItem]);
         setTableEdits(prevTableEdits => [
             ...prevTableEdits,
-            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} edit={editParam}temp={temp}/>
+            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} edit={editParam} temp={temp}/>
         ]);
     };
 
@@ -357,12 +409,12 @@ function Edit() {
                             >
                                 <Button variant="outlined"
                                         onDoubleClick={(e) => {
-                                            if (inputs[col.dataKey] !== undefined) {
+                                            if (inputs[col.dataKey] !== undefined || unitQuery !== '') {
                                                 handleClick(e, col.dataKey);
                                             }
                                         }}
                                         onClick={(e) => {
-                                            if (inputs[col.dataKey] === undefined) {
+                                            if (inputs[col.dataKey] === undefined && unitQuery === '') {
                                                 handleClick(e, col.dataKey);
                                             }
                                         }}

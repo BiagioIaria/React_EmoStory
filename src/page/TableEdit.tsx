@@ -118,111 +118,126 @@ function TableEdit(params: any) {
         setEmotion(elabData);
     }
 
-    function setUnitLabel(data: any, type: string) {
+    function setUnitLabel(data: any) {
         const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-            return item[type]['value'];
+            return item['Plan']['value'];
         });
 
-        setLabels(prevLabels => {
-            if (type === 'Plan') {
-                const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                    if (item['a']['value'] === 'true') {
-                        return 'Accomplished'
-                    } else {
-                        return 'Unaccomplished'
-                    }
-                });
-                const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                    if (item['Conflict']['value'] === 'inConflictWith') {
-                        return 'Conflict'
-                    } else {
-                        return 'Conflict?'
-                    }
-                });
+        const elabDataGoal = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return item['Goal']['value'];
+        })
 
-                const elabDataSup = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                    if (item['Conflict']['value'] === 'inSupportOf') {
-                        return 'Support'
-                    } else {
-                        return 'Support?'
-                    }
-                });
+        const elabDataAgent = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return item['Agent']['value'];
+        })
 
-                return {
-                    ...prevLabels,
-                    plan1: elabData[0],
-                    plan2: elabData[1],
-                    accplan1: elabDataAcc[0],
-                    accplan2: elabDataAcc[1],
-                    conflict: elabDataCon[0],
-                    dxSupport: elabDataSup[0],
-                    sxSupport: elabDataSup[1]
-                };
-            } else if (type === 'Goal') {
-                return {
-                    ...prevLabels,
-                    goalplan1: elabData[0],
-                    goalplan2: elabData[1],
+        const elabDataValue = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return {agent: item['Agent']['value'], values: item['Values']['value'].split(", ")};
+        })
 
-                };
-            } else if (type === 'Agent') {
-                return {
-                    ...prevLabels,
-                    agentplan1: elabData[0],
-                    agentplan2: elabData[1],
-
-                };
+        let g = [3]
+        let value1 = {}
+        let value2 = {}
+        for (let j = 0; j < elabDataValue[1]['values'].length; j++) {
+            const index = j + elabDataValue[0]['values'].length
+            value2 = {
+                ...value2,
+                ['value' + index + '_plan2']: elabDataValue[1]['values'][j]
             }
+            g.unshift(2)
+        }
+        for (let j = 0; j < elabDataValue[0]['values'].length; j++) {
+            value1 = {
+                ...value1,
+                ['value' + j + '_plan1']: elabDataValue[0]['values'][j]
+            }
+            g.unshift(1)
+        }
+        setGroups(g)
+        setLabels(prevLabels => {
+
+            const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                if (item['a']['value'] === 'true') {
+                    return 'Accomplished'
+                } else {
+                    return 'Unaccomplished'
+                }
+            });
+
+            const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                if (item['Conflict']['value'] === 'inConflictWith') {
+                    return 'Conflict'
+                } else {
+                    return 'Conflict?'
+                }
+            });
+
+
+            const elabDataSup = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                if (item['Conflict']['value'] === 'inSupportOf') {
+                    return 'Support'
+                } else {
+                    return 'Support?'
+                }
+            });
+
+            return {
+                ...prevLabels,
+                plan1: elabData[0],
+                plan2: elabData[1],
+                accplan1: elabDataAcc[0],
+                accplan2: elabDataAcc[1],
+                conflict: elabDataCon[0],
+                dxSupport: elabDataSup[0],
+                sxSupport: elabDataSup[1],
+                goalplan1: elabDataGoal[0],
+                goalplan2: elabDataGoal[1],
+                agentplan1: elabDataAgent[0],
+                agentplan2: elabDataAgent[1],
+                ...value1,
+                ...value2
+            };
+
         })
 
         setQueryLabels(prevLabels => {
-            if (type === 'Plan') {
-                const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                    if (item['a']['value'] === 'true') {
-                        return 'Accomplished'
-                    } else {
-                        return 'Unaccomplished'
-                    }
-                });
-                const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                    if (item['Conflict']['value'] === 'inConflictWith') {
-                        return 'Conflict'
-                    } else {
-                        return ''
-                    }
-                });
-                const elabDataSup = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                    if (item['Conflict']['value'] === 'inSupportOf') {
-                        return 'Support'
-                    } else {
-                        return ''
-                    }
-                });
-                return {
-                    ...prevLabels,
-                    plan1: elabData[0],
-                    plan2: elabData[1],
-                    accplan1: elabDataAcc[0],
-                    accplan2: elabDataAcc[1],
-                    conflict: elabDataCon[0],
-                    dxSupport: elabDataSup[0],
-                    sxSupport: elabDataSup[1]
-                };
-            } else if (type === 'Goal') {
-                return {
-                    ...prevLabels,
-                    goalplan1: elabData[0],
-                    goalplan2: elabData[1],
 
-                };
-            } else if (type === 'Agent') {
-                return {
-                    ...prevLabels,
-                    agentplan1: elabData[0],
-                    agentplan2: elabData[1],
+            const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                if (item['a']['value'] === 'true') {
+                    return 'Accomplished'
+                } else {
+                    return 'Unaccomplished'
+                }
+            });
+            const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                if (item['Conflict']['value'] === 'inConflictWith') {
+                    return 'Conflict'
+                } else {
+                    return ''
+                }
+            });
+            const elabDataSup = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+                if (item['Conflict']['value'] === 'inSupportOf') {
+                    return 'Support'
+                } else {
+                    return ''
+                }
+            });
 
-                };
-            }
+            return {
+                ...prevLabels,
+                plan1: elabData[0],
+                plan2: elabData[1],
+                accplan1: elabDataAcc[0],
+                accplan2: elabDataAcc[1],
+                conflict: elabDataCon[0],
+                dxSupport: elabDataSup[0],
+                sxSupport: elabDataSup[1],
+                goalplan1: elabDataGoal[0],
+                goalplan2: elabDataGoal[1],
+                agentplan1: elabDataAgent[0],
+                agentplan2: elabDataAgent[1],
+            };
         })
     }
 
@@ -231,51 +246,32 @@ function TableEdit(params: any) {
         const editParam = params.edit
 
         if (unitParam !== '' && editParam === '1') {
-            const fetchData = async (type: string) => {
+            const fetchData = async () => {
                 const comment = unitParam + '_' + params.idTableEdit
                 try {
-                    let query = ``
-                    if (type === 'Plan') {
-                        query = `
+                    let query = `
                         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                         PREFIX : <http://www.purl.org/drammar#>
                         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                         
-                        SELECT (STRAFTER(STR(?p), "#")AS ?Plan) ?a (STRAFTER(STR(?s), "#")AS ?Conflict)
+                        SELECT (STRAFTER(STR(?p), "#") AS ?Plan) ?a (STRAFTER(STR(?s), "#") AS ?Conflict) 
+                               (STRAFTER(STR(?g), "#") AS ?Goal) (STRAFTER(STR(?ag), "#") AS ?Agent) 
+                               (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?val), "#"), "_atStake|_inBalance", ""); separator=", ") AS ?Values)
                         WHERE {
                             ?p rdf:type :Plan .
                             ?p2 rdf:type :Plan .
                             ?p :accomplished ?a .
                             ?p ?s ?p2 .
-                            ?p rdfs:comment "Unit_Box_0" .
-                            ?p2 rdfs:comment "Unit_Box_0" .
+                            ?p rdfs:comment "${comment}" .
+                            ?p2 rdfs:comment "${comment}" .
+                            ?g :isAchievedBy ?p .
+                            ?ag :intends ?p .
+                            ?val :isValueEngagedOf ?ag .
                         }
-                        `;
-                    } else if (type === 'Goal') {
-                        query = `
-                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                        PREFIX : <http://www.purl.org/drammar#>
-                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                        
-                        SELECT (STRAFTER(STR(?g), "#")AS ?Goal)
-                        WHERE {
-                          ?g rdf:type :Goal .
-                          ?g rdfs:comment "${comment}" .
-                        }
-                        `;
-                    } else if (type === 'Agent') {
-                        query = `
-                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                        PREFIX : <http://www.purl.org/drammar#>
-                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                        
-                        SELECT (STRAFTER(STR(?a), "#")AS ?Agent)
-                        WHERE {
-                          ?a rdf:type :Agent .
-                          ?a rdfs:comment "${comment}" .
-                        }
-                        `;
-                    }
+                        GROUP BY ?p ?a ?s ?g ?ag
+
+                       `;
+
 
                     const response = await axios.get(variables.API_URL_GET, {
                         params: {
@@ -285,16 +281,12 @@ function TableEdit(params: any) {
                             'Accept': 'application/sparql-results+json',
                         },
                     });
-                    setUnitLabel(response.data['results']['bindings'], type);
+                    setUnitLabel(response.data['results']['bindings']);
                 } catch (err) {
                     console.log(err);
                 }
             };
-            fetchData('Plan').then(
-                () => fetchData('Goal').then(
-                    () => fetchData('Agent').then()
-                )
-            )
+            fetchData().then()
         }
         // eslint-disable-next-line
     }, [params.data[0]['value']]);
@@ -342,6 +334,7 @@ function TableEdit(params: any) {
             && partValid
             && Object.values(queryLabels).some(value => value === "Support" || value === "Conflict")
             && params.data[0]['save'] === true) {
+            const editParam = params.edit
             const unit = params.data[0].value.replace(/ /g, '_')
             const plan1 = queryLabels['plan1'].replace(/ /g, '_')
             const plan2 = queryLabels['plan2'].replace(/ /g, '_')
@@ -680,7 +673,7 @@ function TableEdit(params: any) {
                 }
             }
 
-            if (Object.values(triplesQuery).length === 0) {
+            if (Object.values(triplesQuery).length === 0 && editParam === 0) {
 
                 setTriplesQuery(
                     {
@@ -996,12 +989,12 @@ function TableEdit(params: any) {
                             </Menu>
                             <Button variant="outlined"
                                     onDoubleClick={(e) => {
-                                        if (inputs['value' + index + '_' + column.dataKey] !== undefined) {
+                                        if (inputs['value' + index + '_' + column.dataKey] !== undefined || queryLabels['value' + index + '_' + column.dataKey] !== '') {
                                             handleClick(e, 'value' + index + '_' + column.dataKey);
                                         }
                                     }}
                                     onClick={(e) => {
-                                        if (inputs['value' + index + '_' + column.dataKey] === undefined) {
+                                        if (inputs['value' + index + '_' + column.dataKey] === undefined && queryLabels['value' + index + '_' + column.dataKey] === '') {
                                             handleClick(e, 'value' + index + '_' + column.dataKey)
                                         }
                                     }}
@@ -1167,12 +1160,12 @@ function TableEdit(params: any) {
                                     </Typography>
                                     <Button variant="outlined"
                                             onDoubleClick={(e) => {
-                                                if (inputs[keyLabel] !== undefined) {
+                                                if (inputs[keyLabel] !== undefined || queryLabels[keyLabel] !== '') {
                                                     handleClick(e, keyLabel);
                                                 }
                                             }}
                                             onClick={(e) => {
-                                                if (inputs[keyLabel] === undefined) {
+                                                if (inputs[keyLabel] === undefined && queryLabels[keyLabel] === '') {
                                                     handleClick(e, keyLabel);
                                                 }
                                             }}
@@ -1206,12 +1199,12 @@ function TableEdit(params: any) {
                                     </Typography>
                                     <Button variant="outlined"
                                             onDoubleClick={(e) => {
-                                                if (inputs['goal' + keyLabel] !== undefined) {
+                                                if (inputs['goal' + keyLabel] !== undefined || queryLabels['goal' + keyLabel] !== '') {
                                                     handleClick(e, 'goal' + keyLabel);
                                                 }
                                             }}
                                             onClick={(e) => {
-                                                if (inputs['goal' + keyLabel] === undefined) {
+                                                if (inputs['goal' + keyLabel] === undefined && queryLabels['goal' + keyLabel] === '') {
                                                     handleClick(e, 'goal' + keyLabel)
                                                 }
                                             }}
@@ -1246,12 +1239,12 @@ function TableEdit(params: any) {
                                     </Typography>
                                     <Button variant="outlined"
                                             onDoubleClick={(e) => {
-                                                if (inputs['agent' + keyLabel] !== undefined) {
+                                                if (inputs['agent' + keyLabel] !== undefined || queryLabels['agent' + keyLabel] !== '') {
                                                     handleClick(e, 'agent' + keyLabel);
                                                 }
                                             }}
                                             onClick={(e) => {
-                                                if (inputs['agent' + keyLabel] === undefined) {
+                                                if (inputs['agent' + keyLabel] === undefined && queryLabels['agent' + keyLabel] === '') {
                                                     handleClick(e, 'agent' + keyLabel)
                                                 }
                                             }}
