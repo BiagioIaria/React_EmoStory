@@ -117,7 +117,6 @@ function TableEdit(params: any) {
         });
         setEmotion(elabData);
     }
-
     function setUnitLabel(data: any) {
         const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
             return item['Plan']['value'];
@@ -132,24 +131,89 @@ function TableEdit(params: any) {
         })
 
         const elabDataValue = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-            return {agent: item['Agent']['value'], values: item['Values']['value'].split(", ")};
+            let states = []
+            let statesQuery = item['States']['value'].split(", ")
+            let values = item['Values']['value'].split(", ")
+            for (let i = 0; i < values.length; i++) {
+                const s = statesQuery.filter((str: string | string[]) => str.includes(values[i]))
+                states.push({value: values[i], s: s})
+            }
+            return {agent: item['Agent']['value'], values: values, states: states};
         })
+        function findString(data: any[], targetValue: string, searchString: string): string | null {
+            const targetObject = data.find(item => item.value === targetValue);
+            if (!targetObject) {
+                return null;
+            }
+
+            const targetString = targetObject.s.find((str: string) => str.includes(searchString));
+            if (!targetString) {
+                return null;
+            }
+
+            const lastUnderscoreIndex = targetString.lastIndexOf('_');
+            if (lastUnderscoreIndex === -1) {
+                return null;
+            }
+
+            return targetString.substring(lastUnderscoreIndex + 1);
+        }
 
         let g = [3]
         let value1 = {}
         let value2 = {}
         for (let j = 0; j < elabDataValue[1]['values'].length; j++) {
             const index = j + elabDataValue[0]['values'].length
+            const preUnit = findString(
+                elabDataValue[1]['states'],
+                elabDataValue[1]['values'][j],
+                `Precondition_${params.data[0]['value']}_${elabDataValue[1]['values'][j]}_`
+            )
+
+            const prePlan = findString(
+                elabDataValue[1]['states'],
+                elabDataValue[1]['values'][j],
+                `Precondition_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
+            )
+
+            const effPlan = findString(
+                elabDataValue[1]['states'],
+                elabDataValue[1]['values'][j],
+                `Effect_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
+            )
             value2 = {
                 ...value2,
-                ['value' + index + '_plan2']: elabDataValue[1]['values'][j]
+                ['value' + index + '_plan2']: elabDataValue[1]['values'][j],
+                ['balEff' + index + '_plan2']: effPlan,
+                ['balPre' + index + '_plan2']: prePlan,
+                ['balPreUnit' + index + '_preUnit']: preUnit,
             }
             g.unshift(2)
         }
         for (let j = 0; j < elabDataValue[0]['values'].length; j++) {
+            const preUnit = findString(
+                elabDataValue[0]['states'],
+                elabDataValue[0]['values'][j],
+                `Precondition_${params.data[0]['value']}_${elabDataValue[0]['values'][j]}_`
+            )
+
+            const prePlan = findString(
+                elabDataValue[0]['states'],
+                elabDataValue[0]['values'][j],
+                `Precondition_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
+            )
+
+            const effPlan = findString(
+                elabDataValue[0]['states'],
+                elabDataValue[0]['values'][j],
+                `Effect_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
+            )
             value1 = {
                 ...value1,
-                ['value' + j + '_plan1']: elabDataValue[0]['values'][j]
+                ['value' + j + '_plan1']: elabDataValue[0]['values'][j],
+                ['balEff' + j + '_plan1']: effPlan,
+                ['balPre' + j + '_plan1']: prePlan,
+                ['balPreUnit' + j + '_preUnit']: preUnit,
             }
             g.unshift(1)
         }
@@ -237,6 +301,8 @@ function TableEdit(params: any) {
                 goalplan2: elabDataGoal[1],
                 agentplan1: elabDataAgent[0],
                 agentplan2: elabDataAgent[1],
+                ...value1,
+                ...value2
             };
         })
     }
@@ -257,6 +323,7 @@ function TableEdit(params: any) {
                         SELECT (STRAFTER(STR(?p), "#") AS ?Plan) ?a (STRAFTER(STR(?s), "#") AS ?Conflict) 
                                (STRAFTER(STR(?g), "#") AS ?Goal) (STRAFTER(STR(?ag), "#") AS ?Agent) 
                                (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?val), "#"), "_atStake|_inBalance", ""); separator=", ") AS ?Values)
+                               (GROUP_CONCAT(DISTINCT STRAFTER(STR(?state), "#"); separator=", ") AS ?States)
                         WHERE {
                             ?p rdf:type :Plan .
                             ?p2 rdf:type :Plan .
@@ -267,6 +334,7 @@ function TableEdit(params: any) {
                             ?g :isAchievedBy ?p .
                             ?ag :intends ?p .
                             ?val :isValueEngagedOf ?ag .
+                            ?val :isDataOf ?state .
                         }
                         GROUP BY ?p ?a ?s ?g ?ag
 
