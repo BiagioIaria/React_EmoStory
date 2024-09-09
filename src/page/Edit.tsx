@@ -407,7 +407,7 @@ function Edit() {
                             <TableCell key={col.dataKey}
                                        style={{width: col.width, textAlign: "center"}}
                             >
-                                <Button variant="outlined"
+                                <Button variant="outlined" style={{ textTransform: 'none' }}
                                         onDoubleClick={(e) => {
                                             if (inputs[col.dataKey] !== undefined || unitQuery !== '') {
                                                 handleClick(e, col.dataKey);
@@ -477,7 +477,6 @@ function Edit() {
             setLoading(false);
         }
     };
-console.log(loading)
     return (
         <div className='edit'>
             <Paper style={{display: 'flex', flexDirection: 'column', height: '630px'}}>

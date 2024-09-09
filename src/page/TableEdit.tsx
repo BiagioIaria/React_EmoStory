@@ -984,13 +984,13 @@ function TableEdit(params: any) {
                     <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
                          margin={1}>
                         <Stack direction="row" spacing={2}>
-                            <Button variant="contained" disabled>
+                            <Button style={{ textTransform: 'none' }} variant="contained" disabled>
                                 Balance?
                             </Button>
-                            <Button variant="contained" disabled>
+                            <Button style={{ textTransform: 'none' }} variant="contained" disabled>
                                 Value?
                             </Button>
-                            <Button variant="contained" disabled>
+                            <Button style={{ textTransform: 'none' }} variant="contained" disabled>
                                 Balance?
                             </Button>
                         </Stack>
@@ -1014,7 +1014,7 @@ function TableEdit(params: any) {
                     <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
                          margin={1}>
                         <Stack direction="row" spacing={2}>
-                            <Button variant="outlined"
+                            <Button style={{ textTransform: 'none' }} variant="outlined"
                                     onDoubleClick={(e) => {
                                         if (labels['balPre' + index + '_' + column.dataKey] !== undefined) {
                                             handleClick(e, 'balPre' + index + '_' + column.dataKey)
@@ -1047,7 +1047,7 @@ function TableEdit(params: any) {
                                     <Button
                                         variant="contained"
                                         onClick={() => handleConfirm('balPre' + index + '_' + column.dataKey, 'inBalance')}
-                                        style={{backgroundColor: 'green', color: 'white'}}
+                                        style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
                                     >
                                         inBalance
                                     </Button>
@@ -1056,13 +1056,13 @@ function TableEdit(params: any) {
                                 <MenuItem>
                                     <Button variant="contained"
                                             onClick={() => handleConfirm('balPre' + index + '_' + column.dataKey, 'atStake')}
-                                            style={{backgroundColor: 'red', color: 'white'}}
+                                            style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
                                     >
                                         atStake
                                     </Button>
                                 </MenuItem>
                             </Menu>
-                            <Button variant="outlined"
+                            <Button style={{ textTransform: 'none' }} variant="outlined"
                                     onDoubleClick={(e) => {
                                         if (inputs['value' + index + '_' + column.dataKey] !== undefined || queryLabels['value' + index + '_' + column.dataKey] !== '') {
                                             handleClick(e, 'value' + index + '_' + column.dataKey);
@@ -1097,7 +1097,7 @@ function TableEdit(params: any) {
                                     </Button>
                                 </MenuItem>
                             </Menu>
-                            <Button variant="outlined"
+                            <Button style={{ textTransform: 'none' }} variant="outlined"
                                     onDoubleClick={(e) => {
                                         if (labels['balEff' + index + '_' + column.dataKey] !== undefined) {
                                             handleClick(e, 'balEff' + index + '_' + column.dataKey)
@@ -1130,7 +1130,7 @@ function TableEdit(params: any) {
                                     <Button
                                         variant="contained"
                                         onClick={() => handleConfirm('balEff' + index + '_' + column.dataKey, 'inBalance')}
-                                        style={{backgroundColor: 'green', color: 'white'}}
+                                        style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
                                     >
                                         inBalance
                                     </Button>
@@ -1139,7 +1139,7 @@ function TableEdit(params: any) {
                                 <MenuItem>
                                     <Button variant="contained"
                                             onClick={() => handleConfirm('balEff' + index + '_' + column.dataKey, 'atStake')}
-                                            style={{backgroundColor: 'red', color: 'white'}}
+                                            style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
                                     >
                                         atStake
                                     </Button>
@@ -1178,7 +1178,7 @@ function TableEdit(params: any) {
                                 }}
                             >
                                 <Button
-                                    variant="outlined"
+                                    style={{ textTransform: 'none' }} variant="outlined"
                                     onDoubleClick={(e) => {
                                         if (labels['acc' + keyLabel] !== 'accomplished?') {
                                             handleClick(e, 'acc' + keyLabel);
@@ -1214,7 +1214,7 @@ function TableEdit(params: any) {
                                         <Button
                                             variant="contained"
                                             onClick={() => handleConfirm('acc' + keyLabel, 'Accomplished')}
-                                            style={{backgroundColor: 'green', color: 'white'}}
+                                            style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
                                         >
                                             Accomplished
                                         </Button>
@@ -1223,7 +1223,7 @@ function TableEdit(params: any) {
                                     <MenuItem>
                                         <Button variant="contained"
                                                 onClick={() => handleConfirm('acc' + keyLabel, 'Unaccomplished')}
-                                                style={{backgroundColor: 'red', color: 'white'}}
+                                                style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
                                         >
                                             Unaccomplished
                                         </Button>
@@ -1233,7 +1233,7 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         P Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button variant="outlined"
+                                    <Button style={{ textTransform: 'none' }} variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (inputs[keyLabel] !== undefined || queryLabels[keyLabel] !== '') {
                                                     handleClick(e, keyLabel);
@@ -1272,7 +1272,7 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         G Plan Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button variant="outlined"
+                                    <Button style={{ textTransform: 'none' }} variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (inputs['goal' + keyLabel] !== undefined || queryLabels['goal' + keyLabel] !== '') {
                                                     handleClick(e, 'goal' + keyLabel);
@@ -1312,7 +1312,7 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button variant="outlined"
+                                    <Button style={{ textTransform: 'none' }} variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (inputs['agent' + keyLabel] !== undefined || queryLabels['agent' + keyLabel] !== '') {
                                                     handleClick(e, 'agent' + keyLabel);
@@ -1388,7 +1388,7 @@ function TableEdit(params: any) {
                                                     display="inline-block"
                                                     margin={1}>
                                             <Stack direction="row" spacing={2}>
-                                                <Button variant="outlined"
+                                                <Button style={{ textTransform: 'none' }} variant="outlined"
                                                         onDoubleClick={(e) => {
                                                             if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
                                                                 handleClick(e, 'balPreUnit' + index + '_' + column.dataKey);
@@ -1421,7 +1421,7 @@ function TableEdit(params: any) {
                                                         <Button
                                                             variant="contained"
                                                             onClick={() => handleConfirm('balPreUnit' + index + '_' + column.dataKey, 'inBalance')}
-                                                            style={{backgroundColor: 'green', color: 'white'}}
+                                                            style={{backgroundColor: 'green', color: 'white',textTransform: 'none'}}
                                                         >
                                                             inBalance
                                                         </Button>
@@ -1430,7 +1430,7 @@ function TableEdit(params: any) {
                                                     <MenuItem>
                                                         <Button variant="contained"
                                                                 onClick={() => handleConfirm('balPreUnit' + index + '_' + column.dataKey, 'atStake')}
-                                                                style={{backgroundColor: 'red', color: 'white'}}
+                                                                style={{backgroundColor: 'green', color: 'white',textTransform: 'none'}}
                                                         >
                                                             atStake
                                                         </Button>
