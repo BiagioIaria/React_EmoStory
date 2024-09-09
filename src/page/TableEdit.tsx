@@ -764,7 +764,9 @@ function TableEdit(params: any) {
                     () => fetchDataInsert('Goal').then(
                         () => fetchDataInsert('Agent').then(
                             () => fetchDataInsert('Emotion').then(
-                                () => fetchDataInsert('Value').then()
+                                () => fetchDataInsert('Value').then(
+                                    () => params.updateData(0)
+                                )
                             )
                         )
                     )
@@ -775,7 +777,9 @@ function TableEdit(params: any) {
                         () => fetchDataInsert('Goal').then(
                             () => fetchDataInsert('Agent').then(
                                 () => fetchDataInsert('Emotion').then(
-                                    () => fetchDataInsert('Value').then()
+                                    () => fetchDataInsert('Value').then(
+                                        () => params.updateData(0)
+                                    )
                                 )
                             )
                         )
@@ -800,8 +804,11 @@ function TableEdit(params: any) {
                 )
 
             }
-            params.updateData(0)
             params.updateData(params.idTableEdit + 1, triplesQuery)
+        }else{
+            if(params.data[0]['save'] === true){
+                params.updateData(0)
+            }
         }
         // eslint-disable-next-line
     }, [params.data, queryLabels]);

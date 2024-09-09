@@ -477,7 +477,7 @@ function Edit() {
             setLoading(false);
         }
     };
-
+console.log(loading)
     return (
         <div className='edit'>
             <Paper style={{display: 'flex', flexDirection: 'column', height: '630px'}}>
@@ -546,7 +546,7 @@ function Edit() {
                 >
                     Save and Do Inference
                 </Button>
-                {data[0]['save'] && loading && (
+                {(data[0]['save'] || loading) && (
                     <Box mt={2}>
                         <CircularProgress/>
                     </Box>
