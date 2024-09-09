@@ -543,9 +543,9 @@ function Edit() {
                     }}
                     disabled={loading}
                 >
-                    Save and Do Inference
+                    Do Inference
                 </Button>
-                {(data[0]['save'] || loading) && (
+                {loading && (
                     <Box mt={2}>
                         <CircularProgress/>
                     </Box>

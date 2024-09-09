@@ -386,7 +386,6 @@ function TableEdit(params: any) {
             }
         };
         fetchDataEmo().then()
-        // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
@@ -569,9 +568,8 @@ function TableEdit(params: any) {
 
                         let tripleValue = '';
 
-                        const generateTriples = (values: any[], agent: any, p: any) => {
+                        const generateTriples = (values: any[], agent: any, p: any, acc: string) => {
                             values.forEach((elem) => {
-
                                 tripleValue += `
                                 :${elem['value']}_atStake rdf:type :Value.
                                 :${elem['value']}_atStake :atStake true.
@@ -597,12 +595,35 @@ function TableEdit(params: any) {
                                 :Effect_${p}_${elem['value']}_${elem['balEff']} rdfs:comment "${comment}".
                                 :Effect_${p}_${elem['value']}_${elem['balEff']} :hasData :${elem['value']}_${elem['balEff']}.
                                 :Effect_${p}_${elem['value']}_${elem['balEff']} :isMemberOf :effect_${p}.
+                            
                             `;
+                                if(queryLabels[acc] === 'Accomplished'){
+                                    tripleValue += `
+                                    :Effect_${unit}_${elem['value']}_${elem['balEff']} rdf:type :SetMember.
+                                    :Effect_${unit}_${elem['value']}_${elem['balEff']} rdfs:comment "${comment}".
+                                    :Effect_${unit}_${elem['value']}_${elem['balEff']} :hasData :${elem['value']}_${elem['balEff']}.
+                                    :Effect_${unit}_${elem['value']}_${elem['balEff']} :isMemberOf :Effect_${unit}.
+                                
+                                    `
+                                }else{
+                                    let effUnit = ''
+                                    if(elem['balEff'] === 'atStake'){
+                                        effUnit = 'inBalance'
+                                    }else{
+                                        effUnit = 'atStake'
+                                    }
+                                    tripleValue += `
+                                    :Effect_${unit}_${elem['value']}_${effUnit} rdf:type :SetMember.
+                                    :Effect_${unit}_${elem['value']}_${effUnit} rdfs:comment "${comment}".
+                                    :Effect_${unit}_${elem['value']}_${effUnit} :hasData :${elem['value']}_${effUnit}.
+                                    :Effect_${unit}_${elem['value']}_${effUnit} :isMemberOf :Effect_${unit}.
+                                    `
+                                }
                             });
                         }
 
-                        generateTriples(value_1, agent1, plan1);
-                        generateTriples(value_2, agent2, plan2);
+                        generateTriples(value_1, agent1, plan1, 'accplan1');
+                        generateTriples(value_2, agent2, plan2, 'accplan2');
 
 
                         const sendBatchQuery = async (batch: string) => {
@@ -765,7 +786,6 @@ function TableEdit(params: any) {
                         () => fetchDataInsert('Agent').then(
                             () => fetchDataInsert('Emotion').then(
                                 () => fetchDataInsert('Value').then(
-                                    () => params.updateData(0)
                                 )
                             )
                         )
@@ -778,7 +798,6 @@ function TableEdit(params: any) {
                             () => fetchDataInsert('Agent').then(
                                 () => fetchDataInsert('Emotion').then(
                                     () => fetchDataInsert('Value').then(
-                                        () => params.updateData(0)
                                     )
                                 )
                             )
@@ -805,6 +824,7 @@ function TableEdit(params: any) {
 
             }
             params.updateData(params.idTableEdit + 1, triplesQuery)
+            params.updateData(0)
         }else{
             if(params.data[0]['save'] === true){
                 params.updateData(0)
