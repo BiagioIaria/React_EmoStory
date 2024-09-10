@@ -457,12 +457,6 @@ function Edit() {
 
     const handleClickInference = async () => {
         setLoading(true);
-        setData(prevData => {
-            const newData = [...prevData];
-            // @ts-ignore
-            newData[0] = {...newData[0], save: true};
-            return newData;
-        });
         try {
             const response = await axios.get('http://localhost:8080/api/inference/run', {
                 headers: {
@@ -526,7 +520,7 @@ function Edit() {
                         });
                     }}
                 >
-                    Salva
+                    Save
                 </Button>
                 {data[0]['save'] && (
                     <Box mt={2}>

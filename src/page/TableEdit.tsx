@@ -117,17 +117,18 @@ function TableEdit(params: any) {
         });
         setEmotion(elabData);
     }
+
     function setUnitLabel(data: any) {
         const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-            return item['Plan']['value'];
+            return item['Plan']?.['value'] ?? null;
         });
 
         const elabDataGoal = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-            return item['Goal']['value'];
+            return item['Goal']?.['value'] ?? null;
         })
 
         const elabDataAgent = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-            return item['Agent']['value'];
+            return item['Agent']?.['value'] ?? null;
         })
 
         const elabDataValue = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
@@ -138,8 +139,9 @@ function TableEdit(params: any) {
                 const s = statesQuery.filter((str: string | string[]) => str.includes(values[i]))
                 states.push({value: values[i], s: s})
             }
-            return {agent: item['Agent']['value'], values: values, states: states};
+            return {agent: item['Agent']?.['value'] ?? null, values: values, states: states};
         })
+
         function findString(data: any[], targetValue: string, searchString: string): string | null {
             const targetObject = data.find(item => item.value === targetValue);
             if (!targetObject) {
@@ -163,73 +165,79 @@ function TableEdit(params: any) {
         let value1 = {}
         let value2 = {}
         for (let j = 0; j < elabDataValue[1]['values'].length; j++) {
-            const index = j + elabDataValue[0]['values'].length
-            const preUnit = findString(
-                elabDataValue[1]['states'],
-                elabDataValue[1]['values'][j],
-                `Precondition_${params.data[0]['value']}_${elabDataValue[1]['values'][j]}_`
-            )
+            if (elabDataValue[1]['values'][j] !== '') {
+                const index = j + elabDataValue[0]['values'].length
+                const preUnit = findString(
+                    elabDataValue[1]['states'],
+                    elabDataValue[1]['values'][j],
+                    `Precondition_${params.data[0]['value']}_${elabDataValue[1]['values'][j]}_`
+                )
 
-            const prePlan = findString(
-                elabDataValue[1]['states'],
-                elabDataValue[1]['values'][j],
-                `Precondition_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
-            )
+                const prePlan = findString(
+                    elabDataValue[1]['states'],
+                    elabDataValue[1]['values'][j],
+                    `Precondition_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
+                )
 
-            const effPlan = findString(
-                elabDataValue[1]['states'],
-                elabDataValue[1]['values'][j],
-                `Effect_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
-            )
-            value2 = {
-                ...value2,
-                ['value' + index + '_plan2']: elabDataValue[1]['values'][j],
-                ['balEff' + index + '_plan2']: effPlan,
-                ['balPre' + index + '_plan2']: prePlan,
-                ['balPreUnit' + index + '_preUnit']: preUnit,
+                const effPlan = findString(
+                    elabDataValue[1]['states'],
+                    elabDataValue[1]['values'][j],
+                    `Effect_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
+                )
+                value2 = {
+                    ...value2,
+                    ['value' + index + '_plan2']: elabDataValue[1]['values'][j],
+                    ['balEff' + index + '_plan2']: effPlan,
+                    ['balPre' + index + '_plan2']: prePlan,
+                    ['balPreUnit' + index + '_preUnit']: preUnit,
+                }
+                g.unshift(2)
             }
-            g.unshift(2)
         }
         for (let j = 0; j < elabDataValue[0]['values'].length; j++) {
-            const preUnit = findString(
-                elabDataValue[0]['states'],
-                elabDataValue[0]['values'][j],
-                `Precondition_${params.data[0]['value']}_${elabDataValue[0]['values'][j]}_`
-            )
+            if (elabDataValue[0]['values'][j] !== '') {
+                const preUnit = findString(
+                    elabDataValue[0]['states'],
+                    elabDataValue[0]['values'][j],
+                    `Precondition_${params.data[0]['value']}_${elabDataValue[0]['values'][j]}_`
+                )
 
-            const prePlan = findString(
-                elabDataValue[0]['states'],
-                elabDataValue[0]['values'][j],
-                `Precondition_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
-            )
+                const prePlan = findString(
+                    elabDataValue[0]['states'],
+                    elabDataValue[0]['values'][j],
+                    `Precondition_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
+                )
 
-            const effPlan = findString(
-                elabDataValue[0]['states'],
-                elabDataValue[0]['values'][j],
-                `Effect_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
-            )
-            value1 = {
-                ...value1,
-                ['value' + j + '_plan1']: elabDataValue[0]['values'][j],
-                ['balEff' + j + '_plan1']: effPlan,
-                ['balPre' + j + '_plan1']: prePlan,
-                ['balPreUnit' + j + '_preUnit']: preUnit,
+                const effPlan = findString(
+                    elabDataValue[0]['states'],
+                    elabDataValue[0]['values'][j],
+                    `Effect_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
+                )
+                value1 = {
+                    ...value1,
+                    ['value' + j + '_plan1']: elabDataValue[0]['values'][j],
+                    ['balEff' + j + '_plan1']: effPlan,
+                    ['balPre' + j + '_plan1']: prePlan,
+                    ['balPreUnit' + j + '_preUnit']: preUnit,
+                }
+                g.unshift(1)
             }
-            g.unshift(1)
         }
         setGroups(g)
         setLabels(prevLabels => {
 
             const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                if (item['a']['value'] === 'true') {
+                if (item['a'] !== undefined && item['a']['value'] === 'true') {
                     return 'Accomplished'
-                } else {
+                } else if (item['a'] !== undefined) {
                     return 'Unaccomplished'
+                } else {
+                    return 'accomplished?'
                 }
             });
 
             const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                if (item['Conflict']['value'] === 'inConflictWith') {
+                if (item['Conflict'] !== undefined && item['Conflict']['value'] === 'inConflictWith') {
                     return 'Conflict'
                 } else {
                     return 'Conflict?'
@@ -238,7 +246,7 @@ function TableEdit(params: any) {
 
 
             const elabDataSup = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                if (item['Conflict']['value'] === 'inSupportOf') {
+                if (item['Conflict'] !== undefined && item['Conflict']['value'] === 'inSupportOf') {
                     return 'Support'
                 } else {
                     return 'Support?'
@@ -247,41 +255,44 @@ function TableEdit(params: any) {
 
             return {
                 ...prevLabels,
-                plan1: elabData[0],
-                plan2: elabData[1],
-                accplan1: elabDataAcc[0],
-                accplan2: elabDataAcc[1],
-                conflict: elabDataCon[0],
-                dxSupport: elabDataSup[0],
-                sxSupport: elabDataSup[1],
-                goalplan1: elabDataGoal[0],
-                goalplan2: elabDataGoal[1],
-                agentplan1: elabDataAgent[0],
-                agentplan2: elabDataAgent[1],
+                ...(elabData[0] !== null ? {plan1: elabData[0]} : {}),
+                ...(elabData[1] !== null ? {plan2: elabData[1]} : {}),
+                ...(elabDataAcc[0] !== null ? {accplan1: elabDataAcc[0]} : {}),
+                ...(elabDataAcc[1] !== null ? {accplan2: elabDataAcc[1]} : {}),
+                ...(elabDataCon[0] !== null ? {conflict: elabDataCon[0]} : {}),
+                ...(elabDataSup[0] !== null ? {dxSupport: elabDataSup[0]} : {}),
+                ...(elabDataSup[1] !== null ? {sxSupport: elabDataSup[1]} : {}),
+                ...(elabDataGoal[0] !== null ? {goalplan1: elabDataGoal[0]} : {}),
+                ...(elabDataGoal[1] !== null ? {goalplan2: elabDataGoal[1]} : {}),
+                ...(elabDataAgent[0] !== null ? {agentplan1: elabDataAgent[0]} : {}),
+                ...(elabDataAgent[1] !== null ? {agentplan2: elabDataAgent[1]} : {}),
                 ...value1,
                 ...value2
             };
+
 
         })
 
         setQueryLabels(prevLabels => {
 
             const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                if (item['a']['value'] === 'true') {
+                if (item['a'] !== undefined && item['a']['value'] === 'true') {
                     return 'Accomplished'
-                } else {
+                } else if (item['a'] !== undefined) {
                     return 'Unaccomplished'
+                } else {
+                    return 'accomplished?'
                 }
             });
             const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                if (item['Conflict']['value'] === 'inConflictWith') {
+                if (item['Conflict'] !== undefined && item['Conflict']['value'] === 'inConflictWith') {
                     return 'Conflict'
                 } else {
                     return ''
                 }
             });
             const elabDataSup = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
-                if (item['Conflict']['value'] === 'inSupportOf') {
+                if (item['Conflict'] !== undefined && item['Conflict']['value'] === 'inSupportOf') {
                     return 'Support'
                 } else {
                     return ''
@@ -290,20 +301,21 @@ function TableEdit(params: any) {
 
             return {
                 ...prevLabels,
-                plan1: elabData[0],
-                plan2: elabData[1],
-                accplan1: elabDataAcc[0],
-                accplan2: elabDataAcc[1],
-                conflict: elabDataCon[0],
-                dxSupport: elabDataSup[0],
-                sxSupport: elabDataSup[1],
-                goalplan1: elabDataGoal[0],
-                goalplan2: elabDataGoal[1],
-                agentplan1: elabDataAgent[0],
-                agentplan2: elabDataAgent[1],
+                ...(elabData[0] !== null ? {plan1: elabData[0]} : {}),
+                ...(elabData[1] !== null ? {plan2: elabData[1]} : {}),
+                ...(elabDataAcc[0] !== null ? {accplan1: elabDataAcc[0]} : {}),
+                ...(elabDataAcc[1] !== null ? {accplan2: elabDataAcc[1]} : {}),
+                ...(elabDataCon[0] !== null ? {conflict: elabDataCon[0]} : {}),
+                ...(elabDataSup[0] !== null ? {dxSupport: elabDataSup[0]} : {}),
+                ...(elabDataSup[1] !== null ? {sxSupport: elabDataSup[1]} : {}),
+                ...(elabDataGoal[0] !== null ? {goalplan1: elabDataGoal[0]} : {}),
+                ...(elabDataGoal[1] !== null ? {goalplan2: elabDataGoal[1]} : {}),
+                ...(elabDataAgent[0] !== null ? {agentplan1: elabDataAgent[0]} : {}),
+                ...(elabDataAgent[1] !== null ? {agentplan2: elabDataAgent[1]} : {}),
                 ...value1,
                 ...value2
             };
+
         })
     }
 
@@ -321,20 +333,34 @@ function TableEdit(params: any) {
                         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                         
                         SELECT (STRAFTER(STR(?p), "#") AS ?Plan) ?a (STRAFTER(STR(?s), "#") AS ?Conflict) 
-                               (STRAFTER(STR(?g), "#") AS ?Goal) (STRAFTER(STR(?ag), "#") AS ?Agent) 
-                               (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?val), "#"), "_atStake|_inBalance", ""); separator=", ") AS ?Values)
-                               (GROUP_CONCAT(DISTINCT STRAFTER(STR(?state), "#"); separator=", ") AS ?States)
+                               (STRAFTER(STR(?g), "#") AS ?Goal1) (STRAFTER(STR(?ag), "#") AS ?Agent) 
+                               (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?val), "#"), "_atStake|_inBalance", ""); separator=", ") AS ?Values) (GROUP_CONCAT(DISTINCT STRAFTER(STR(?state), "#"); separator=", ") AS ?States)
                         WHERE {
                             ?p rdf:type :Plan .
                             ?p2 rdf:type :Plan .
-                            ?p :accomplished ?a .
-                            ?p ?s ?p2 .
+                            OPTIONAL {
+                                ?p :accomplished ?a .
+                            }
+                            OPTIONAL {
+                                ?p ?s ?p2 .
+                                FILTER(EXISTS { ?p ?s ?p2 })
+                            }
+                            
                             ?p rdfs:comment "${comment}" .
                             ?p2 rdfs:comment "${comment}" .
-                            ?g :isAchievedBy ?p .
-                            ?ag :intends ?p .
-                            ?val :isValueEngagedOf ?ag .
-                            ?val :isDataOf ?state .
+                            
+                            OPTIONAL {
+                                ?g :isAchievedBy ?p .
+                            }
+                            OPTIONAL {
+                                ?ag :intends ?p .
+                            }
+                            OPTIONAL {
+                                ?val :isValueEngagedOf ?ag .
+                            }
+                            OPTIONAL {
+                                ?val :isDataOf ?state .
+                            }
                         }
                         GROUP BY ?p ?a ?s ?g ?ag
 
@@ -389,7 +415,6 @@ function TableEdit(params: any) {
     }, []);
 
     useEffect(() => {
-        const partValid = Object.values(queryLabels).slice(0, 8).every((value: string) => value !== '');
 
         const prefixQuery = `
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -397,18 +422,15 @@ function TableEdit(params: any) {
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         `
 
-        if (params.data[0]['value'] !== ''
-            && partValid
-            && Object.values(queryLabels).some(value => value === "Support" || value === "Conflict")
-            && params.data[0]['save'] === true) {
+        if (params.data[0]['value'] !== '' && params.data[0]['save'] === true) {
             const editParam = params.edit
             const unit = params.data[0].value.replace(/ /g, '_')
-            const plan1 = queryLabels['plan1'].replace(/ /g, '_')
-            const plan2 = queryLabels['plan2'].replace(/ /g, '_')
-            const goal1 = queryLabels['goalplan1'].replace(/ /g, '_')
-            const goal2 = queryLabels['goalplan2'].replace(/ /g, '_')
-            const agent1 = queryLabels['agentplan1'].replace(/ /g, '_')
-            const agent2 = queryLabels['agentplan2'].replace(/ /g, '_')
+            const plan1 = (queryLabels['plan1'] ?? '').replace(/ /g, '_');
+            const plan2 = (queryLabels['plan2'] ?? '').replace(/ /g, '_')
+            const goal1 = (queryLabels['goalplan1'] ?? '').replace(/ /g, '_')
+            const goal2 = (queryLabels['goalplan2'] ?? '').replace(/ /g, '_')
+            const agent1 = (queryLabels['agentplan1'] ?? '').replace(/ /g, '_')
+            const agent2 = (queryLabels['agentplan2'] ?? '').replace(/ /g, '_')
             const comment = unit + '_' + params['idTableEdit']
 
 
@@ -416,30 +438,30 @@ function TableEdit(params: any) {
                 try {
                     let query
 
-                    if (t === 'Plan') {
+                    if (t === 'Plan' && plan1 !== '' && plan2 !== '') {
                         conflict = ''
                         accomplished1 = ''
                         accomplished2 = ''
-                        if (queryLabels['accplan1'] === 'Accomplished') {
+                        if (queryLabels['accplan1'] && queryLabels['accplan1'] === 'Accomplished') {
                             accomplished1 = `:${plan1} :accomplished true .`
-                        } else {
+                        } else if (queryLabels['accplan1']) {
                             accomplished1 = `:${plan1} :accomplished false .`
                         }
-                        if (queryLabels['accplan2'] === 'Accomplished') {
+                        if (queryLabels['accplan2'] && queryLabels['accplan2'] === 'Accomplished') {
                             accomplished2 = `:${plan2} :accomplished true .`
-                        } else {
+                        } else if (queryLabels['accplan2']) {
                             accomplished2 = `:${plan2} :accomplished false .`
                         }
-                        if (queryLabels['conflict'] !== '') {
+                        if (queryLabels['conflict'] && queryLabels['conflict'] !== '') {
                             conflict =
                                 `:${plan1} :inConflictWith :${plan2} .
                                  :${plan2} :inConflictWith :${plan1} .`
                         } else {
-                            if (queryLabels['sxSupport'] === '') {
+                            if (queryLabels['sxSupport'] && queryLabels['sxSupport'] === '') {
                                 conflict = `:${plan1} :inSupportOf :${plan2} .`
-                            } else if (queryLabels['dxSupport'] === '') {
+                            } else if (queryLabels['dxSupport'] && queryLabels['dxSupport'] === '') {
                                 conflict = `:${plan2} :inSupportOf :${plan1} .`
-                            } else {
+                            } else if (queryLabels['sxSupport'] && queryLabels['dxSupport']) {
                                 conflict =
                                     `:${plan1} :inSupportOf :${plan2} .
                                      :${plan2} :inSupportOf :${plan1} .`
@@ -488,10 +510,9 @@ function TableEdit(params: any) {
                             await sendBatchQuery(batch);
                         }
 
-                    } else if (t === 'Goal') {
+                    } else if (t === 'Goal' && goal1 !== '' && goal2 !== '') {
 
-                        query = `${prefixQuery}
-                          INSERT DATA {
+                        let tripleGoal = `
                             :${goal1} rdf:type :Goal.
                             :${goal1} rdfs:comment "${comment}" .
                             :${goal1}_schema rdf:type :GoalSchema.
@@ -502,8 +523,16 @@ function TableEdit(params: any) {
                             :${goal2}_schema rdf:type :GoalSchema.
                             :${goal2}_schema rdfs:comment "${comment}" .
                             :${goal2}_schema :describes :${goal2} .
+                        `
+                        if (plan1 !== '' && plan2 !== '') {
+                            tripleGoal += `
                             :${goal1} :isAchievedBy :${plan1} .
                             :${goal2} :isAchievedBy :${plan2} .
+                            `
+                        }
+                        query = `${prefixQuery}
+                          INSERT DATA {
+                            ${tripleGoal}
                           }
                         `;
 
@@ -512,18 +541,33 @@ function TableEdit(params: any) {
                                 'Content-Type': 'application/sparql-update'
                             }
                         });
-                    } else if (t === 'Agent') {
+                    } else if (t === 'Agent' && agent1 !== '' && agent2 !== '') {
 
-                        query = `${prefixQuery}
-                          INSERT DATA {
+                        let tripleAgent = `
                             :${agent1} rdf:type :Agent.
                             :${agent1} rdfs:comment "${comment}" .
                             :${agent2} rdf:type :Agent.
                             :${agent2} rdfs:comment "${comment}" .
-                            :${agent1} :hasGoal :${goal1}.
-                            :${agent2} :hasGoal :${goal2}.
+                            
+                        `
+                        if (plan1 !== '' && plan2 !== '') {
+                            tripleAgent += `
                             :${agent1} :intends :${plan1}.
                             :${agent2} :intends :${plan2}.
+                            
+                            `
+                        }
+
+                        if (goal1 !== '' && goal2 !== '') {
+                            tripleAgent += `
+                            :${agent1} :hasGoal :${goal1}.
+                            :${agent2} :hasGoal :${goal2}.
+                            `
+                        }
+
+                        query = `${prefixQuery}
+                          INSERT DATA {
+                            ${tripleAgent}
                           }
                         `;
 
@@ -532,7 +576,7 @@ function TableEdit(params: any) {
                                 'Content-Type': 'application/sparql-update'
                             }
                         });
-                    } else if (t === 'Emotion') {
+                    } else if (t === 'Emotion' && agent1 !== '' && agent2 !== '') {
 
                         let tripleEmo = ''
                         emotion.forEach((elem) => {
@@ -587,17 +631,22 @@ function TableEdit(params: any) {
                                 :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} rdfs:comment "${comment}".
                                 :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} :hasData :${elem['value']}_${elem['balPreUnit']}.
                                 :Precondition_${unit}_${elem['value']}_${elem['balPreUnit']} :isMemberOf :Precondition_${unit}.
-                                :Precondition_${p}_${elem['value']}_${elem['balPre']} rdf:type :SetMember.
-                                :Precondition_${p}_${elem['value']}_${elem['balPre']} rdfs:comment "${comment}".
-                                :Precondition_${p}_${elem['value']}_${elem['balPre']} :hasData :${elem['value']}_${elem['balPre']}.
-                                :Precondition_${p}_${elem['value']}_${elem['balPre']} :isMemberOf :precondition_${p}.
-                                :Effect_${p}_${elem['value']}_${elem['balEff']} rdf:type :SetMember.
-                                :Effect_${p}_${elem['value']}_${elem['balEff']} rdfs:comment "${comment}".
-                                :Effect_${p}_${elem['value']}_${elem['balEff']} :hasData :${elem['value']}_${elem['balEff']}.
-                                :Effect_${p}_${elem['value']}_${elem['balEff']} :isMemberOf :effect_${p}.
                             
                             `;
-                                if(queryLabels[acc] === 'Accomplished'){
+                                if (p !== '') {
+                                    tripleValue += `
+                                    :Precondition_${p}_${elem['value']}_${elem['balPre']} rdf:type :SetMember.
+                                    :Precondition_${p}_${elem['value']}_${elem['balPre']} rdfs:comment "${comment}".
+                                    :Precondition_${p}_${elem['value']}_${elem['balPre']} :hasData :${elem['value']}_${elem['balPre']}.
+                                    :Precondition_${p}_${elem['value']}_${elem['balPre']} :isMemberOf :precondition_${p}.
+                                    :Effect_${p}_${elem['value']}_${elem['balEff']} rdf:type :SetMember.
+                                    :Effect_${p}_${elem['value']}_${elem['balEff']} rdfs:comment "${comment}".
+                                    :Effect_${p}_${elem['value']}_${elem['balEff']} :hasData :${elem['value']}_${elem['balEff']}.
+                                    :Effect_${p}_${elem['value']}_${elem['balEff']} :isMemberOf :effect_${p}.
+                                    
+                                    `
+                                }
+                                if (queryLabels[acc] === 'Accomplished') {
                                     tripleValue += `
                                     :Effect_${unit}_${elem['value']}_${elem['balEff']} rdf:type :SetMember.
                                     :Effect_${unit}_${elem['value']}_${elem['balEff']} rdfs:comment "${comment}".
@@ -605,18 +654,18 @@ function TableEdit(params: any) {
                                     :Effect_${unit}_${elem['value']}_${elem['balEff']} :isMemberOf :Effect_${unit}.
                                 
                                     `
-                                }else{
-                                    let effUnit = ''
-                                    if(elem['balEff'] === 'atStake'){
-                                        effUnit = 'inBalance'
-                                    }else{
-                                        effUnit = 'atStake'
+                                } else {
+                                    let effUnitValue
+                                    if (elem['balEff'] === 'atStake') {
+                                        effUnitValue = 'inBalance'
+                                    } else {
+                                        effUnitValue = 'atStake'
                                     }
                                     tripleValue += `
-                                    :Effect_${unit}_${elem['value']}_${effUnit} rdf:type :SetMember.
-                                    :Effect_${unit}_${elem['value']}_${effUnit} rdfs:comment "${comment}".
-                                    :Effect_${unit}_${elem['value']}_${effUnit} :hasData :${elem['value']}_${effUnit}.
-                                    :Effect_${unit}_${elem['value']}_${effUnit} :isMemberOf :Effect_${unit}.
+                                    :Effect_${unit}_${elem['value']}_${effUnitValue} rdf:type :SetMember.
+                                    :Effect_${unit}_${elem['value']}_${effUnitValue} rdfs:comment "${comment}".
+                                    :Effect_${unit}_${elem['value']}_${effUnitValue} :hasData :${elem['value']}_${effUnitValue}.
+                                    :Effect_${unit}_${elem['value']}_${effUnitValue} :isMemberOf :Effect_${unit}.
                                     `
                                 }
                             });
@@ -710,10 +759,10 @@ function TableEdit(params: any) {
             let accomplished2: any = queryLabels['accplan2'] === 'Accomplished';
 
             let conflict = ''
-            if (queryLabels['conflict'] !== '') {
+            if (queryLabels['conflict'] && queryLabels['conflict'] !== '') {
                 conflict = queryLabels['conflict']
 
-            } else {
+            } else if (queryLabels['sxSupport'] || queryLabels['dxSupport']) {
                 conflict = queryLabels['sxSupport'] + '_' + queryLabels['dxSupport']
 
             }
@@ -781,16 +830,20 @@ function TableEdit(params: any) {
                     }
                 )
 
-                fetchDataInsert('Plan').then(
-                    () => fetchDataInsert('Goal').then(
-                        () => fetchDataInsert('Agent').then(
-                            () => fetchDataInsert('Emotion').then(
-                                () => fetchDataInsert('Value').then(
-                                )
-                            )
-                        )
-                    )
-                );
+                const fetchData = async () => {
+                    try {
+                        await fetchDataInsert('Plan');
+                        await fetchDataInsert('Goal');
+                        await fetchDataInsert('Agent');
+                        await fetchDataInsert('Emotion');
+                        await fetchDataInsert('Value');
+                        params.updateData(0);
+                    } catch (error) {
+                        console.error('Errore durante l\'aggiornamento dei dati:', error);
+                    }
+                };
+
+                fetchData().then();
             } else {
                 fetchDataDelete().then(
                     () => fetchDataInsert('Plan').then(
@@ -804,7 +857,21 @@ function TableEdit(params: any) {
                         )
                     )
                 )
+                const fetchData = async () => {
+                    try {
+                        await fetchDataDelete();
+                        await fetchDataInsert('Plan');
+                        await fetchDataInsert('Goal');
+                        await fetchDataInsert('Agent');
+                        await fetchDataInsert('Emotion');
+                        await fetchDataInsert('Value');
+                        params.updateData(0);
+                    } catch (error) {
+                        console.error('Errore durante l\'aggiornamento dei dati:', error);
+                    }
+                };
 
+                fetchData().then();
                 setTriplesQuery(
                     {
                         Unit: unit,
@@ -824,14 +891,13 @@ function TableEdit(params: any) {
 
             }
             params.updateData(params.idTableEdit + 1, triplesQuery)
-            params.updateData(0)
-        }else{
-            if(params.data[0]['save'] === true){
+        } else {
+            if (params.data[0]['save'] === true) {
                 params.updateData(0)
             }
         }
         // eslint-disable-next-line
-    }, [params.data, queryLabels]);
+    }, [params.data[0], queryLabels]);
 
     let template: string | any[] | readonly Sample[]
     let posForTemplate = ['']
@@ -1004,13 +1070,13 @@ function TableEdit(params: any) {
                     <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
                          margin={1}>
                         <Stack direction="row" spacing={2}>
-                            <Button style={{ textTransform: 'none' }} variant="contained" disabled>
+                            <Button style={{textTransform: 'none'}} variant="contained" disabled>
                                 Balance?
                             </Button>
-                            <Button style={{ textTransform: 'none' }} variant="contained" disabled>
+                            <Button style={{textTransform: 'none'}} variant="contained" disabled>
                                 Value?
                             </Button>
-                            <Button style={{ textTransform: 'none' }} variant="contained" disabled>
+                            <Button style={{textTransform: 'none'}} variant="contained" disabled>
                                 Balance?
                             </Button>
                         </Stack>
@@ -1034,7 +1100,7 @@ function TableEdit(params: any) {
                     <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
                          margin={1}>
                         <Stack direction="row" spacing={2}>
-                            <Button style={{ textTransform: 'none' }} variant="outlined"
+                            <Button style={{textTransform: 'none'}} variant="outlined"
                                     onDoubleClick={(e) => {
                                         if (labels['balPre' + index + '_' + column.dataKey] !== undefined) {
                                             handleClick(e, 'balPre' + index + '_' + column.dataKey)
@@ -1076,13 +1142,13 @@ function TableEdit(params: any) {
                                 <MenuItem>
                                     <Button variant="contained"
                                             onClick={() => handleConfirm('balPre' + index + '_' + column.dataKey, 'atStake')}
-                                            style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
+                                            style={{backgroundColor: 'red', color: 'white', textTransform: 'none'}}
                                     >
                                         atStake
                                     </Button>
                                 </MenuItem>
                             </Menu>
-                            <Button style={{ textTransform: 'none' }} variant="outlined"
+                            <Button style={{textTransform: 'none'}} variant="outlined"
                                     onDoubleClick={(e) => {
                                         if (inputs['value' + index + '_' + column.dataKey] !== undefined || queryLabels['value' + index + '_' + column.dataKey] !== '') {
                                             handleClick(e, 'value' + index + '_' + column.dataKey);
@@ -1117,7 +1183,7 @@ function TableEdit(params: any) {
                                     </Button>
                                 </MenuItem>
                             </Menu>
-                            <Button style={{ textTransform: 'none' }} variant="outlined"
+                            <Button style={{textTransform: 'none'}} variant="outlined"
                                     onDoubleClick={(e) => {
                                         if (labels['balEff' + index + '_' + column.dataKey] !== undefined) {
                                             handleClick(e, 'balEff' + index + '_' + column.dataKey)
@@ -1159,7 +1225,7 @@ function TableEdit(params: any) {
                                 <MenuItem>
                                     <Button variant="contained"
                                             onClick={() => handleConfirm('balEff' + index + '_' + column.dataKey, 'atStake')}
-                                            style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
+                                            style={{backgroundColor: 'red', color: 'white', textTransform: 'none'}}
                                     >
                                         atStake
                                     </Button>
@@ -1198,7 +1264,7 @@ function TableEdit(params: any) {
                                 }}
                             >
                                 <Button
-                                    style={{ textTransform: 'none' }} variant="outlined"
+                                    style={{textTransform: 'none'}} variant="outlined"
                                     onDoubleClick={(e) => {
                                         if (labels['acc' + keyLabel] !== 'accomplished?') {
                                             handleClick(e, 'acc' + keyLabel);
@@ -1220,7 +1286,7 @@ function TableEdit(params: any) {
                                             : labels['acc' + keyLabel] === 'Unaccomplished'
                                                 ? 'red' : 'theme.palette.primary.main'
                                     }}
-                                    disabled={labels['acc' + keyLabel] === 'accomplished?' && inputs[keyLabel] === undefined}
+                                    disabled={queryLabels[keyLabel] === '' && inputs[keyLabel] === undefined}
                                 >
                                     {labels['acc' + keyLabel]}
                                 </Button>
@@ -1243,7 +1309,7 @@ function TableEdit(params: any) {
                                     <MenuItem>
                                         <Button variant="contained"
                                                 onClick={() => handleConfirm('acc' + keyLabel, 'Unaccomplished')}
-                                                style={{backgroundColor: 'green', color: 'white', textTransform: 'none'}}
+                                                style={{backgroundColor: 'red', color: 'white', textTransform: 'none'}}
                                         >
                                             Unaccomplished
                                         </Button>
@@ -1253,7 +1319,7 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         P Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button style={{ textTransform: 'none' }} variant="outlined"
+                                    <Button style={{textTransform: 'none'}} variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (inputs[keyLabel] !== undefined || queryLabels[keyLabel] !== '') {
                                                     handleClick(e, keyLabel);
@@ -1292,7 +1358,7 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         G Plan Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button style={{ textTransform: 'none' }} variant="outlined"
+                                    <Button style={{textTransform: 'none'}} variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (inputs['goal' + keyLabel] !== undefined || queryLabels['goal' + keyLabel] !== '') {
                                                     handleClick(e, 'goal' + keyLabel);
@@ -1332,7 +1398,7 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button style={{ textTransform: 'none' }} variant="outlined"
+                                    <Button style={{textTransform: 'none'}} variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (inputs['agent' + keyLabel] !== undefined || queryLabels['agent' + keyLabel] !== '') {
                                                     handleClick(e, 'agent' + keyLabel);
@@ -1408,7 +1474,7 @@ function TableEdit(params: any) {
                                                     display="inline-block"
                                                     margin={1}>
                                             <Stack direction="row" spacing={2}>
-                                                <Button style={{ textTransform: 'none' }} variant="outlined"
+                                                <Button style={{textTransform: 'none'}} variant="outlined"
                                                         onDoubleClick={(e) => {
                                                             if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
                                                                 handleClick(e, 'balPreUnit' + index + '_' + column.dataKey);
@@ -1441,7 +1507,11 @@ function TableEdit(params: any) {
                                                         <Button
                                                             variant="contained"
                                                             onClick={() => handleConfirm('balPreUnit' + index + '_' + column.dataKey, 'inBalance')}
-                                                            style={{backgroundColor: 'green', color: 'white',textTransform: 'none'}}
+                                                            style={{
+                                                                backgroundColor: 'green',
+                                                                color: 'white',
+                                                                textTransform: 'none'
+                                                            }}
                                                         >
                                                             inBalance
                                                         </Button>
@@ -1450,7 +1520,11 @@ function TableEdit(params: any) {
                                                     <MenuItem>
                                                         <Button variant="contained"
                                                                 onClick={() => handleConfirm('balPreUnit' + index + '_' + column.dataKey, 'atStake')}
-                                                                style={{backgroundColor: 'green', color: 'white',textTransform: 'none'}}
+                                                                style={{
+                                                                    backgroundColor: 'red',
+                                                                    color: 'white',
+                                                                    textTransform: 'none'
+                                                                }}
                                                         >
                                                             atStake
                                                         </Button>
@@ -1494,7 +1568,7 @@ function TableEdit(params: any) {
                                             : labels['sxSupport'] === 'Support'
                                                 ? 'green' : '',
                                     }}
-                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (labels['conflict'] === 'Conflict?' && labels['dxSupport'] === 'Support?' && labels['sxSupport'] === 'Support?')}
+                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
                                 >
                                     <ArrowBackIosNewIcon/>
                                     <Typography variant="button" display="block">{labels['sxSupport']}</Typography>
@@ -1515,7 +1589,7 @@ function TableEdit(params: any) {
                                             : labels['conflict'] === 'Conflict'
                                                 ? 'red' : '',
                                     }}
-                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (labels['conflict'] === 'Conflict?' && labels['dxSupport'] === 'Support?' && labels['sxSupport'] === 'Support?')}
+                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
                                 >
                                     <ArrowBackIosNewIcon/>
                                     <Typography variant="button" display="block">{labels['conflict']}</Typography>
@@ -1537,7 +1611,7 @@ function TableEdit(params: any) {
                                             : labels['dxSupport'] === 'Support'
                                                 ? 'green' : '',
                                     }}
-                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (labels['conflict'] === 'Conflict?' && labels['dxSupport'] === 'Support?' && labels['sxSupport'] === 'Support?')}
+                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
                                 >
                                     <Typography variant="button" display="block">{labels['dxSupport']}</Typography>
                                     <ArrowForwardIosIcon/>
