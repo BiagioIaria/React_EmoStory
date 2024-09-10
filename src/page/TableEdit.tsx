@@ -164,63 +164,67 @@ function TableEdit(params: any) {
         let g = [3]
         let value1 = {}
         let value2 = {}
-        for (let j = 0; j < elabDataValue[1]['values'].length; j++) {
-            if (elabDataValue[1]['values'][j] !== '') {
-                const index = j + elabDataValue[0]['values'].length
-                const preUnit = findString(
-                    elabDataValue[1]['states'],
-                    elabDataValue[1]['values'][j],
-                    `Precondition_${params.data[0]['value']}_${elabDataValue[1]['values'][j]}_`
-                )
+        if (elabDataValue[1]) {
+            for (let j = 0; j < elabDataValue[1]['values'].length; j++) {
+                if (elabDataValue[1]['values'][j] !== '') {
+                    const index = j + elabDataValue[0]['values'].length
+                    const preUnit = findString(
+                        elabDataValue[1]['states'],
+                        elabDataValue[1]['values'][j],
+                        `Precondition_${params.data[0]['value']}_${elabDataValue[1]['values'][j]}_`
+                    )
 
-                const prePlan = findString(
-                    elabDataValue[1]['states'],
-                    elabDataValue[1]['values'][j],
-                    `Precondition_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
-                )
+                    const prePlan = findString(
+                        elabDataValue[1]['states'],
+                        elabDataValue[1]['values'][j],
+                        `Precondition_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
+                    )
 
-                const effPlan = findString(
-                    elabDataValue[1]['states'],
-                    elabDataValue[1]['values'][j],
-                    `Effect_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
-                )
-                value2 = {
-                    ...value2,
-                    ['value' + index + '_plan2']: elabDataValue[1]['values'][j],
-                    ['balEff' + index + '_plan2']: effPlan,
-                    ['balPre' + index + '_plan2']: prePlan,
-                    ['balPreUnit' + index + '_preUnit']: preUnit,
+                    const effPlan = findString(
+                        elabDataValue[1]['states'],
+                        elabDataValue[1]['values'][j],
+                        `Effect_${elabData[1]}_${elabDataValue[1]['values'][j]}_`
+                    )
+                    value2 = {
+                        ...value2,
+                        ['value' + index + '_plan2']: elabDataValue[1]['values'][j],
+                        ['balEff' + index + '_plan2']: effPlan,
+                        ['balPre' + index + '_plan2']: prePlan,
+                        ['balPreUnit' + index + '_preUnit']: preUnit,
+                    }
+                    g.unshift(2)
                 }
-                g.unshift(2)
             }
         }
-        for (let j = 0; j < elabDataValue[0]['values'].length; j++) {
-            if (elabDataValue[0]['values'][j] !== '') {
-                const preUnit = findString(
-                    elabDataValue[0]['states'],
-                    elabDataValue[0]['values'][j],
-                    `Precondition_${params.data[0]['value']}_${elabDataValue[0]['values'][j]}_`
-                )
+        if (elabDataValue[0]) {
+            for (let j = 0; j < elabDataValue[0]['values'].length; j++) {
+                if (elabDataValue[0]['values'][j] !== '') {
+                    const preUnit = findString(
+                        elabDataValue[0]['states'],
+                        elabDataValue[0]['values'][j],
+                        `Precondition_${params.data[0]['value']}_${elabDataValue[0]['values'][j]}_`
+                    )
 
-                const prePlan = findString(
-                    elabDataValue[0]['states'],
-                    elabDataValue[0]['values'][j],
-                    `Precondition_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
-                )
+                    const prePlan = findString(
+                        elabDataValue[0]['states'],
+                        elabDataValue[0]['values'][j],
+                        `Precondition_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
+                    )
 
-                const effPlan = findString(
-                    elabDataValue[0]['states'],
-                    elabDataValue[0]['values'][j],
-                    `Effect_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
-                )
-                value1 = {
-                    ...value1,
-                    ['value' + j + '_plan1']: elabDataValue[0]['values'][j],
-                    ['balEff' + j + '_plan1']: effPlan,
-                    ['balPre' + j + '_plan1']: prePlan,
-                    ['balPreUnit' + j + '_preUnit']: preUnit,
+                    const effPlan = findString(
+                        elabDataValue[0]['states'],
+                        elabDataValue[0]['values'][j],
+                        `Effect_${elabData[0]}_${elabDataValue[0]['values'][j]}_`
+                    )
+                    value1 = {
+                        ...value1,
+                        ['value' + j + '_plan1']: elabDataValue[0]['values'][j],
+                        ['balEff' + j + '_plan1']: effPlan,
+                        ['balPre' + j + '_plan1']: prePlan,
+                        ['balPreUnit' + j + '_preUnit']: preUnit,
+                    }
+                    g.unshift(1)
                 }
-                g.unshift(1)
             }
         }
         setGroups(g)
@@ -255,17 +259,17 @@ function TableEdit(params: any) {
 
             return {
                 ...prevLabels,
-                ...(elabData[0] !== null ? {plan1: elabData[0]} : {}),
-                ...(elabData[1] !== null ? {plan2: elabData[1]} : {}),
-                ...(elabDataAcc[0] !== null ? {accplan1: elabDataAcc[0]} : {}),
-                ...(elabDataAcc[1] !== null ? {accplan2: elabDataAcc[1]} : {}),
-                ...(elabDataCon[0] !== null ? {conflict: elabDataCon[0]} : {}),
-                ...(elabDataSup[0] !== null ? {dxSupport: elabDataSup[0]} : {}),
-                ...(elabDataSup[1] !== null ? {sxSupport: elabDataSup[1]} : {}),
-                ...(elabDataGoal[0] !== null ? {goalplan1: elabDataGoal[0]} : {}),
-                ...(elabDataGoal[1] !== null ? {goalplan2: elabDataGoal[1]} : {}),
-                ...(elabDataAgent[0] !== null ? {agentplan1: elabDataAgent[0]} : {}),
-                ...(elabDataAgent[1] !== null ? {agentplan2: elabDataAgent[1]} : {}),
+                ...(elabData[0] !== null && elabData[0] !== undefined ? {plan1: elabData[0]} : {}),
+                ...(elabData[1] !== null && elabData[1] !== undefined ? {plan2: elabData[1]} : {}),
+                ...(elabDataAcc[0] !== null && elabDataAcc[0] !== undefined ? {accplan1: elabDataAcc[0]} : {}),
+                ...(elabDataAcc[1] !== null && elabDataAcc[1] !== undefined ? {accplan2: elabDataAcc[1]} : {}),
+                ...(elabDataCon[0] !== null && elabDataCon[0] !== undefined ? {conflict: elabDataCon[0]} : {}),
+                ...(elabDataSup[0] !== null && elabDataSup[0] !== undefined ? {dxSupport: elabDataSup[0]} : {}),
+                ...(elabDataSup[1] !== null && elabDataSup[1] !== undefined ? {sxSupport: elabDataSup[1]} : {}),
+                ...(elabDataGoal[0] !== null && elabDataGoal[0] !== undefined ? {goalplan1: elabDataGoal[0]} : {}),
+                ...(elabDataGoal[1] !== null && elabDataGoal[1] !== undefined ? {goalplan2: elabDataGoal[1]} : {}),
+                ...(elabDataAgent[0] !== null && elabDataAgent[0] !== undefined ? {agentplan1: elabDataAgent[0]} : {}),
+                ...(elabDataAgent[1] !== null && elabDataAgent[1] !== undefined ? {agentplan2: elabDataAgent[1]} : {}),
                 ...value1,
                 ...value2
             };
@@ -301,17 +305,17 @@ function TableEdit(params: any) {
 
             return {
                 ...prevLabels,
-                ...(elabData[0] !== null ? {plan1: elabData[0]} : {}),
-                ...(elabData[1] !== null ? {plan2: elabData[1]} : {}),
-                ...(elabDataAcc[0] !== null ? {accplan1: elabDataAcc[0]} : {}),
-                ...(elabDataAcc[1] !== null ? {accplan2: elabDataAcc[1]} : {}),
-                ...(elabDataCon[0] !== null ? {conflict: elabDataCon[0]} : {}),
-                ...(elabDataSup[0] !== null ? {dxSupport: elabDataSup[0]} : {}),
-                ...(elabDataSup[1] !== null ? {sxSupport: elabDataSup[1]} : {}),
-                ...(elabDataGoal[0] !== null ? {goalplan1: elabDataGoal[0]} : {}),
-                ...(elabDataGoal[1] !== null ? {goalplan2: elabDataGoal[1]} : {}),
-                ...(elabDataAgent[0] !== null ? {agentplan1: elabDataAgent[0]} : {}),
-                ...(elabDataAgent[1] !== null ? {agentplan2: elabDataAgent[1]} : {}),
+                ...(elabData[0] !== null && elabData[0] !== undefined ? {plan1: elabData[0]} : {}),
+                ...(elabData[1] !== null && elabData[1] !== undefined ? {plan2: elabData[1]} : {}),
+                ...(elabDataAcc[0] !== null && elabDataAcc[0] !== undefined ? {accplan1: elabDataAcc[0]} : {}),
+                ...(elabDataAcc[1] !== null && elabDataAcc[1] !== undefined ? {accplan2: elabDataAcc[1]} : {}),
+                ...(elabDataCon[0] !== null && elabDataCon[0] !== undefined ? {conflict: elabDataCon[0]} : {}),
+                ...(elabDataSup[0] !== null && elabDataSup[0] !== undefined ? {dxSupport: elabDataSup[0]} : {}),
+                ...(elabDataSup[1] !== null && elabDataSup[1] !== undefined ? {sxSupport: elabDataSup[1]} : {}),
+                ...(elabDataGoal[0] !== null && elabDataGoal[0] !== undefined ? {goalplan1: elabDataGoal[0]} : {}),
+                ...(elabDataGoal[1] !== null && elabDataGoal[1] !== undefined ? {goalplan2: elabDataGoal[1]} : {}),
+                ...(elabDataAgent[0] !== null && elabDataAgent[0] !== undefined ? {agentplan1: elabDataAgent[0]} : {}),
+                ...(elabDataAgent[1] !== null && elabDataAgent[1] !== undefined ? {agentplan2: elabDataAgent[1]} : {}),
                 ...value1,
                 ...value2
             };
@@ -333,7 +337,7 @@ function TableEdit(params: any) {
                         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                         
                         SELECT (STRAFTER(STR(?p), "#") AS ?Plan) ?a (STRAFTER(STR(?s), "#") AS ?Conflict) 
-                               (STRAFTER(STR(?g), "#") AS ?Goal1) (STRAFTER(STR(?ag), "#") AS ?Agent) 
+                               (STRAFTER(STR(?g), "#") AS ?Goal) (STRAFTER(STR(?ag), "#") AS ?Agent) 
                                (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?val), "#"), "_atStake|_inBalance", ""); separator=", ") AS ?Values) (GROUP_CONCAT(DISTINCT STRAFTER(STR(?state), "#"); separator=", ") AS ?States)
                         WHERE {
                             ?p rdf:type :Plan .
@@ -438,59 +442,72 @@ function TableEdit(params: any) {
                 try {
                     let query
 
-                    if (t === 'Plan' && plan1 !== '' && plan2 !== '') {
+                    if (t === 'Plan') {
                         conflict = ''
                         accomplished1 = ''
                         accomplished2 = ''
-                        if (queryLabels['accplan1'] && queryLabels['accplan1'] === 'Accomplished') {
-                            accomplished1 = `:${plan1} :accomplished true .`
-                        } else if (queryLabels['accplan1']) {
-                            accomplished1 = `:${plan1} :accomplished false .`
-                        }
-                        if (queryLabels['accplan2'] && queryLabels['accplan2'] === 'Accomplished') {
-                            accomplished2 = `:${plan2} :accomplished true .`
-                        } else if (queryLabels['accplan2']) {
-                            accomplished2 = `:${plan2} :accomplished false .`
-                        }
-                        if (queryLabels['conflict'] && queryLabels['conflict'] !== '') {
-                            conflict =
-                                `:${plan1} :inConflictWith :${plan2} .
-                                 :${plan2} :inConflictWith :${plan1} .`
-                        } else {
-                            if (queryLabels['sxSupport'] && queryLabels['sxSupport'] === '') {
-                                conflict = `:${plan1} :inSupportOf :${plan2} .`
-                            } else if (queryLabels['dxSupport'] && queryLabels['dxSupport'] === '') {
-                                conflict = `:${plan2} :inSupportOf :${plan1} .`
-                            } else if (queryLabels['sxSupport'] && queryLabels['dxSupport']) {
-                                conflict =
-                                    `:${plan1} :inSupportOf :${plan2} .
-                                     :${plan2} :inSupportOf :${plan1} .`
+                        let triplePlan = ``
+                        if (plan1 !== '') {
+                            if (queryLabels['accplan1'] && queryLabels['accplan1'] === 'Accomplished') {
+                                accomplished1 = `:${plan1} :accomplished true .`
+                            } else if (queryLabels['accplan1']) {
+                                accomplished1 = `:${plan1} :accomplished false .`
                             }
-                        }
-                        const triplePlan = `
+                            triplePlan += `
                             :${plan1} rdf:type :DirectlyExecutablePlan.
                             :${plan1} rdfs:comment "${comment}" .
-                            :${plan2} rdf:type :DirectlyExecutablePlan.
-                            :${plan2} rdfs:comment "${comment}" .
                             :precondition_${plan1} rdf:type :ConsistentStateSet.
                             :precondition_${plan1} rdfs:comment "${comment}" .
                             :precondition_${plan1} :isPlanPreconditionOf :${plan1}.
                             :effect_${plan1} rdf:type :ConsistentStateSet.
                             :effect_${plan1} rdfs:comment "${comment}" .
                             :effect_${plan1} :isPlanEffectOf :${plan1}.
+                            :${plan1} :isMotivationFor :Timeline_${unit} .
+                            
+                            `
+                        }
+                        if (plan2 !== '') {
+                            if (queryLabels['accplan2'] && queryLabels['accplan2'] === 'Accomplished') {
+                                accomplished2 = `:${plan2} :accomplished true .`
+                            } else if (queryLabels['accplan2']) {
+                                accomplished2 = `:${plan2} :accomplished false .`
+                            }
+                            triplePlan += `
+                            :${plan2} rdf:type :DirectlyExecutablePlan.
+                            :${plan2} rdfs:comment "${comment}" .
                             :precondition_${plan2} rdf:type :ConsistentStateSet.
                             :precondition_${plan2} rdfs:comment "${comment}" .
                             :precondition_${plan2} :isPlanPreconditionOf :${plan2}.
                             :effect_${plan2} rdf:type :ConsistentStateSet.
                             :effect_${plan2} rdfs:comment "${comment}" .
                             :effect_${plan2} :isPlanEffectOf :${plan2} .
-                            :${plan1} :isMotivationFor :Timeline_${unit} .
                             :${plan2} :isMotivationFor :Timeline_${unit} .
+                            
+                            `
+                        }
+                        if (plan1 !== '' && plan2 !== '') {
+                            if (queryLabels['conflict'] && queryLabels['conflict'] !== '') {
+                                conflict = `
+                                :${plan1} :inConflictWith :${plan2} .
+                                :${plan2} :inConflictWith :${plan1} .`
+                            } else {
+                                if (queryLabels['sxSupport'] && queryLabels['sxSupport'] === '') {
+                                    conflict = `:${plan1} :inSupportOf :${plan2} .`
+                                } else if (queryLabels['dxSupport'] && queryLabels['dxSupport'] === '') {
+                                    conflict = `:${plan2} :inSupportOf :${plan1} .`
+                                } else if (queryLabels['sxSupport'] && queryLabels['dxSupport']) {
+                                    conflict = `
+                                    :${plan1} :inSupportOf :${plan2} .
+                                    :${plan2} :inSupportOf :${plan1} .`
+                                }
+                            }
+
+                            triplePlan += `
                             ${conflict}
                             ${accomplished1}
                             ${accomplished2}
                         `
-
+                        }
                         const sendBatchQuery = async (batch: string) => {
                             const query = `${prefixQuery}
                                                    INSERT DATA {
@@ -510,25 +527,38 @@ function TableEdit(params: any) {
                             await sendBatchQuery(batch);
                         }
 
-                    } else if (t === 'Goal' && goal1 !== '' && goal2 !== '') {
-
-                        let tripleGoal = `
+                    } else if (t === 'Goal') {
+                        let tripleGoal = ``
+                        if (goal1 !== '') {
+                            tripleGoal += `
                             :${goal1} rdf:type :Goal.
                             :${goal1} rdfs:comment "${comment}" .
                             :${goal1}_schema rdf:type :GoalSchema.
                             :${goal1}_schema rdfs:comment "${comment}" .
                             :${goal1}_schema :describes :${goal1} .
+                            `
+                            if (plan1 !== '') {
+                                tripleGoal += `
+                                :${goal1} :isAchievedBy :${plan1} .
+                                
+                                `
+                            }
+                        }
+                        if (goal2 !== '') {
+                            tripleGoal += `
                             :${goal2} rdf:type :Goal.
                             :${goal2} rdfs:comment "${comment}" .
                             :${goal2}_schema rdf:type :GoalSchema.
                             :${goal2}_schema rdfs:comment "${comment}" .
                             :${goal2}_schema :describes :${goal2} .
-                        `
-                        if (plan1 !== '' && plan2 !== '') {
-                            tripleGoal += `
-                            :${goal1} :isAchievedBy :${plan1} .
-                            :${goal2} :isAchievedBy :${plan2} .
+                            
                             `
+                            if (plan2 !== '') {
+                                tripleGoal += `
+                                :${goal2} :isAchievedBy :${plan2} .
+                                
+                                `
+                            }
                         }
                         query = `${prefixQuery}
                           INSERT DATA {
@@ -541,28 +571,46 @@ function TableEdit(params: any) {
                                 'Content-Type': 'application/sparql-update'
                             }
                         });
-                    } else if (t === 'Agent' && agent1 !== '' && agent2 !== '') {
-
-                        let tripleAgent = `
+                    } else if (t === 'Agent') {
+                        let tripleAgent = ``
+                        if (agent1 !== '') {
+                            tripleAgent += `
                             :${agent1} rdf:type :Agent.
                             :${agent1} rdfs:comment "${comment}" .
+                            `
+                            if (plan1 !== '') {
+                                tripleAgent += `
+                                :${agent1} :intends :${plan1}.
+                                
+                                `
+                            }
+
+                            if (goal1 !== '') {
+                                tripleAgent += `
+                                :${agent1} :hasGoal :${goal1}.
+                                
+                                `
+                            }
+                        }
+                        if (agent2 !== '') {
+                            tripleAgent += `
                             :${agent2} rdf:type :Agent.
                             :${agent2} rdfs:comment "${comment}" .
                             
-                        `
-                        if (plan1 !== '' && plan2 !== '') {
-                            tripleAgent += `
-                            :${agent1} :intends :${plan1}.
-                            :${agent2} :intends :${plan2}.
-                            
                             `
-                        }
+                            if (plan2 !== '') {
+                                tripleAgent += `
+                                :${agent2} :intends :${plan2}.
+                                
+                                `
+                            }
 
-                        if (goal1 !== '' && goal2 !== '') {
-                            tripleAgent += `
-                            :${agent1} :hasGoal :${goal1}.
-                            :${agent2} :hasGoal :${goal2}.
-                            `
+                            if (goal2 !== '') {
+                                tripleAgent += `
+                                :${agent2} :hasGoal :${goal2}.
+                                
+                                `
+                            }
                         }
 
                         query = `${prefixQuery}
@@ -576,24 +624,36 @@ function TableEdit(params: any) {
                                 'Content-Type': 'application/sparql-update'
                             }
                         });
-                    } else if (t === 'Emotion' && agent1 !== '' && agent2 !== '') {
+                    } else if (t === 'Emotion') {
 
                         let tripleEmo = ''
                         emotion.forEach((elem) => {
-                            tripleEmo = tripleEmo +
-                                `:${elem}_${agent1} rdf:type :Emotion.
-                                 :${elem}_${agent2} rdf:type :Emotion.
+
+                            tripleEmo += `
+                            :${elem}_ES rdf:type :EmotionSchema.
+                            :${elem}_ES rdfs:comment "${comment}" .
+                            :${elem}_ES :hasEmotionType :${elem}.
+                            `
+
+                            if (agent1 !== '') {
+                                tripleEmo += `
+                                 :${elem}_${agent1} rdf:type :Emotion.
                                  :${elem}_${agent1} rdfs:comment "${comment}" .
-                                 :${elem}_${agent2} rdfs:comment "${comment}" .
-                                 :${elem}_${agent1} :isEmotionOf :${agent1}
-                                 :${elem}_${agent2} :isEmotionOf :${agent2}
-                                 :${elem}_ES rdf:type :EmotionSchema.
-                                 :${elem}_ES rdfs:comment "${comment}" .
-                                 :${elem}_ES :hasEmotionType :${elem}
-                                 :${elem}_ES :describes :${elem}_${agent1}
-                                 :${elem}_ES :describes :${elem}_${agent2}
+                                 :${elem}_${agent1} :isEmotionOf :${agent1}.
+                                 :${elem}_ES :describes :${elem}_${agent1}.
                                  
                                  `
+                            }
+
+                            if (agent2 !== '') {
+                                tripleEmo += `
+                                 :${elem}_${agent2} rdf:type :Emotion.
+                                 :${elem}_${agent2} rdfs:comment "${comment}" .
+                                 :${elem}_${agent2} :isEmotionOf :${agent2}.
+                                 :${elem}_ES :describes :${elem}_${agent2}.
+                                 
+                                 `
+                            }
                         })
 
                         query = `${prefixQuery}
@@ -670,10 +730,12 @@ function TableEdit(params: any) {
                                 }
                             });
                         }
-
-                        generateTriples(value_1, agent1, plan1, 'accplan1');
-                        generateTriples(value_2, agent2, plan2, 'accplan2');
-
+                        if (agent1 !== '') {
+                            generateTriples(value_1, agent1, plan1, 'accplan1');
+                        }
+                        if (agent2 !== '') {
+                            generateTriples(value_2, agent2, plan2, 'accplan2');
+                        }
 
                         const sendBatchQuery = async (batch: string) => {
                             const query = `${prefixQuery}
