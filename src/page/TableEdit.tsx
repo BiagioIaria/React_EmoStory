@@ -233,7 +233,7 @@ function TableEdit(params: any) {
             const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
                 if (item['a'] !== undefined && item['a']['value'] === 'true') {
                     return 'Accomplished'
-                } else if (item['a'] !== undefined) {
+                } else if (item['a'] !== undefined && item['a']['value'] === 'false') {
                     return 'Unaccomplished'
                 } else {
                     return 'accomplished?'
@@ -282,10 +282,10 @@ function TableEdit(params: any) {
             const elabDataAcc = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
                 if (item['a'] !== undefined && item['a']['value'] === 'true') {
                     return 'Accomplished'
-                } else if (item['a'] !== undefined) {
+                } else if (item['a'] !== undefined && item['a']['value'] === 'false') {
                     return 'Unaccomplished'
                 } else {
-                    return 'accomplished?'
+                    return ''
                 }
             });
             const elabDataCon = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
@@ -336,10 +336,22 @@ function TableEdit(params: any) {
                         PREFIX : <http://www.purl.org/drammar#>
                         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                         
-                        SELECT (STRAFTER(STR(?p), "#") AS ?Plan) ?a (STRAFTER(STR(?s), "#") AS ?Conflict) 
+                        SELECT (STRAFTER(STR(?p), "#") AS ?Plan) ?a (GROUP_CONCAT(DISTINCT ?Conflict; separator=", ") AS ?Conflict)
                                (STRAFTER(STR(?g), "#") AS ?Goal) (STRAFTER(STR(?ag), "#") AS ?Agent) 
-                               (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?val), "#"), "_atStake|_inBalance", ""); separator=", ") AS ?Values) (GROUP_CONCAT(DISTINCT STRAFTER(STR(?state), "#"); separator=", ") AS ?States)
+                               (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?val), "#"), "_atStake|_inBalance", ""); separator=", ") AS ?Values) 
+                               (GROUP_CONCAT(DISTINCT STRAFTER(STR(?state), "#"); separator=", ") AS ?States)
                         WHERE {
+                            {
+                                SELECT (COUNT(?s) AS ?sCount)
+                                WHERE {
+                                    ?p rdf:type :Plan .
+                                    ?p2 rdf:type :Plan .
+                                    ?p ?s ?p2 .
+                                    ?p rdfs:comment "${comment}" .
+                                    ?p2 rdfs:comment "${comment}" .
+                                    FILTER(?s = :inConflictWith)
+                                }
+                            }
                             ?p rdf:type :Plan .
                             ?p2 rdf:type :Plan .
                             OPTIONAL {
@@ -347,12 +359,13 @@ function TableEdit(params: any) {
                             }
                             OPTIONAL {
                                 ?p ?s ?p2 .
-                                FILTER(EXISTS { ?p ?s ?p2 })
+                                BIND(STRAFTER(STR(?s), "#") AS ?Conflict)
+                                FILTER(?s IN (:inSupportOf, :inConflictWith))
                             }
                             
-                            ?p rdfs:comment "${comment}" .
-                            ?p2 rdfs:comment "${comment}" .
-                            
+                            ?p rdfs:comment "unit_0" .
+                            ?p2 rdfs:comment "unit_0" .
+                        
                             OPTIONAL {
                                 ?g :isAchievedBy ?p .
                             }
@@ -365,8 +378,9 @@ function TableEdit(params: any) {
                             OPTIONAL {
                                 ?val :isDataOf ?state .
                             }
+                            FILTER (?sCount = 0 || BOUND(?s))
                         }
-                        GROUP BY ?p ?a ?s ?g ?ag
+                        GROUP BY ?p ?a ?g ?ag
 
                        `;
 
@@ -491,10 +505,10 @@ function TableEdit(params: any) {
                                 :${plan1} :inConflictWith :${plan2} .
                                 :${plan2} :inConflictWith :${plan1} .`
                             } else {
-                                if (queryLabels['sxSupport'] && queryLabels['sxSupport'] === '') {
-                                    conflict = `:${plan1} :inSupportOf :${plan2} .`
-                                } else if (queryLabels['dxSupport'] && queryLabels['dxSupport'] === '') {
+                                if (queryLabels['sxSupport'] && queryLabels['dxSupport'] === '') {
                                     conflict = `:${plan2} :inSupportOf :${plan1} .`
+                                } else if (queryLabels['dxSupport'] && queryLabels['sxSupport'] === '') {
+                                    conflict = `:${plan1} :inSupportOf :${plan2} .`
                                 } else if (queryLabels['sxSupport'] && queryLabels['dxSupport']) {
                                     conflict = `
                                     :${plan1} :inSupportOf :${plan2} .

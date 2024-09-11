@@ -125,6 +125,7 @@ function Edit() {
     const [unitQuery, setUnitQuery] = useState('');
     const [numberTableEdit, setNumberTableEdit] = useState<any>(0);
     const [loading, setLoading] = useState(false);
+    const [startWait, setStartWait] = useState(false);
 
 
     let params = useParams();
@@ -249,8 +250,8 @@ function Edit() {
     }, [data]);
 
     useEffect(() => {
+        if (data[0]['value'] !== '' && startWait) {
 
-        if (data[0]['value'] !== '') {
             const fetchDataInsert = async () => {
                 const unit = data[0]['value'].replace(/ /g, '_')
                 const prefixQuery = `
@@ -325,6 +326,11 @@ function Edit() {
                     () => setUnitQuery(data[0]['value'])
                 )
             )
+
+        }else{
+            if(!startWait && unitQuery){
+                setStartWait(true)
+            }
         }
         // eslint-disable-next-line
     }, [data[0]['value']]);
