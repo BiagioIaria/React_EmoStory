@@ -110,6 +110,7 @@ function TableEdit(params: any) {
     const [inputs, setInputs] = useState<Inputs>({});
     const [triplesQuery, setTriplesQuery] = useState<Labels>({});
     const [emotion, setEmotion] = useState([]);
+    const [agentEmotionInf, setAgentEmotionInf] = useState<any>([]);
 
     function setEmotionQuery(data: any) {
         const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
@@ -363,8 +364,8 @@ function TableEdit(params: any) {
                                 FILTER(?s IN (:inSupportOf, :inConflictWith))
                             }
                             
-                            ?p rdfs:comment "unit_0" .
-                            ?p2 rdfs:comment "unit_0" .
+                            ?p rdfs:comment "${comment}" .
+                            ?p2 rdfs:comment "${comment}" .
                         
                             OPTIONAL {
                                 ?g :isAchievedBy ?p .
@@ -402,6 +403,30 @@ function TableEdit(params: any) {
         }
         // eslint-disable-next-line
     }, [params.data[0]['value']]);
+
+    useEffect(() => {
+        const groupedData: { [key: string]: string[] } = {};
+
+        params.emoInf.forEach((label: any) => {
+            const agent = label['i']['value']
+            const emo = label['emo']['value'].split('#')[1].split('_')[0]
+
+            if (!groupedData[agent]) {
+                groupedData[agent] = [];
+            }
+
+            groupedData[agent].push(emo);
+        });
+
+        const emoAgent = Object.keys(groupedData).map(agent => ({
+            agent,
+            emo: groupedData[agent]
+        }));
+
+        setAgentEmotionInf(emoAgent)
+
+        // eslint-disable-next-line
+    }, [params.emoInf]);
 
     useEffect(() => {
         const fetchDataEmo = async () => {
@@ -1692,6 +1717,42 @@ function TableEdit(params: any) {
                                     <Typography variant="button" display="block">{labels['dxSupport']}</Typography>
                                     <ArrowForwardIosIcon/>
                                 </IconButton>
+                            </Box>
+                        );
+                    } else if (2 === rowIndex && (posForTemplate[0] === column.dataKey || posForTemplate[1] === column.dataKey)) {
+                        let keyLabel: string
+
+                        if (column.dataKey === 'unit_b') {
+                            keyLabel = 'plan1'
+                        } else if (column.dataKey === 'unit_n') {
+                            keyLabel = 'plan2'
+                        } else {
+                            keyLabel = column.dataKey
+                        }
+
+                        const filteredAgent = agentEmotionInf.find((item: {
+                            agent: any;
+                        }) => item.agent === labels['agent' + keyLabel]);
+
+                        cellContent = (
+                            <Box
+                                display="flex"
+                                flexDirection="column"
+                                alignItems="center"
+                                justifyContent="center"
+                                height="100%"
+                                padding={2}
+                            >
+                                {filteredAgent?.emo.map((emotion: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined, index: React.Key | null | undefined) => (
+                                    <Button
+                                        key={index}
+                                        variant="contained"
+                                        color="warning"
+                                        style={{margin: '4px'}}
+                                    >
+                                        {emotion}
+                                    </Button>
+                                ))}
                             </Box>
                         );
                     }

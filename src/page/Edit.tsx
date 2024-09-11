@@ -125,7 +125,7 @@ function Edit() {
     const [unitQuery, setUnitQuery] = useState('');
     const [numberTableEdit, setNumberTableEdit] = useState<any>(0);
     const [loading, setLoading] = useState(false);
-    const [startWait, setStartWait] = useState(false);
+    const [emoInf, setEmoInf] = useState([]);
 
 
     let params = useParams();
@@ -188,7 +188,7 @@ function Edit() {
                 for (let i = 0; i <= Number(numberTableEdit[0]['number']['value']); i++) {
                     tableEdit.push(
                         <TableEdit key={'edit_' + i} data={data} updateData={updateData} edit={editParam} temp={temp}
-                                   idTableEdit={i}/>
+                                   idTableEdit={i} emoInf={emoInf}/>
                     )
                 }
             }
@@ -243,15 +243,14 @@ function Edit() {
         setTableEdits(prevTableEdits =>
             prevTableEdits.map((edit, index) => (
                 <TableEdit key={edit.key} data={data} updateData={updateData} edit={editParam} temp={temp}
-                           idTableEdit={index}/>
+                           idTableEdit={index} emoInf={emoInf}/>
             ))
         );
         // eslint-disable-next-line
-    }, [data]);
+    }, [data, emoInf]);
 
     useEffect(() => {
-        if (data[0]['value'] !== '' && startWait) {
-
+        if (data[0]['value'] !== '' && data[0]['value'] !== unitQuery) {
             const fetchDataInsert = async () => {
                 const unit = data[0]['value'].replace(/ /g, '_')
                 const prefixQuery = `
@@ -327,10 +326,6 @@ function Edit() {
                 )
             )
 
-        }else{
-            if(!startWait && unitQuery){
-                setStartWait(true)
-            }
         }
         // eslint-disable-next-line
     }, [data[0]['value']]);
@@ -357,7 +352,7 @@ function Edit() {
 
 
     const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData}
-                                                             edit={editParam} temp={temp} idTableEdit={0}/>]);
+                                                             edit={editParam} temp={temp} idTableEdit={0} emoInf={emoInf}/>]);
 
     const handleClick = (event: { currentTarget: any; }, id: any) => {
         setAnchorEls((prev) => ({...prev, [id]: event.currentTarget}));
@@ -401,7 +396,7 @@ function Edit() {
         setData([...data, newItem]);
         setTableEdits(prevTableEdits => [
             ...prevTableEdits,
-            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} edit={editParam} temp={temp}/>
+            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} edit={editParam} temp={temp} emoInf={emoInf}/>
         ]);
     };
 
@@ -413,7 +408,7 @@ function Edit() {
                             <TableCell key={col.dataKey}
                                        style={{width: col.width, textAlign: "center"}}
                             >
-                                <Button variant="outlined" style={{ textTransform: 'none' }}
+                                <Button variant="outlined" style={{textTransform: 'none'}}
                                         onDoubleClick={(e) => {
                                             if (inputs[col.dataKey] !== undefined || unitQuery !== '') {
                                                 handleClick(e, col.dataKey);
@@ -470,7 +465,7 @@ function Edit() {
                 },
             });
 
-            console.log('Risposta:', response.data);
+            setEmoInf(response.data['results']['bindings']);
         } catch (error) {
             console.error('Errore:', error);
         } finally {
