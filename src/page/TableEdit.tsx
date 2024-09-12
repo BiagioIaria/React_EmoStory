@@ -11,6 +11,7 @@ import {
     MenuItem,
     Stack,
     TableBody,
+    Tooltip,
     Typography
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -1181,19 +1182,23 @@ function TableEdit(params: any) {
                                 Balance?
                             </Button>
                         </Stack>
-                        <IconButton
-                            color="primary"
-                            aria-label="add"
-                            sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                            }}
-                            onClick={() => addGroup(column.dataKey)}
-                        >
-                            <AddIcon/>
-                        </IconButton>
+                        <Tooltip title={<span style={{fontSize: '1.2em'}}>Add New Value</span>}
+                                 placement="top"
+                                 arrow>
+                            <IconButton
+                                color="primary"
+                                aria-label="add"
+                                sx={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                }}
+                                onClick={() => addGroup(column.dataKey)}
+                            >
+                                <AddIcon/>
+                            </IconButton>
+                        </Tooltip>
                     </Box>
                 );
             } else {
@@ -1201,30 +1206,34 @@ function TableEdit(params: any) {
                     <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
                          margin={1}>
                         <Stack direction="row" spacing={2}>
-                            <Button style={{textTransform: 'none'}} variant="outlined"
-                                    onDoubleClick={(e) => {
-                                        if (labels['balPre' + index + '_' + column.dataKey] !== undefined) {
-                                            handleClick(e, 'balPre' + index + '_' + column.dataKey)
-                                        }
-                                    }}
-                                    onClick={(e) => {
-                                        if (labels['balPre' + index + '_' + column.dataKey] === undefined) {
-                                            handleClick(e, 'balPre' + index + '_' + column.dataKey)
-                                        }
-                                    }}
-                                    sx={{
-                                        m: 1,
-                                        borderColor: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
-                                            ? 'green'
-                                            : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
-                                                ? 'red' : 'theme.palette.primary.main',
-                                        color: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
-                                            ? 'green'
-                                            : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
-                                                ? 'red' : 'theme.palette.primary.main'
-                                    }}>
-                                {labels['balPre' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPre' + index + '_' + column.dataKey]}
-                            </Button>
+                            <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Plan</span>}
+                                     placement="top"
+                                     arrow>
+                                <Button style={{textTransform: 'none'}} variant="outlined"
+                                        onDoubleClick={(e) => {
+                                            if (labels['balPre' + index + '_' + column.dataKey] !== undefined) {
+                                                handleClick(e, 'balPre' + index + '_' + column.dataKey)
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (labels['balPre' + index + '_' + column.dataKey] === undefined) {
+                                                handleClick(e, 'balPre' + index + '_' + column.dataKey)
+                                            }
+                                        }}
+                                        sx={{
+                                            m: 1,
+                                            borderColor: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
+                                                ? 'green'
+                                                : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
+                                                    ? 'red' : 'theme.palette.primary.main',
+                                            color: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
+                                                ? 'green'
+                                                : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
+                                                    ? 'red' : 'theme.palette.primary.main'
+                                        }}>
+                                    {labels['balPre' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPre' + index + '_' + column.dataKey]}
+                                </Button>
+                            </Tooltip>
                             <Menu
                                 anchorEl={anchorEls['balPre' + index + '_' + column.dataKey]}
                                 open={Boolean(anchorEls['balPre' + index + '_' + column.dataKey])}
@@ -1249,20 +1258,24 @@ function TableEdit(params: any) {
                                     </Button>
                                 </MenuItem>
                             </Menu>
-                            <Button style={{textTransform: 'none'}} variant="outlined"
-                                    onDoubleClick={(e) => {
-                                        if (inputs['value' + index + '_' + column.dataKey] !== undefined || queryLabels['value' + index + '_' + column.dataKey] !== '') {
-                                            handleClick(e, 'value' + index + '_' + column.dataKey);
-                                        }
-                                    }}
-                                    onClick={(e) => {
-                                        if (inputs['value' + index + '_' + column.dataKey] === undefined && queryLabels['value' + index + '_' + column.dataKey] === '') {
-                                            handleClick(e, 'value' + index + '_' + column.dataKey)
-                                        }
-                                    }}
-                            >
-                                {labels['value' + index + '_' + column.dataKey] === undefined ? 'Value?' : labels['value' + index + '_' + column.dataKey]}
-                            </Button>
+                            <Tooltip title={<span style={{fontSize: '1.2em'}}>Value Title</span>}
+                                     placement="top"
+                                     arrow>
+                                <Button style={{textTransform: 'none'}} variant="outlined"
+                                        onDoubleClick={(e) => {
+                                            if (inputs['value' + index + '_' + column.dataKey] !== undefined || queryLabels['value' + index + '_' + column.dataKey] !== '') {
+                                                handleClick(e, 'value' + index + '_' + column.dataKey);
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (inputs['value' + index + '_' + column.dataKey] === undefined && queryLabels['value' + index + '_' + column.dataKey] === '') {
+                                                handleClick(e, 'value' + index + '_' + column.dataKey)
+                                            }
+                                        }}
+                                >
+                                    {labels['value' + index + '_' + column.dataKey] === undefined ? 'Value?' : labels['value' + index + '_' + column.dataKey]}
+                                </Button>
+                            </Tooltip>
                             <Menu
                                 anchorEl={anchorEls['value' + index + '_' + column.dataKey]}
                                 open={Boolean(anchorEls['value' + index + '_' + column.dataKey])}
@@ -1284,30 +1297,34 @@ function TableEdit(params: any) {
                                     </Button>
                                 </MenuItem>
                             </Menu>
-                            <Button style={{textTransform: 'none'}} variant="outlined"
-                                    onDoubleClick={(e) => {
-                                        if (labels['balEff' + index + '_' + column.dataKey] !== undefined) {
-                                            handleClick(e, 'balEff' + index + '_' + column.dataKey)
-                                        }
-                                    }}
-                                    onClick={(e) => {
-                                        if (labels['balEff' + index + '_' + column.dataKey] === undefined) {
-                                            handleClick(e, 'balEff' + index + '_' + column.dataKey)
-                                        }
-                                    }}
-                                    sx={{
-                                        m: 1,
-                                        borderColor: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
-                                            ? 'green'
-                                            : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
-                                                ? 'red' : 'theme.palette.primary.main',
-                                        color: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
-                                            ? 'green'
-                                            : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
-                                                ? 'red' : 'theme.palette.primary.main'
-                                    }}>
-                                {labels['balEff' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balEff' + index + '_' + column.dataKey]}
-                            </Button>
+                            <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value after the Plan</span>}
+                                     placement="top"
+                                     arrow>
+                                <Button style={{textTransform: 'none'}} variant="outlined"
+                                        onDoubleClick={(e) => {
+                                            if (labels['balEff' + index + '_' + column.dataKey] !== undefined) {
+                                                handleClick(e, 'balEff' + index + '_' + column.dataKey)
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (labels['balEff' + index + '_' + column.dataKey] === undefined) {
+                                                handleClick(e, 'balEff' + index + '_' + column.dataKey)
+                                            }
+                                        }}
+                                        sx={{
+                                            m: 1,
+                                            borderColor: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
+                                                ? 'green'
+                                                : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
+                                                    ? 'red' : 'theme.palette.primary.main',
+                                            color: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
+                                                ? 'green'
+                                                : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
+                                                    ? 'red' : 'theme.palette.primary.main'
+                                        }}>
+                                    {labels['balEff' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balEff' + index + '_' + column.dataKey]}
+                                </Button>
+                            </Tooltip>
                             <Menu
                                 anchorEl={anchorEls['balEff' + index + '_' + column.dataKey]}
                                 open={Boolean(anchorEls['balEff' + index + '_' + column.dataKey])}
@@ -1364,34 +1381,37 @@ function TableEdit(params: any) {
                                     justifyContent: 'center',
                                 }}
                             >
-                                <Button
-                                    style={{textTransform: 'none'}} variant="outlined"
-                                    onDoubleClick={(e) => {
-                                        if (labels['acc' + keyLabel] !== 'accomplished?') {
-                                            handleClick(e, 'acc' + keyLabel);
-                                        }
-                                    }}
-                                    onClick={(e) => {
-                                        if (labels['acc' + keyLabel] === 'accomplished?') {
-                                            handleClick(e, 'acc' + keyLabel)
-                                        }
-                                    }}
-                                    sx={{
-                                        m: 1,
-                                        borderColor: labels['acc' + keyLabel] === 'Accomplished'
-                                            ? 'green'
-                                            : labels['acc' + keyLabel] === 'Unaccomplished'
-                                                ? 'red' : 'theme.palette.primary.main',
-                                        color: labels['acc' + keyLabel] === 'Accomplished'
-                                            ? 'green'
-                                            : labels['acc' + keyLabel] === 'Unaccomplished'
-                                                ? 'red' : 'theme.palette.primary.main'
-                                    }}
-                                    disabled={queryLabels[keyLabel] === '' && inputs[keyLabel] === undefined}
-                                >
-                                    {labels['acc' + keyLabel]}
-                                </Button>
-
+                                <Tooltip title={<span style={{fontSize: '1.2em'}}>Plan Completion</span>}
+                                         placement="top"
+                                         arrow>
+                                    <Button
+                                        style={{textTransform: 'none'}} variant="outlined"
+                                        onDoubleClick={(e) => {
+                                            if (labels['acc' + keyLabel] !== 'accomplished?') {
+                                                handleClick(e, 'acc' + keyLabel);
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (labels['acc' + keyLabel] === 'accomplished?') {
+                                                handleClick(e, 'acc' + keyLabel)
+                                            }
+                                        }}
+                                        sx={{
+                                            m: 1,
+                                            borderColor: labels['acc' + keyLabel] === 'Accomplished'
+                                                ? 'green'
+                                                : labels['acc' + keyLabel] === 'Unaccomplished'
+                                                    ? 'red' : 'theme.palette.primary.main',
+                                            color: labels['acc' + keyLabel] === 'Accomplished'
+                                                ? 'green'
+                                                : labels['acc' + keyLabel] === 'Unaccomplished'
+                                                    ? 'red' : 'theme.palette.primary.main'
+                                        }}
+                                        disabled={queryLabels[keyLabel] === '' && inputs[keyLabel] === undefined}
+                                    >
+                                        {labels['acc' + keyLabel]}
+                                    </Button>
+                                </Tooltip>
                                 <Menu
                                     anchorEl={anchorEls['acc' + keyLabel]}
                                     open={Boolean(anchorEls['acc' + keyLabel])}
@@ -1420,20 +1440,24 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         P Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button style={{textTransform: 'none'}} variant="outlined"
-                                            onDoubleClick={(e) => {
-                                                if (inputs[keyLabel] !== undefined || queryLabels[keyLabel] !== '') {
-                                                    handleClick(e, keyLabel);
-                                                }
-                                            }}
-                                            onClick={(e) => {
-                                                if (inputs[keyLabel] === undefined && queryLabels[keyLabel] === '') {
-                                                    handleClick(e, keyLabel);
-                                                }
-                                            }}
-                                            sx={{m: 1}}>
-                                        {labels[keyLabel]}
-                                    </Button>
+                                    <Tooltip title={<span style={{fontSize: '1.2em'}}>Agent Title</span>}
+                                             placement="top"
+                                             arrow>
+                                        <Button style={{textTransform: 'none'}} variant="outlined"
+                                                onDoubleClick={(e) => {
+                                                    if (inputs[keyLabel] !== undefined || queryLabels[keyLabel] !== '') {
+                                                        handleClick(e, keyLabel);
+                                                    }
+                                                }}
+                                                onClick={(e) => {
+                                                    if (inputs[keyLabel] === undefined && queryLabels[keyLabel] === '') {
+                                                        handleClick(e, keyLabel);
+                                                    }
+                                                }}
+                                                sx={{m: 1}}>
+                                            {labels[keyLabel]}
+                                        </Button>
+                                    </Tooltip>
                                 </Box>
                                 <Menu
                                     anchorEl={anchorEls[keyLabel]}
@@ -1459,20 +1483,23 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         G Plan Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button style={{textTransform: 'none'}} variant="outlined"
-                                            onDoubleClick={(e) => {
-                                                if (inputs['goal' + keyLabel] !== undefined || queryLabels['goal' + keyLabel] !== '') {
-                                                    handleClick(e, 'goal' + keyLabel);
-                                                }
-                                            }}
-                                            onClick={(e) => {
-                                                if (inputs['goal' + keyLabel] === undefined && queryLabels['goal' + keyLabel] === '') {
-                                                    handleClick(e, 'goal' + keyLabel)
-                                                }
-                                            }}
-                                            sx={{m: 1}}>
-                                        {labels['goal' + keyLabel]}
-                                    </Button>
+                                    <Tooltip title={<span style={{fontSize: '1.2em'}}>Goal Title</span>} placement="top"
+                                             arrow>
+                                        <Button style={{textTransform: 'none'}} variant="outlined"
+                                                onDoubleClick={(e) => {
+                                                    if (inputs['goal' + keyLabel] !== undefined || queryLabels['goal' + keyLabel] !== '') {
+                                                        handleClick(e, 'goal' + keyLabel);
+                                                    }
+                                                }}
+                                                onClick={(e) => {
+                                                    if (inputs['goal' + keyLabel] === undefined && queryLabels['goal' + keyLabel] === '') {
+                                                        handleClick(e, 'goal' + keyLabel)
+                                                    }
+                                                }}
+                                                sx={{m: 1}}>
+                                            {labels['goal' + keyLabel]}
+                                        </Button>
+                                    </Tooltip>
                                 </Box>
                                 <Menu
                                     anchorEl={anchorEls['goal' + keyLabel]}
@@ -1499,20 +1526,23 @@ function TableEdit(params: any) {
                                     <Typography variant="body2" style={{marginRight: 8}}>
                                         Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
-                                    <Button style={{textTransform: 'none'}} variant="outlined"
-                                            onDoubleClick={(e) => {
-                                                if (inputs['agent' + keyLabel] !== undefined || queryLabels['agent' + keyLabel] !== '') {
-                                                    handleClick(e, 'agent' + keyLabel);
-                                                }
-                                            }}
-                                            onClick={(e) => {
-                                                if (inputs['agent' + keyLabel] === undefined && queryLabels['agent' + keyLabel] === '') {
-                                                    handleClick(e, 'agent' + keyLabel)
-                                                }
-                                            }}
-                                            sx={{m: 1}}>
-                                        {labels['agent' + keyLabel]}
-                                    </Button>
+                                    <Tooltip title={<span style={{fontSize: '1.2em'}}>Agent Title</span>}
+                                             placement="top" arrow>
+                                        <Button style={{textTransform: 'none'}} variant="outlined"
+                                                onDoubleClick={(e) => {
+                                                    if (inputs['agent' + keyLabel] !== undefined || queryLabels['agent' + keyLabel] !== '') {
+                                                        handleClick(e, 'agent' + keyLabel);
+                                                    }
+                                                }}
+                                                onClick={(e) => {
+                                                    if (inputs['agent' + keyLabel] === undefined && queryLabels['agent' + keyLabel] === '') {
+                                                        handleClick(e, 'agent' + keyLabel)
+                                                    }
+                                                }}
+                                                sx={{m: 1}}>
+                                            {labels['agent' + keyLabel]}
+                                        </Button>
+                                    </Tooltip>
                                 </Box>
                                 <Menu
                                     anchorEl={anchorEls['agent' + keyLabel]}
@@ -1575,30 +1605,34 @@ function TableEdit(params: any) {
                                                     display="inline-block"
                                                     margin={1}>
                                             <Stack direction="row" spacing={2}>
-                                                <Button style={{textTransform: 'none'}} variant="outlined"
-                                                        onDoubleClick={(e) => {
-                                                            if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
-                                                                handleClick(e, 'balPreUnit' + index + '_' + column.dataKey);
-                                                            }
-                                                        }}
-                                                        onClick={(e) => {
-                                                            if (labels['balPreUnit' + index + '_' + column.dataKey] === undefined) {
-                                                                handleClick(e, 'balPreUnit' + index + '_' + column.dataKey)
-                                                            }
-                                                        }}
-                                                        sx={{
-                                                            m: 1,
-                                                            borderColor: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
-                                                                ? 'green'
-                                                                : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
-                                                                    ? 'red' : 'theme.palette.primary.main',
-                                                            color: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
-                                                                ? 'green'
-                                                                : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
-                                                                    ? 'red' : 'theme.palette.primary.main'
-                                                        }}>
-                                                    {labels['balPreUnit' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPreUnit' + index + '_' + column.dataKey]}
-                                                </Button>
+                                                <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Unit</span>}
+                                                         placement="top"
+                                                         arrow>
+                                                    <Button style={{textTransform: 'none'}} variant="outlined"
+                                                            onDoubleClick={(e) => {
+                                                                if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
+                                                                    handleClick(e, 'balPreUnit' + index + '_' + column.dataKey);
+                                                                }
+                                                            }}
+                                                            onClick={(e) => {
+                                                                if (labels['balPreUnit' + index + '_' + column.dataKey] === undefined) {
+                                                                    handleClick(e, 'balPreUnit' + index + '_' + column.dataKey)
+                                                                }
+                                                            }}
+                                                            sx={{
+                                                                m: 1,
+                                                                borderColor: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
+                                                                    ? 'green'
+                                                                    : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
+                                                                        ? 'red' : 'theme.palette.primary.main',
+                                                                color: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
+                                                                    ? 'green'
+                                                                    : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
+                                                                        ? 'red' : 'theme.palette.primary.main'
+                                                            }}>
+                                                        {labels['balPreUnit' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPreUnit' + index + '_' + column.dataKey]}
+                                                    </Button>
+                                                </Tooltip>
                                                 <Menu
                                                     anchorEl={anchorEls['balPreUnit' + index + '_' + column.dataKey]}
                                                     open={Boolean(anchorEls['balPreUnit' + index + '_' + column.dataKey])}
@@ -1653,70 +1687,82 @@ function TableEdit(params: any) {
                                     justifyContent: 'center',
                                 }}
                             >
-                                <IconButton
-                                    onClick={() => handleConfirm('sxSupport', labels['sxSupport'])}
-                                    sx={{
-                                        m: 1,
-                                        border: labels['sxSupport'] === 'Support?' || labels['sxSupport'] === 'Support' ? '1px solid' : '',
-                                        borderRadius: '8px',
-                                        padding: '8px',
-                                        borderColor: labels['sxSupport'] === 'Support?'
-                                            ? 'theme.palette.primary.main'
-                                            : labels['sxSupport'] === 'Support'
-                                                ? 'green' : '',
-                                        color: labels['sxSupport'] === 'Support?'
-                                            ? 'theme.palette.primary.main'
-                                            : labels['sxSupport'] === 'Support'
-                                                ? 'green' : '',
-                                    }}
-                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
-                                >
-                                    <ArrowBackIosNewIcon/>
-                                    <Typography variant="button" display="block">{labels['sxSupport']}</Typography>
-                                </IconButton>
-                                <IconButton
-                                    onClick={() => handleConfirm('conflict', labels['conflict'])}
-                                    sx={{
-                                        m: 1,
-                                        border: labels['conflict'] === 'Conflict?' || labels['conflict'] === 'Conflict' ? '1px solid' : '',
-                                        borderRadius: '8px',
-                                        padding: '8px',
-                                        borderColor: labels['conflict'] === 'Conflict?'
-                                            ? 'theme.palette.primary.main'
-                                            : labels['conflict'] === 'Conflict'
-                                                ? 'red' : '',
-                                        color: labels['conflict'] === 'Conflict?'
-                                            ? 'theme.palette.primary.main'
-                                            : labels['conflict'] === 'Conflict'
-                                                ? 'red' : '',
-                                    }}
-                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
-                                >
-                                    <ArrowBackIosNewIcon/>
-                                    <Typography variant="button" display="block">{labels['conflict']}</Typography>
-                                    <ArrowForwardIosIcon/>
-                                </IconButton>
-                                <IconButton
-                                    onClick={() => handleConfirm('dxSupport', labels['dxSupport'])}
-                                    sx={{
-                                        m: 1,
-                                        border: labels['dxSupport'] === 'Support?' || labels['dxSupport'] === 'Support' ? '1px solid' : '',
-                                        borderRadius: '8px',
-                                        padding: '8px',
-                                        borderColor: labels['dxSupport'] === 'Support?'
-                                            ? 'theme.palette.primary.main'
-                                            : labels['dxSupport'] === 'Support'
-                                                ? 'green' : '',
-                                        color: labels['dxSupport'] === 'Support?'
-                                            ? 'theme.palette.primary.main'
-                                            : labels['dxSupport'] === 'Support'
-                                                ? 'green' : '',
-                                    }}
-                                    disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
-                                >
-                                    <Typography variant="button" display="block">{labels['dxSupport']}</Typography>
-                                    <ArrowForwardIosIcon/>
-                                </IconButton>
+                                <Tooltip title={<span style={{fontSize: '1.2em'}}>Plan 2 in Support Of Plan 1</span>}
+                                         placement="top"
+                                         arrow>
+                                    <IconButton
+                                        onClick={() => handleConfirm('sxSupport', labels['sxSupport'])}
+                                        sx={{
+                                            m: 1,
+                                            border: labels['sxSupport'] === 'Support?' || labels['sxSupport'] === 'Support' ? '1px solid' : '',
+                                            borderRadius: '8px',
+                                            padding: '8px',
+                                            borderColor: labels['sxSupport'] === 'Support?'
+                                                ? 'theme.palette.primary.main'
+                                                : labels['sxSupport'] === 'Support'
+                                                    ? 'green' : '',
+                                            color: labels['sxSupport'] === 'Support?'
+                                                ? 'theme.palette.primary.main'
+                                                : labels['sxSupport'] === 'Support'
+                                                    ? 'green' : '',
+                                        }}
+                                        disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
+                                    >
+                                        <ArrowBackIosNewIcon/>
+                                        <Typography variant="button" display="block">{labels['sxSupport']}</Typography>
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title={<span style={{fontSize: '1.2em'}}>Plan 1 in Conflict with Plan 2</span>}
+                                         placement="top"
+                                         arrow>
+                                    <IconButton
+                                        onClick={() => handleConfirm('conflict', labels['conflict'])}
+                                        sx={{
+                                            m: 1,
+                                            border: labels['conflict'] === 'Conflict?' || labels['conflict'] === 'Conflict' ? '1px solid' : '',
+                                            borderRadius: '8px',
+                                            padding: '8px',
+                                            borderColor: labels['conflict'] === 'Conflict?'
+                                                ? 'theme.palette.primary.main'
+                                                : labels['conflict'] === 'Conflict'
+                                                    ? 'red' : '',
+                                            color: labels['conflict'] === 'Conflict?'
+                                                ? 'theme.palette.primary.main'
+                                                : labels['conflict'] === 'Conflict'
+                                                    ? 'red' : '',
+                                        }}
+                                        disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
+                                    >
+                                        <ArrowBackIosNewIcon/>
+                                        <Typography variant="button" display="block">{labels['conflict']}</Typography>
+                                        <ArrowForwardIosIcon/>
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title={<span style={{fontSize: '1.2em'}}>Plan 1 in Support of Plan 2</span>}
+                                         placement="top"
+                                         arrow>
+                                    <IconButton
+                                        onClick={() => handleConfirm('dxSupport', labels['dxSupport'])}
+                                        sx={{
+                                            m: 1,
+                                            border: labels['dxSupport'] === 'Support?' || labels['dxSupport'] === 'Support' ? '1px solid' : '',
+                                            borderRadius: '8px',
+                                            padding: '8px',
+                                            borderColor: labels['dxSupport'] === 'Support?'
+                                                ? 'theme.palette.primary.main'
+                                                : labels['dxSupport'] === 'Support'
+                                                    ? 'green' : '',
+                                            color: labels['dxSupport'] === 'Support?'
+                                                ? 'theme.palette.primary.main'
+                                                : labels['dxSupport'] === 'Support'
+                                                    ? 'green' : '',
+                                        }}
+                                        disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
+                                    >
+                                        <Typography variant="button" display="block">{labels['dxSupport']}</Typography>
+                                        <ArrowForwardIosIcon/>
+                                    </IconButton>
+                                </Tooltip>
                             </Box>
                         );
                     } else if (2 === rowIndex && (posForTemplate[0] === column.dataKey || posForTemplate[1] === column.dataKey)) {

@@ -10,7 +10,7 @@ import {
     Table,
     TableContainer,
     TableHead,
-    TextField
+    TextField, Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
@@ -352,7 +352,8 @@ function Edit() {
 
 
     const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData}
-                                                             edit={editParam} temp={temp} idTableEdit={0} emoInf={emoInf}/>]);
+                                                             edit={editParam} temp={temp} idTableEdit={0}
+                                                             emoInf={emoInf}/>]);
 
     const handleClick = (event: { currentTarget: any; }, id: any) => {
         setAnchorEls((prev) => ({...prev, [id]: event.currentTarget}));
@@ -396,7 +397,8 @@ function Edit() {
         setData([...data, newItem]);
         setTableEdits(prevTableEdits => [
             ...prevTableEdits,
-            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} edit={editParam} temp={temp} emoInf={emoInf}/>
+            <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} edit={editParam} temp={temp}
+                       emoInf={emoInf}/>
         ]);
     };
 
@@ -408,20 +410,22 @@ function Edit() {
                             <TableCell key={col.dataKey}
                                        style={{width: col.width, textAlign: "center"}}
                             >
-                                <Button variant="outlined" style={{textTransform: 'none'}}
-                                        onDoubleClick={(e) => {
-                                            if (inputs[col.dataKey] !== undefined || unitQuery !== '') {
-                                                handleClick(e, col.dataKey);
-                                            }
-                                        }}
-                                        onClick={(e) => {
-                                            if (inputs[col.dataKey] === undefined && unitQuery === '') {
-                                                handleClick(e, col.dataKey);
-                                            }
-                                        }}
-                                        sx={{m: 1}}>
-                                    {labels[col.dataKey]}
-                                </Button>
+                                <Tooltip title={<span style={{fontSize: '1.2em'}}>Unit Title</span>} placement="top" arrow>
+                                    <Button variant="outlined" style={{textTransform: 'none'}}
+                                            onDoubleClick={(e) => {
+                                                if (inputs[col.dataKey] !== undefined || unitQuery !== '') {
+                                                    handleClick(e, col.dataKey);
+                                                }
+                                            }}
+                                            onClick={(e) => {
+                                                if (inputs[col.dataKey] === undefined && unitQuery === '') {
+                                                    handleClick(e, col.dataKey);
+                                                }
+                                            }}
+                                            sx={{m: 1}}>
+                                        {labels[col.dataKey]}
+                                    </Button>
+                                </Tooltip>
                                 <Menu
                                     anchorEl={anchorEls[col.dataKey]}
                                     open={Boolean(anchorEls[col.dataKey])}
@@ -483,13 +487,7 @@ function Edit() {
                                            sx={{
                                                textAlign: 'center',
                                            }}>
-                                    <TextField id="Title" label="Title" variant="standard"/>
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align={"center"} colSpan={initialColumns.length}
-                                           className="triangle-container">
-                                    Unit Hierarchy
+                                    <TextField id="Title" label="Drammar Title" variant="standard"/>
                                 </TableCell>
                             </TableRow>
                             {header()}
@@ -499,13 +497,17 @@ function Edit() {
                 </TableContainer>
             </Paper>
             <div style={{display: 'flex', justifyContent: 'center', marginTop: 16}}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={addTableEdit}
-                >
-                    <AddIcon/>
-                </Button>
+                <Tooltip title={<span style={{fontSize: '1.2em'}}>Add new Minimal Calculation Space</span>}
+                         placement="top"
+                         arrow>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={addTableEdit}
+                    >
+                        <AddIcon/>
+                    </Button>
+                </Tooltip>
             </div>
             <Box display="flex" justifyContent="center" mt={5} gap={2}>
                 <Button
