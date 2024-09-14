@@ -423,7 +423,7 @@ function Edit() {
                                                 }
                                             }}
                                             sx={{m: 1}}>
-                                        {labels[col.dataKey]}
+                                        {labels[col.dataKey] + ' Title'}
                                     </Button>
                                 </Tooltip>
                                 <Menu
@@ -448,11 +448,32 @@ function Edit() {
                                 </Menu>
                             </TableCell>
                         )
-                    } else {
+                    }else{
+                        return (
+                            <TableCell key={col.dataKey}
+                                       style={{width: col.width, textAlign: "center"}}
+                            ></TableCell>
+                        )
+                    }
+                }
+            )}
+        </TableRow>
+    );
+
+    const headerTable = () => (
+        <TableRow>
+            {initialColumns.map((col) => {
+                    if ('unit' !== col.dataKey) {
                         return (
                             <TableCell key={col.dataKey}
                                        style={{width: col.width, textAlign: "center"}}
                             >{col.label}</TableCell>
+                        )
+                    }else{
+                        return (
+                            <TableCell key={col.dataKey}
+                                       style={{width: col.width, textAlign: "center"}}
+                            ></TableCell>
                         )
                     }
                 }
@@ -478,7 +499,7 @@ function Edit() {
     };
     return (
         <div className='edit'>
-            <Paper style={{display: 'flex', flexDirection: 'column', height: '630px'}}>
+            <Paper style={{display: 'flex', flexDirection: 'column', height: '57em'}}>
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead style={{position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1}}>
@@ -490,7 +511,40 @@ function Edit() {
                                     <TextField id="Title" label="Drammar Title" variant="standard"/>
                                 </TableCell>
                             </TableRow>
+                            <TableRow>
+                                <TableCell align="center" colSpan={initialColumns.length}
+                                           sx={{
+                                               textAlign: 'center',
+                                           }}>
+                                    <div style={{ position: 'relative', width: '100%' }}>
+                                        <span className="backgroundText">Synopsis Drammar</span>
+                                        <TextField
+                                            multiline
+                                            rows={2}
+                                            variant="outlined"
+                                            style={{ width: '55em' }}
+                                        />
+                                    </div>
+                                </TableCell>
+                            </TableRow>
                             {header()}
+                            <TableRow>
+                                <TableCell align="center" colSpan={initialColumns.length}
+                                           sx={{
+                                               textAlign: 'center',
+                                           }}>
+                                    <div style={{ position: 'relative', width: '100%' }}>
+                                        <span className="backgroundText">Synopsis Unit</span>
+                                        <TextField
+                                            multiline
+                                            rows={2}
+                                            variant="outlined"
+                                            style={{ width: '55em' }}
+                                        />
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                            {headerTable()}
                         </TableHead>
                         {tableEdits}
                     </Table>

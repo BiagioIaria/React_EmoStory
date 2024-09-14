@@ -39,3 +39,13 @@
   margin: 1em auto;
   width: 90%;
 }
+
+.App .backgroundText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(0, 0, 0, 0.1); /* Colore nero con trasparenza */
+  font-size: 3em; /* Regola la dimensione del testo secondo necessità */
+  pointer-events: none; /* Assicurati che il testo non interferisca con l'input del TextField */
+}
