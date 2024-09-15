@@ -10,7 +10,6 @@ import {
     Menu,
     MenuItem,
     Stack,
-    TableBody,
     Tooltip,
     Typography
 } from "@mui/material";
@@ -1169,9 +1168,16 @@ function TableEdit(params: any) {
         function ButtonsValue(index: number, column: ColumnData, flag: boolean) {
             if (!flag) {
                 return (
-                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
-                         margin={1}>
-                        <Stack direction="row" spacing={2}>
+                    <Box
+                        key={'Value ' + index + ' ' + column.dataKey}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        position="relative"
+                        marginTop={2}
+                        height={'56px'}
+                    >
+                        <Stack direction="row" spacing={2} alignItems={"center"}>
                             <Button style={{textTransform: 'none'}} variant="contained" disabled>
                                 Balance?
                             </Button>
@@ -1205,14 +1211,13 @@ function TableEdit(params: any) {
                 );
             } else {
                 return (
-                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block"
-                         margin={1}>
-                        <Stack direction="row" spacing={2}>
+                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block">
+                        <Stack direction="row" spacing={2} alignItems={"center"}>
                             <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Plan</span>}
-                                     placement="top"
-                                     arrow>
+                                     placement="top" arrow>
                                 <span>
-                                    <Button style={{textTransform: 'none'}} variant="outlined"
+                                    <Button style={{ textTransform: 'none', height: '56px', display: 'flex', alignItems: 'center' }}
+                                            variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (labels['balPre' + index + '_' + column.dataKey] !== undefined) {
                                                     handleClick(e, 'balPre' + index + '_' + column.dataKey)
@@ -1225,18 +1230,9 @@ function TableEdit(params: any) {
                                             }}
                                             sx={{
                                                 m: 1,
-                                                borderColor: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
-                                                    ? 'green'
-                                                    : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
-                                                        ? 'red' : 'theme.palette.primary.main',
-                                                color: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
-                                                    ? 'green'
-                                                    : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
-                                                        ? 'red' : 'theme.palette.primary.main',
-                                                fontWeight: labels['balPre' + index + '_' + column.dataKey] === 'inBalance'
-                                                    ? 'bold'
-                                                    : labels['balPre' + index + '_' + column.dataKey] === 'atStake'
-                                                        ? 'bold' : 'normal',
+                                                borderColor: labels['balPre' + index + '_' + column.dataKey] === 'inBalance' ? 'green' : labels['balPre' + index + '_' + column.dataKey] === 'atStake' ? 'red' : 'theme.palette.primary.main',
+                                                color: labels['balPre' + index + '_' + column.dataKey] === 'inBalance' ? 'green' : labels['balPre' + index + '_' + column.dataKey] === 'atStake' ? 'red' : 'theme.palette.primary.main',
+                                                fontWeight: labels['balPre' + index + '_' + column.dataKey] === 'inBalance' ? 'bold' : labels['balPre' + index + '_' + column.dataKey] === 'atStake' ? 'bold' : 'normal',
                                             }}>
                                         {labels['balPre' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPre' + index + '_' + column.dataKey]}
                                     </Button>
@@ -1255,7 +1251,6 @@ function TableEdit(params: any) {
                                     >
                                         inBalance
                                     </Button>
-
                                 </MenuItem>
                                 <MenuItem>
                                     <Button variant="contained"
@@ -1266,11 +1261,10 @@ function TableEdit(params: any) {
                                     </Button>
                                 </MenuItem>
                             </Menu>
-                            <Tooltip title={<span style={{fontSize: '1.2em'}}>Value Title</span>}
-                                     placement="top"
-                                     arrow>
+                            <Tooltip title={<span style={{fontSize: '1.2em'}}>Value Title</span>} placement="top" arrow>
                                 <span>
-                                    <Button style={{textTransform: 'none'}} variant="outlined"
+                                    <Button style={{ textTransform: 'none', height: '56px', display: 'flex', alignItems: 'center' }}
+                                            variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (inputs['value' + index + '_' + column.dataKey] !== undefined || queryLabels['value' + index + '_' + column.dataKey] !== '') {
                                                     handleClick(e, 'value' + index + '_' + column.dataKey);
@@ -1282,9 +1276,7 @@ function TableEdit(params: any) {
                                                 }
                                             }}
                                             sx={{
-                                                fontWeight: labels['value' + index + '_' + column.dataKey] !== 'Value?' && labels['value' + index + '_' + column.dataKey] !== undefined
-                                                    ? 'bold'
-                                                    : 'normal',
+                                                fontWeight: labels['value' + index + '_' + column.dataKey] !== 'Value?' && labels['value' + index + '_' + column.dataKey] !== undefined ? 'bold' : 'normal',
                                             }}
                                     >
                                         {labels['value' + index + '_' + column.dataKey] === undefined ? 'Value?' : labels['value' + index + '_' + column.dataKey]}
@@ -1313,10 +1305,10 @@ function TableEdit(params: any) {
                                 </MenuItem>
                             </Menu>
                             <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value after the Plan</span>}
-                                     placement="top"
-                                     arrow>
+                                     placement="top" arrow>
                                 <span>
-                                    <Button style={{textTransform: 'none'}} variant="outlined"
+                                    <Button style={{ textTransform: 'none', height: '56px', display: 'flex', alignItems: 'center' }}
+                                            variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (labels['balEff' + index + '_' + column.dataKey] !== undefined) {
                                                     handleClick(e, 'balEff' + index + '_' + column.dataKey)
@@ -1329,18 +1321,9 @@ function TableEdit(params: any) {
                                             }}
                                             sx={{
                                                 m: 1,
-                                                borderColor: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
-                                                    ? 'green'
-                                                    : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
-                                                        ? 'red' : 'theme.palette.primary.main',
-                                                color: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
-                                                    ? 'green'
-                                                    : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
-                                                        ? 'red' : 'theme.palette.primary.main',
-                                                fontWeight: labels['balEff' + index + '_' + column.dataKey] === 'inBalance'
-                                                    ? 'bold'
-                                                    : labels['balEff' + index + '_' + column.dataKey] === 'atStake'
-                                                        ? 'bold' : 'normal',
+                                                borderColor: labels['balEff' + index + '_' + column.dataKey] === 'inBalance' ? 'green' : labels['balEff' + index + '_' + column.dataKey] === 'atStake' ? 'red' : 'theme.palette.primary.main',
+                                                color: labels['balEff' + index + '_' + column.dataKey] === 'inBalance' ? 'green' : labels['balEff' + index + '_' + column.dataKey] === 'atStake' ? 'red' : 'theme.palette.primary.main',
+                                                fontWeight: labels['balEff' + index + '_' + column.dataKey] === 'inBalance' ? 'bold' : labels['balEff' + index + '_' + column.dataKey] === 'atStake' ? 'bold' : 'normal',
                                             }}>
                                         {labels['balEff' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balEff' + index + '_' + column.dataKey]}
                                     </Button>
@@ -1359,7 +1342,6 @@ function TableEdit(params: any) {
                                     >
                                         inBalance
                                     </Button>
-
                                 </MenuItem>
                                 <MenuItem>
                                     <Button variant="contained"
@@ -1618,13 +1600,13 @@ function TableEdit(params: any) {
                                     } else if (el === 1 && posForTemplate[1] === column.dataKey) {
                                         return (
                                             <div key={'Value ' + index + ' ' + column.dataKey}
-                                                 style={{height: '3.70em'}}>
+                                            style={{height: '72px'}}>
                                             </div>
                                         )
                                     } else if (el === 2 && posForTemplate[0] === column.dataKey) {
                                         return (
                                             <div key={'Value ' + index + ' ' + column.dataKey}
-                                                 style={{height: '3.70em'}}>
+                                                 style={{height: '72px'}}>
                                             </div>
                                         )
                                     } else {
@@ -1637,18 +1619,18 @@ function TableEdit(params: any) {
                             )}
                         </>)
                     } else if (1 === rowIndex && 'preUnit' === column.dataKey) {
-                        cellContent = (<div style={{marginTop: '-1.03em'}}>
+                        cellContent = (<div>
                             {groups.map((el, index) => {
                                     if (el === 1 || el === 2) {
                                         return <Box key={'Value ' + index + ' ' + column.dataKey} position="relative"
-                                                    display="inline-block"
-                                                    margin={1}>
-                                            <Stack direction="row" spacing={2}>
+                                                    display="inline-block">
+                                            <Stack direction="row" spacing={2} alignItems={"center"}>
                                                 <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Unit</span>}
                                                          placement="top"
                                                          arrow>
                                                     <span>
-                                                        <Button style={{textTransform: 'none'}} variant="outlined"
+                                                        <Button style={{ textTransform: 'none', height: '56px', display: 'flex', alignItems: 'center' }}
+                                                                variant="outlined"
                                                                 onDoubleClick={(e) => {
                                                                     if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
                                                                         handleClick(e, 'balPreUnit' + index + '_' + column.dataKey);
@@ -1715,7 +1697,7 @@ function TableEdit(params: any) {
                                     } else {
                                         return (
                                             <div key={'Value ' + index + ' ' + column.dataKey}
-                                                 style={{height: '3.70em'}}>
+                                            style={{height: '86px'}}>
                                             </div>
                                         )
                                     }
@@ -1755,7 +1737,8 @@ function TableEdit(params: any) {
                                             disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
                                         >
                                             <ArrowBackIosNewIcon/>
-                                            <Typography variant="button" display="block" sx={{fontWeight: labels['sxSupport'] !== 'Support?' ? 'bold' : 'normal'}}>{labels['sxSupport']}</Typography>
+                                            <Typography variant="button" display="block"
+                                                        sx={{fontWeight: labels['sxSupport'] !== 'Support?' ? 'bold' : 'normal'}}>{labels['sxSupport']}</Typography>
                                         </IconButton>
                                     </span>
                                 </Tooltip>
@@ -1782,7 +1765,8 @@ function TableEdit(params: any) {
                                             disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
                                         >
                                             <ArrowBackIosNewIcon/>
-                                            <Typography variant="button" display="block" sx={{fontWeight: labels['conflict'] !== 'Conflict?' ? 'bold' : 'normal'}}>{labels['conflict']}</Typography>
+                                            <Typography variant="button" display="block"
+                                                        sx={{fontWeight: labels['conflict'] !== 'Conflict?' ? 'bold' : 'normal'}}>{labels['conflict']}</Typography>
                                             <ArrowForwardIosIcon/>
                                         </IconButton>
                                     </span>
@@ -1809,7 +1793,8 @@ function TableEdit(params: any) {
                                             }}
                                             disabled={(inputs['plan1'] === undefined || inputs['plan2'] === undefined) && (queryLabels['plan1'] === '' || queryLabels['plan2'] === '')}
                                         >
-                                            <Typography variant="button" display="block" sx={{ fontWeight: labels['dxSupport'] !== 'Support?' ? 'bold' : 'normal'}}>{labels['dxSupport']}</Typography>
+                                            <Typography variant="button" display="block"
+                                                        sx={{fontWeight: labels['dxSupport'] !== 'Support?' ? 'bold' : 'normal'}}>{labels['dxSupport']}</Typography>
                                             <ArrowForwardIosIcon/>
                                         </IconButton>
                                     </span>
@@ -1881,13 +1866,13 @@ function TableEdit(params: any) {
     };
 
     return (
-        <TableBody>
+        <>
             {initialRows.map((row, index) => (
                 <TableRow key={index}>
                     {rowContent(index, row)}
                 </TableRow>
             ))}
-        </TableBody>
+        </>
     );
 }
 

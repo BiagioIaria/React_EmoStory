@@ -3,11 +3,11 @@ import TableEdit from "./TableEdit";
 import {
     Box,
     Button,
-    CircularProgress,
+    CircularProgress, Divider,
     Input,
     Menu,
     MenuItem,
-    Table,
+    Table, TableBody,
     TableContainer,
     TableHead,
     TextField, Tooltip
@@ -402,64 +402,6 @@ function Edit() {
         ]);
     };
 
-    const header = () => (
-        <TableRow>
-            {initialColumns.map((col) => {
-                    if ('unit' === col.dataKey) {
-                        return (
-                            <TableCell key={col.dataKey}
-                                       style={{width: col.width, textAlign: "center"}}
-                            >
-                                <Tooltip title={<span style={{fontSize: '1.2em'}}>Unit Title</span>} placement="top" arrow>
-                                    <Button variant="outlined" style={{textTransform: 'none'}}
-                                            onDoubleClick={(e) => {
-                                                if (inputs[col.dataKey] !== undefined || unitQuery !== '') {
-                                                    handleClick(e, col.dataKey);
-                                                }
-                                            }}
-                                            onClick={(e) => {
-                                                if (inputs[col.dataKey] === undefined && unitQuery === '') {
-                                                    handleClick(e, col.dataKey);
-                                                }
-                                            }}
-                                            sx={{m: 1}}>
-                                        {labels[col.dataKey] + ' Title'}
-                                    </Button>
-                                </Tooltip>
-                                <Menu
-                                    anchorEl={anchorEls[col.dataKey]}
-                                    open={Boolean(anchorEls[col.dataKey])}
-                                    onClose={() => handleClose(col.dataKey)}
-                                >
-                                    <MenuItem>
-                                        <Input
-                                            placeholder="Unit"
-                                            value={inputs[col.dataKey]?.input || ''}
-                                            onChange={(e) => handleInputChange(col.dataKey, 'input', e.target.value)}
-                                            fullWidth
-                                            onKeyDown={handleKeyDown}
-                                        />
-                                    </MenuItem>
-                                    <MenuItem>
-                                        <Button variant="contained" onClick={() => handleConfirm(col.dataKey)}>
-                                            Confirm
-                                        </Button>
-                                    </MenuItem>
-                                </Menu>
-                            </TableCell>
-                        )
-                    }else{
-                        return (
-                            <TableCell key={col.dataKey}
-                                       style={{width: col.width, textAlign: "center"}}
-                            ></TableCell>
-                        )
-                    }
-                }
-            )}
-        </TableRow>
-    );
-
     const headerTable = () => (
         <TableRow>
             {initialColumns.map((col) => {
@@ -469,7 +411,7 @@ function Edit() {
                                        style={{width: col.width, textAlign: "center"}}
                             >{col.label}</TableCell>
                         )
-                    }else{
+                    } else {
                         return (
                             <TableCell key={col.dataKey}
                                        style={{width: col.width, textAlign: "center"}}
@@ -480,7 +422,6 @@ function Edit() {
             )}
         </TableRow>
     );
-
     const handleClickInference = async () => {
         setLoading(true);
         try {
@@ -497,6 +438,7 @@ function Edit() {
             setLoading(false);
         }
     };
+
     return (
         <div className='edit'>
             <Paper style={{display: 'flex', flexDirection: 'column', height: '57em'}}>
@@ -516,37 +458,103 @@ function Edit() {
                                            sx={{
                                                textAlign: 'center',
                                            }}>
-                                    <div style={{ position: 'relative', width: '100%' }}>
+                                    <div style={{position: 'relative', width: '100%'}}>
                                         <span className="backgroundText">Synopsis Drammar</span>
                                         <TextField
                                             multiline
                                             rows={2}
                                             variant="outlined"
-                                            style={{ width: '55em' }}
+                                            style={{width: '55em'}}
                                         />
                                     </div>
                                 </TableCell>
                             </TableRow>
-                            {header()}
                             <TableRow>
-                                <TableCell align="center" colSpan={initialColumns.length}
+                                <TableCell key={'unit'}
+                                           align="center" colSpan={initialColumns.length}
+                                           sx={{
+                                               textAlign: 'center',
+                                           }}
+                                >
+                                    <Tooltip title={<span style={{fontSize: '1.2em'}}>Unit Title</span>} placement="top"
+                                             arrow>
+                                        <Button variant="outlined" style={{textTransform: 'none'}}
+                                                onDoubleClick={(e) => {
+                                                    if (inputs['unit'] !== undefined || unitQuery !== '') {
+                                                        handleClick(e, 'unit');
+                                                    }
+                                                }}
+                                                onClick={(e) => {
+                                                    if (inputs['unit'] === undefined && unitQuery === '') {
+                                                        handleClick(e, 'unit');
+                                                    }
+                                                }}
+                                                sx={{m: 1}}>
+                                            {labels['unit'] + ' Title'}
+                                        </Button>
+                                    </Tooltip>
+                                    <Menu
+                                        anchorEl={anchorEls['unit']}
+                                        open={Boolean(anchorEls['unit'])}
+                                        onClose={() => handleClose('unit')}
+                                    >
+                                        <MenuItem>
+                                            <Input
+                                                placeholder="Unit"
+                                                value={inputs['unit']?.input || ''}
+                                                onChange={(e) => handleInputChange('unit', 'input', e.target.value)}
+                                                fullWidth
+                                                onKeyDown={handleKeyDown}
+                                            />
+                                        </MenuItem>
+                                        <MenuItem>
+                                            <Button variant="contained" onClick={() => handleConfirm('unit')}>
+                                                Confirm
+                                            </Button>
+                                        </MenuItem>
+                                    </Menu>
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell key={'Synopsis Unit'} align="center" colSpan={initialColumns.length}
                                            sx={{
                                                textAlign: 'center',
                                            }}>
-                                    <div style={{ position: 'relative', width: '100%' }}>
+                                    <div style={{position: 'relative', width: '100%'}}>
                                         <span className="backgroundText">Synopsis Unit</span>
                                         <TextField
                                             multiline
                                             rows={2}
                                             variant="outlined"
-                                            style={{ width: '55em' }}
+                                            style={{width: '55em'}}
                                         />
                                     </div>
                                 </TableCell>
                             </TableRow>
                             {headerTable()}
                         </TableHead>
-                        {tableEdits}
+                        <TableBody>
+                            {tableEdits.reduce((acc: any, current, index) => {
+                                if (index < tableEdits.length - 1) {
+                                    return [
+                                        ...acc,
+                                        current,
+                                        <TableRow key={'TableCell_' + index}>
+                                            <TableCell colSpan={initialColumns.length} sx={{p: 0}}>
+                                                <Divider key={`divider-${index}`} sx={{
+                                                    borderColor: 'primary.main',
+                                                    borderWidth: 3,
+                                                    my: 2,
+                                                    width: '100%',
+                                                }}/>
+                                            </TableCell>
+                                        </TableRow>
+                                    ];
+                                } else {
+                                    return [...acc, current];
+                                }
+                            }, [])}
+                        </TableBody>
                     </Table>
                 </TableContainer>
             </Paper>
