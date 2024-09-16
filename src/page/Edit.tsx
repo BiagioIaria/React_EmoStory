@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
+import DownloadIcon from '@mui/icons-material/Download';
 import Paper from "@mui/material/Paper";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
@@ -125,8 +126,11 @@ function Edit() {
     const [unitQuery, setUnitQuery] = useState('');
     const [numberTableEdit, setNumberTableEdit] = useState<any>(0);
     const [loading, setLoading] = useState(false);
+    const [loadingExp, setLoadingExp] = useState(false);
     const [emoInf, setEmoInf] = useState([]);
-
+    const [drammarSynopsis, setDrammarSynopsis] = useState('');
+    const [unitSynopsis, setUnitSynopsis] = useState('');
+    const [drammarTitle, setDrammarTitle] = useState('');
 
     let params = useParams();
     const temp = params.get("temp");
@@ -152,7 +156,7 @@ function Edit() {
             },
             {
                 width: columnWidth,
-                label: 'Unit i',
+                label: 'Unit i Title',
                 dataKey: 'unit',
             },
             {
@@ -196,7 +200,7 @@ function Edit() {
         } else {
             setLabels(prevLabels => {
                 updateData('unit', '')
-                return {...prevLabels, unit: 'Unit i'};
+                return {...prevLabels, unit: 'Unit i Title'};
             })
         }
         // eslint-disable-next-line
@@ -235,7 +239,66 @@ function Edit() {
             }
         }
 
-        fetchDataNumber().then()
+        const fetchDataAnnotations = async () => {
+            try {
+                const query = `
+                    PREFIX dc: <http://purl.org/dc/elements/1.1/>
+                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX : <http://www.purl.org/drammar#>
+                    
+                    SELECT ?description1 (STRAFTER(STR(?v), "#") AS ?Vocabulary) ?description2
+                    WHERE {
+                      OPTIONAL {
+                        :Unit_Box dc:description ?description1 .
+                      }
+                    
+                      OPTIONAL {
+                        ?v rdf:type :Vocabulary .
+                        ?v rdfs:comment "Unit_Box" .
+                      }
+                    
+                      OPTIONAL {
+                        ?v dc:description ?description2 .
+                      }
+                    }
+                `;
+
+                const response = await axios.get(variables.API_URL_GET, {
+                    params: {
+                        query,
+                    },
+                    headers: {
+                        'Accept': 'application/sparql-results+json',
+                    },
+                });
+                if(response.data['results']['bindings'][0]['Vocabulary']['value']){
+                    setDrammarTitle(response.data['results']['bindings'][0]['Vocabulary']['value'])
+                }
+                if(response.data['results']['bindings'][0]['description2']['value']){
+                    setDrammarSynopsis(response.data['results']['bindings'][0]['description2']['value'])
+                }
+                if(response.data['results']['bindings'][0]['description1']['value']){
+                    setUnitSynopsis(response.data['results']['bindings'][0]['description1']['value'])
+                }
+
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        const fetchData = async () => {
+            try {
+                await fetchDataNumber()
+                await fetchDataAnnotations()
+            } catch (error) {
+                console.error('Errore durante l\'aggiornamento dei dati:', error);
+            }
+        };
+
+        if(unitParam){
+            fetchData().then();
+        }
         // eslint-disable-next-line
     }, []);
 
@@ -250,31 +313,47 @@ function Edit() {
     }, [data, emoInf]);
 
     useEffect(() => {
-        if (data[0]['value'] !== '' && data[0]['value'] !== unitQuery) {
+        if ((data[0]['value'] !== '' && data[0]['value'] !== unitQuery) || data[0]['save']) {
             const fetchDataInsert = async () => {
                 const unit = data[0]['value'].replace(/ /g, '_')
                 const prefixQuery = `
+                PREFIX dc: <http://purl.org/dc/elements/1.1/>
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX : <http://www.purl.org/drammar#>
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                 `
                 try {
-                    let query
+                    let tripleUnit
 
-                    query = `${prefixQuery}
-                          INSERT DATA {
-                            :${unit} rdf:type :Unit .
-                            :${unit} rdfs:comment "${unit}" .
-                            :Timeline_${unit} rdf:type :Timeline .
-                            :Timeline_${unit} rdfs:comment "${unit}" .
-                            :Effect_${unit} rdf:type :ConsistentStateSet .
-                            :Effect_${unit} rdfs:comment "${unit}".
-                            :Timeline_${unit} :hasTimelineEffect :Effect_${unit}.
-                            :Precondition_${unit} rdf:type :ConsistentStateSet .
-                            :Precondition_${unit} rdfs:comment "${unit}".
-                            :Timeline_${unit} :hasTimelinePrecondition :Precondition_${unit} .
-                          }
+                    tripleUnit = `
+                        :${unit} rdf:type :Unit .
+                        :${unit} rdfs:comment "${unit}" .
+                        :Timeline_${unit} rdf:type :Timeline .
+                        :Timeline_${unit} rdfs:comment "${unit}" .
+                        :Effect_${unit} rdf:type :ConsistentStateSet .
+                        :Effect_${unit} rdfs:comment "${unit}".
+                        :Timeline_${unit} :hasTimelineEffect :Effect_${unit}.
+                        :Precondition_${unit} rdf:type :ConsistentStateSet .
+                        :Precondition_${unit} rdfs:comment "${unit}".
+                        :Timeline_${unit} :hasTimelinePrecondition :Precondition_${unit} .
+                        :${unit} dc:description "${unitSynopsis}" .
+                         
                         `;
+
+
+                    if(drammarTitle !== ''){
+                        tripleUnit += `
+                        :${drammarTitle} rdf:type :Vocabulary .
+                        :${drammarTitle} rdfs:comment "${unit}" .
+                        :${drammarTitle} dc:description "${drammarSynopsis}" .
+                        
+                        `
+                    }
+
+                    const query = `${prefixQuery}
+                                                   INSERT DATA {
+                                                     ${tripleUnit}
+                                                   }`;
 
                     await axios.post(variables.API_URL_POST, query, {
                         headers: {
@@ -328,7 +407,7 @@ function Edit() {
 
         }
         // eslint-disable-next-line
-    }, [data[0]['value']]);
+    }, [data[0]['value'], data[0]['save']]);
 
     const updateData = (id: any, newValue?: any, msgSave?: string) => {
         setData((prevData: any) => {
@@ -422,8 +501,41 @@ function Edit() {
             )}
         </TableRow>
     );
-    const handleClickInference = async () => {
+
+    useEffect(() => {
+        if (!data[0].save && loading) {
+            executeInferenceAfterSave().then();
+        }
+        // eslint-disable-next-line
+    }, [data[0].save, loading]);
+
+    useEffect(() => {
+        if (!data[0].save && loadingExp) {
+            executeExportAfterSave().then();
+        }
+        // eslint-disable-next-line
+    }, [data[0].save, loadingExp]);
+
+    const handleClickSaveAndInference = async () => {
         setLoading(true);
+        setData(prevData => {
+            const newData = [...prevData];
+            // @ts-ignore
+            newData[0] = { ...newData[0], save: true };
+            return newData;
+        });
+
+        await new Promise<void>(resolve => {
+            const interval = setInterval(() => {
+                if (!data[0].save) {
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 50);
+        });
+    };
+
+    const executeInferenceAfterSave = async () => {
         try {
             const response = await axios.get('http://localhost:8080/api/inference/run', {
                 headers: {
@@ -439,6 +551,52 @@ function Edit() {
         }
     };
 
+    const handleClickSaveAndExport = async () => {
+        setLoadingExp(true);
+        setData(prevData => {
+            const newData = [...prevData];
+            // @ts-ignore
+            newData[0] = { ...newData[0], save: true };
+            return newData;
+        });
+
+        await new Promise<void>(resolve => {
+            const interval = setInterval(() => {
+                if (!data[0].save) {
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 50);
+        });
+    };
+
+    const executeExportAfterSave = async () => {
+        try {
+            // Effettua la richiesta GET al tuo endpoint
+            const response = await axios.get('http://localhost:8080/api/inference/export', {
+                responseType: 'blob' // Questo è importante per gestire i dati binari
+            });
+
+            // Crea un URL per il file RDF
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/rdf+xml' }));
+
+            // Crea un link per il download
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'exported.rdf'); // Nome del file da scaricare
+
+            // Aggiungi il link al DOM, cliccalo, e poi rimuovilo
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+        } catch (error) {
+            console.error('Errore durante l\'export del file:', error);
+        } finally {
+            setLoadingExp(false);
+        }
+    };
+
     return (
         <div className='edit'>
             <Paper style={{display: 'flex', flexDirection: 'column', height: '57em'}}>
@@ -450,7 +608,10 @@ function Edit() {
                                            sx={{
                                                textAlign: 'center',
                                            }}>
-                                    <TextField id="Title" label="Drammar Title" variant="standard"/>
+                                    <TextField id="Title" label="Drammar Title" variant="standard"
+                                               value={drammarTitle}
+                                               onChange={(event) => setDrammarTitle(event.target.value)}
+                                    />
                                 </TableCell>
                             </TableRow>
                             <TableRow>
@@ -465,6 +626,8 @@ function Edit() {
                                             rows={2}
                                             variant="outlined"
                                             style={{width: '55em'}}
+                                            value={drammarSynopsis}
+                                            onChange={(event) => setDrammarSynopsis(event.target.value)}
                                         />
                                     </div>
                                 </TableCell>
@@ -490,7 +653,7 @@ function Edit() {
                                                     }
                                                 }}
                                                 sx={{m: 1}}>
-                                            {labels['unit'] + ' Title'}
+                                            {labels['unit']}
                                         </Button>
                                     </Tooltip>
                                     <Menu
@@ -527,6 +690,8 @@ function Edit() {
                                             rows={2}
                                             variant="outlined"
                                             style={{width: '55em'}}
+                                            value={unitSynopsis}
+                                            onChange={(event) => setUnitSynopsis(event.target.value)}
                                         />
                                     </div>
                                 </TableCell>
@@ -594,7 +759,7 @@ function Edit() {
                 )}
                 <Button
                     variant="contained"
-                    onClick={handleClickInference}
+                    onClick={handleClickSaveAndInference}
                     startIcon={<SaveIcon/>}
                     style={{
                         backgroundColor: 'lightyellow',
@@ -602,9 +767,23 @@ function Edit() {
                     }}
                     disabled={loading}
                 >
-                    Do Inference
+                    Save and Do Inference
                 </Button>
                 {loading && (
+                    <Box mt={2}>
+                        <CircularProgress/>
+                    </Box>
+                )}
+                <Button
+                    variant="contained"
+                    onClick={handleClickSaveAndExport}
+                    startIcon={<DownloadIcon />}
+                    color="primary"
+                    disabled={loadingExp}
+                >
+                    Save and Export rdf
+                </Button>
+                {loadingExp && (
                     <Box mt={2}>
                         <CircularProgress/>
                     </Box>
