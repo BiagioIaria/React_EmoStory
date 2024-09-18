@@ -64,7 +64,6 @@ function Import() {
                                                      ${batch}
                                                    }`;
 
-
                     await axios.post(variables.API_URL_POST, query, {
                         headers: {
                             'Content-Type': 'application/sparql-update'
@@ -145,9 +144,22 @@ function Import() {
                         
                         `;
                                 if (Object.keys(kb).includes('precedes')) {
-
+                                    for (let i = 0; i < kb['precedes'].length; i++) {
+                                        tripleUnit+=`
+                                        :Timeline_${kb['precedes'][i]['p1']} :precedes :Timeline_${kb['precedes'][i]['p2']}
+                                        
+                                        `
+                                    }
                                 }
 
+                                if (Object.keys(kb).includes('follows')) {
+                                    for (let i = 0; i < kb['follows'].length; i++) {
+                                        tripleUnit+=`
+                                        :Timeline_${kb['follows'][i]['p1']} :follows :Timeline_${kb['follows'][i]['p2']}
+                                        
+                                        `
+                                    }
+                                }
 
                                 const BATCH_SIZE = 4;
                                 const triples = tripleUnit.split('\n'); // Divide le triple per riga
@@ -175,19 +187,19 @@ function Import() {
                                         conflict = `:${plan1} :inConflictWith :${plan2}
                                             :${plan2} :inConflictWith :${plan1}`
 
+                                        if (Object.keys(kb).includes('accomplished') || Object.keys(kb).includes('unaccomplished')) {
+                                            if (kb['accomplished'].includes(plan1)) {
+                                                accomplished1 = `:${plan1} :accomplished true .`
+                                            } else if (kb['unaccomplished'].includes(plan1)) {
+                                                accomplished1 = `:${plan1} :accomplished false .`
+                                            }
 
-                                        if (kb['accomplished'].includes(plan1)) {
-                                            accomplished1 = `:${plan1} :accomplished true .`
-                                        } else if(kb['unaccomplished'].includes(plan1)){
-                                            accomplished1 = `:${plan1} :accomplished false .`
+                                            if (kb['accomplished'].includes(plan2)) {
+                                                accomplished2 = `:${plan2} :accomplished true .`
+                                            } else if (kb['unaccomplished'].includes(plan2)) {
+                                                accomplished2 = `:${plan2} :accomplished false .`
+                                            }
                                         }
-
-                                        if (kb['accomplished'].includes(plan2)) {
-                                            accomplished2 = `:${plan2} :accomplished true .`
-                                        } else if(kb['unaccomplished'].includes(plan2)){
-                                            accomplished2 = `:${plan2} :accomplished false .`
-                                        }
-
                                         triplePlan += `
                                 :${plan1} rdf:type :DirectlyExecutablePlan.
                                 ${comments(commentIndex, plan1, plan1)}
@@ -221,17 +233,18 @@ function Import() {
                                         plan2 = kb['inSupportOf'][i]['p2']
 
                                         conflict = `:${plan1} :inSupportOf :${plan2}`
+                                        if (Object.keys(kb).includes('accomplished') || Object.keys(kb).includes('unaccomplished')) {
+                                            if (kb['accomplished'].includes(plan1)) {
+                                                accomplished1 = `:${plan1} :accomplished true .`
+                                            } else if (kb['unaccomplished'].includes(plan1)) {
+                                                accomplished1 = `:${plan1} :accomplished false .`
+                                            }
 
-                                        if (kb['accomplished'].includes(plan1)) {
-                                            accomplished1 = `:${plan1} :accomplished true .`
-                                        } else if(kb['unaccomplished'].includes(plan1)){
-                                            accomplished1 = `:${plan1} :accomplished false .`
-                                        }
-
-                                        if (kb['accomplished'].includes(plan2)) {
-                                            accomplished2 = `:${plan2} :accomplished true .`
-                                        } else if(kb['unaccomplished'].includes(plan2)){
-                                            accomplished2 = `:${plan2} :accomplished false .`
+                                            if (kb['accomplished'].includes(plan2)) {
+                                                accomplished2 = `:${plan2} :accomplished true .`
+                                            } else if (kb['unaccomplished'].includes(plan2)) {
+                                                accomplished2 = `:${plan2} :accomplished false .`
+                                            }
                                         }
 
                                         triplePlan += `
@@ -249,7 +262,7 @@ function Import() {
                                 ${comments(commentIndex, plan2, `precondition_${plan2}`)}
                                 :precondition_${plan2} :isPlanPreconditionOf :${plan2}.
                                 :effect_${plan2} rdf:type :ConsistentStateSet.
-                                ${comments(commentIndex, plan2, `effect_{plan2}`)}
+                                ${comments(commentIndex, plan2, `effect_${plan2}`)}
                                 :effect_${plan2} :isPlanEffectOf :${plan2} .
                                 :${plan1} :isMotivationFor :Timeline_${unit} .
                                 :${plan2} :isMotivationFor :Timeline_${unit} .
@@ -260,7 +273,6 @@ function Import() {
                                 `
                                     }
                                 }
-
 
                                 const BATCH_SIZE = 4;
                                 const triples = triplePlan.split('\n'); // Divide le triple per riga
@@ -662,7 +674,7 @@ function Import() {
                                 await fetchDataInsert('Agent');
                             }
 
-                            if (Object.keys(kb).includes('Emotion')) {
+                            if (Object.keys(kb).includes('Agent')) {
                                 await fetchDataInsert('Emotion');
                             }
 
@@ -794,6 +806,12 @@ function Import() {
                 }
                 result[cleanKey].push({a: a.trim(), ao: ao.trim()});
             } else if (cleanKey === 'precedes') {
+                const [p1, p2] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({p1: p1.trim(), p2: p2.trim()});
+            }else if (cleanKey === 'follows') {
                 const [p1, p2] = cleanValue.split(',');
                 if (!result[cleanKey]) {
                     result[cleanKey] = [];
