@@ -131,7 +131,7 @@ function Import() {
 
                             }
                             if (t === 'Unit') {
-                                const tripleUnit = `
+                                let tripleUnit = `
                             :${unit} rdf:type :Unit .
                             :${unit} rdfs:comment "${unit}" .
                             :Timeline_${unit} rdf:type :Timeline .
@@ -142,7 +142,11 @@ function Import() {
                             :Precondition_${unit} rdf:type :ConsistentStateSet .
                             :Precondition_${unit} rdfs:comment "${unit}".
                             :Timeline_${unit} :hasTimelinePrecondition :Precondition_${unit} .
+                        
                         `;
+                                if (Object.keys(kb).includes('precedes')) {
+
+                                }
 
 
                                 const BATCH_SIZE = 4;
@@ -158,8 +162,8 @@ function Import() {
                                 let plan1
                                 let plan2
                                 let conflict
-                                let accomplished1
-                                let accomplished2
+                                let accomplished1 =''
+                                let accomplished2=''
 
                                 if (Object.keys(kb).includes('inConflictWith')) {
 
@@ -174,13 +178,13 @@ function Import() {
 
                                         if (kb['accomplished'].includes(plan1)) {
                                             accomplished1 = `:${plan1} :accomplished true .`
-                                        } else {
+                                        } else if(kb['unaccomplished'].includes(plan1)){
                                             accomplished1 = `:${plan1} :accomplished false .`
                                         }
 
                                         if (kb['accomplished'].includes(plan2)) {
                                             accomplished2 = `:${plan2} :accomplished true .`
-                                        } else {
+                                        } else if(kb['unaccomplished'].includes(plan2)){
                                             accomplished2 = `:${plan2} :accomplished false .`
                                         }
 
@@ -220,13 +224,13 @@ function Import() {
 
                                         if (kb['accomplished'].includes(plan1)) {
                                             accomplished1 = `:${plan1} :accomplished true .`
-                                        } else {
+                                        } else if(kb['unaccomplished'].includes(plan1)){
                                             accomplished1 = `:${plan1} :accomplished false .`
                                         }
 
                                         if (kb['accomplished'].includes(plan2)) {
                                             accomplished2 = `:${plan2} :accomplished true .`
-                                        } else {
+                                        } else if(kb['unaccomplished'].includes(plan2)){
                                             accomplished2 = `:${plan2} :accomplished false .`
                                         }
 
@@ -331,6 +335,75 @@ function Import() {
                                     }
                                 }
 
+                                if (Object.keys(kb).includes('Pleasant') || Object.keys(kb).includes('Unpleasant')) {
+                                    for (let i = 0; i < kb['Pleasant'].length; i++) {
+                                        if (kb['Agent'].includes(kb['Pleasant'][i])) {
+                                            tripleAgent += `
+                                            :${kb['Pleasant'][i]} :pleasant true.                             
+                                            
+                                            `
+                                        } else {
+                                            tripleAgent += `
+                                            :${kb['Pleasant'][i]} rdf:type :Object.
+                                            ${comments(commentIndex, plan, kb['Pleasant'][i])}
+                                            :${kb['Pleasant'][i]} :pleasant true.                             
+                                            
+                                            `
+                                        }
+                                    }
+                                    for (let i = 0; i < kb['Unpleasant'].length; i++) {
+                                        if (kb['Agent'].includes(kb['Unpleasant'][i])) {
+                                            tripleAgent += `
+                                            :${kb['Unpleasant'][i]} :pleasant false.                             
+                                            
+                                            `
+                                        } else {
+                                            tripleAgent += `
+                                            :${kb['Unpleasant'][i]} rdf:type :Object.
+                                            ${comments(commentIndex, plan, kb['Unpleasant'][i])}
+                                            :${kb['Unpleasant'][i]} :pleasant false.                             
+                                            
+                                            `
+                                        }
+                                    }
+                                }
+
+                                if (Object.keys(kb).includes('Like') || Object.keys(kb).includes('Dislike')) {
+                                    for (let i = 0; i < kb['Like'].length; i++) {
+                                        agent = kb['Like'][i]['a']
+                                        const ao = kb['Like'][i]['ao']
+                                        if (kb['Agent'].includes(ao)) {
+                                            tripleAgent += `
+                                            :${agent} :likes :${ao}.                             
+                                            
+                                            `
+                                        } else {
+                                            tripleAgent += `
+                                            :${ao} rdf:type :Object.
+                                            ${comments(commentIndex, plan, ao)}
+                                            :${agent} :likes :${ao}.                       
+                                            
+                                            `
+                                        }
+                                    }
+                                    for (let i = 0; i < kb['Dislike'].length; i++) {
+                                        agent = kb['Dislike'][i]['a']
+                                        const ao = kb['Dislike'][i]['ao']
+                                        if (kb['Agent'].includes(ao)) {
+                                            tripleAgent += `
+                                            :${agent} :dislikes :${ao}.                             
+                                            
+                                            `
+                                        } else {
+                                            tripleAgent += `
+                                            :${ao} rdf:type :Object.
+                                            ${comments(commentIndex, plan, ao)}
+                                            :${agent} :dislikes :${ao}.                       
+                                            
+                                            `
+                                        }
+                                    }
+                                }
 
                                 const BATCH_SIZE = 4;
                                 const triples = tripleAgent.split('\n'); // Divide le triple per riga
@@ -572,45 +645,36 @@ function Import() {
                         }
                     }
                 ;
+                const fetchDataSequentially = async () => {
+                    if (Object.keys(kb).includes('Unit')) {
+                        setLoading(true);
+                        await fetchDataInsert('Unit');
 
-                if (Object.keys(kb).includes('Unit')) {
-                    setLoading(true);
-                    fetchDataInsert('Unit').then(
-                        () => {
-                            if (Object.keys(kb).includes('Plan')) {
-                                fetchDataInsert('Plan').then(
-                                    () => {
-                                        if (Object.keys(kb).includes('Goal')) {
-                                            fetchDataInsert('Goal').then(
-                                                () => {
-                                                    if (Object.keys(kb).includes('Agent')) {
-                                                        fetchDataInsert('Agent').then(
-                                                            () => {
-                                                                if (Object.keys(kb).includes('Agent')) {
-                                                                    fetchDataInsert('Emotion').then(
-                                                                        () => {
-                                                                            if (Object.keys(kb).includes('Value')) {
-                                                                                fetchDataInsert('Value').then(
-                                                                                    () => {
-                                                                                        setLoading(false);
-                                                                                    }
-                                                                                )
-                                                                            }
-                                                                        }
-                                                                    )
-                                                                }
-                                                            }
-                                                        )
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-                                )
+                        if (Object.keys(kb).includes('Plan')) {
+                            await fetchDataInsert('Plan');
+
+
+                            if (Object.keys(kb).includes('Goal')) {
+                                await fetchDataInsert('Goal');
+                            }
+
+                            if (Object.keys(kb).includes('Agent')) {
+                                await fetchDataInsert('Agent');
+                            }
+
+                            if (Object.keys(kb).includes('Emotion')) {
+                                await fetchDataInsert('Emotion');
+                            }
+
+                            if (Object.keys(kb).includes('Value')) {
+                                await fetchDataInsert('Value');
                             }
                         }
-                    )
+
+                        setLoading(false);
+                    }
                 }
+                fetchDataSequentially().then()
             }
         }
         ,
@@ -712,6 +776,24 @@ function Import() {
                 }
                 result[cleanKey].push({p1: p1.trim(), p2: p2.trim()});
             } else if (cleanKey === 'inSupportOf') {
+                const [p1, p2] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({p1: p1.trim(), p2: p2.trim()});
+            } else if (cleanKey === 'Like') {
+                const [a, ao] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({a: a.trim(), ao: ao.trim()});
+            } else if (cleanKey === 'Dislike') {
+                const [a, ao] = cleanValue.split(',');
+                if (!result[cleanKey]) {
+                    result[cleanKey] = [];
+                }
+                result[cleanKey].push({a: a.trim(), ao: ao.trim()});
+            } else if (cleanKey === 'precedes') {
                 const [p1, p2] = cleanValue.split(',');
                 if (!result[cleanKey]) {
                     result[cleanKey] = [];
