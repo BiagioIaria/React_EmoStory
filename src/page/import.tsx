@@ -145,7 +145,7 @@ function Import() {
                         `;
                                 if (Object.keys(kb).includes('precedes')) {
                                     for (let i = 0; i < kb['precedes'].length; i++) {
-                                        tripleUnit+=`
+                                        tripleUnit += `
                                         :Timeline_${kb['precedes'][i]['p1']} :precedes :Timeline_${kb['precedes'][i]['p2']}
                                         
                                         `
@@ -154,7 +154,7 @@ function Import() {
 
                                 if (Object.keys(kb).includes('follows')) {
                                     for (let i = 0; i < kb['follows'].length; i++) {
-                                        tripleUnit+=`
+                                        tripleUnit += `
                                         :Timeline_${kb['follows'][i]['p1']} :follows :Timeline_${kb['follows'][i]['p2']}
                                         
                                         `
@@ -174,8 +174,8 @@ function Import() {
                                 let plan1
                                 let plan2
                                 let conflict
-                                let accomplished1 =''
-                                let accomplished2=''
+                                let accomplished1 = ''
+                                let accomplished2 = ''
 
                                 if (Object.keys(kb).includes('inConflictWith')) {
 
@@ -347,7 +347,7 @@ function Import() {
                                     }
                                 }
 
-                                if (Object.keys(kb).includes('Pleasant') || Object.keys(kb).includes('Unpleasant')) {
+                                if (Object.keys(kb).includes('Pleasant')) {
                                     for (let i = 0; i < kb['Pleasant'].length; i++) {
                                         if (kb['Agent'].includes(kb['Pleasant'][i])) {
                                             tripleAgent += `
@@ -363,6 +363,8 @@ function Import() {
                                             `
                                         }
                                     }
+                                }
+                                if (Object.keys(kb).includes('Unpleasant')) {
                                     for (let i = 0; i < kb['Unpleasant'].length; i++) {
                                         if (kb['Agent'].includes(kb['Unpleasant'][i])) {
                                             tripleAgent += `
@@ -380,7 +382,7 @@ function Import() {
                                     }
                                 }
 
-                                if (Object.keys(kb).includes('Like') || Object.keys(kb).includes('Dislike')) {
+                                if (Object.keys(kb).includes('Like')) {
                                     for (let i = 0; i < kb['Like'].length; i++) {
                                         agent = kb['Like'][i]['a']
                                         const ao = kb['Like'][i]['ao']
@@ -398,6 +400,8 @@ function Import() {
                                             `
                                         }
                                     }
+                                }
+                                if (Object.keys(kb).includes('Dislike')) {
                                     for (let i = 0; i < kb['Dislike'].length; i++) {
                                         agent = kb['Dislike'][i]['a']
                                         const ao = kb['Dislike'][i]['ao']
@@ -811,7 +815,7 @@ function Import() {
                     result[cleanKey] = [];
                 }
                 result[cleanKey].push({p1: p1.trim(), p2: p2.trim()});
-            }else if (cleanKey === 'follows') {
+            } else if (cleanKey === 'follows') {
                 const [p1, p2] = cleanValue.split(',');
                 if (!result[cleanKey]) {
                     result[cleanKey] = [];
