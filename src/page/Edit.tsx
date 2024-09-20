@@ -250,16 +250,15 @@ function Edit() {
                     SELECT ?description1 (STRAFTER(STR(?v), "#") AS ?Vocabulary) ?description2
                     WHERE {
                       OPTIONAL {
-                        :Unit_Box dc:description ?description1 .
+                        :${unitParam} dc:description ?description1 .
                       }
                     
                       OPTIONAL {
                         ?v rdf:type :Vocabulary .
-                        ?v rdfs:comment "Unit_Box" .
-                      }
-                    
-                      OPTIONAL {
-                        ?v dc:description ?description2 .
+                        ?v rdfs:comment "${unitParam}" .
+                        OPTIONAL {
+                            ?v dc:description ?description2 .
+                          }
                       }
                     }
                 `;
@@ -272,13 +271,13 @@ function Edit() {
                         'Accept': 'application/sparql-results+json',
                     },
                 });
-                if(response.data['results']['bindings'][0]['Vocabulary']['value']){
+                if (response.data['results']['bindings'][0]['Vocabulary']['value']) {
                     setDrammarTitle(response.data['results']['bindings'][0]['Vocabulary']['value'])
                 }
-                if(response.data['results']['bindings'][0]['description2']['value']){
+                if (response.data['results']['bindings'][0]['description2']['value']) {
                     setDrammarSynopsis(response.data['results']['bindings'][0]['description2']['value'])
                 }
-                if(response.data['results']['bindings'][0]['description1']['value']){
+                if (response.data['results']['bindings'][0]['description1']['value']) {
                     setUnitSynopsis(response.data['results']['bindings'][0]['description1']['value'])
                 }
 
@@ -296,7 +295,7 @@ function Edit() {
             }
         };
 
-        if(unitParam){
+        if (unitParam) {
             fetchData().then();
         }
         // eslint-disable-next-line
@@ -341,7 +340,7 @@ function Edit() {
                         `;
 
 
-                    if(drammarTitle !== ''){
+                    if (drammarTitle !== '') {
                         tripleUnit += `
                         :${drammarTitle} rdf:type :Vocabulary .
                         :${drammarTitle} rdfs:comment "${unit}" .
@@ -366,9 +365,9 @@ function Edit() {
             }
 
             const fetchDataDelete = async (u: string) => {
-
-                try {
-                    const query = `
+                if (u !== '') {
+                    try {
+                        const query = `
                         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                         PREFIX : <http://www.purl.org/drammar#>
                         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -389,16 +388,17 @@ function Edit() {
 
                         `;
 
-                    await axios.post(variables.API_URL_POST, query, {
-                        headers: {
-                            'Content-Type': 'application/sparql-update'
-                        }
-                    });
-                } catch (err) {
-                    console.error(err);
+                        await axios.post(variables.API_URL_POST, query, {
+                            headers: {
+                                'Content-Type': 'application/sparql-update'
+                            }
+                        });
+                    } catch (err) {
+                        console.error(err);
+                    }
                 }
             };
-
+            console.log(unitQuery)
             fetchDataDelete(unitQuery).then(
                 () => fetchDataInsert().then(
                     () => setUnitQuery(data[0]['value'])
@@ -521,7 +521,7 @@ function Edit() {
         setData(prevData => {
             const newData = [...prevData];
             // @ts-ignore
-            newData[0] = { ...newData[0], save: true };
+            newData[0] = {...newData[0], save: true};
             return newData;
         });
 
@@ -556,7 +556,7 @@ function Edit() {
         setData(prevData => {
             const newData = [...prevData];
             // @ts-ignore
-            newData[0] = { ...newData[0], save: true };
+            newData[0] = {...newData[0], save: true};
             return newData;
         });
 
@@ -578,7 +578,7 @@ function Edit() {
             });
 
             // Crea un URL per il file RDF
-            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/rdf+xml' }));
+            const url = window.URL.createObjectURL(new Blob([response.data], {type: 'application/rdf+xml'}));
 
             // Crea un link per il download
             const link = document.createElement('a');
@@ -777,7 +777,7 @@ function Edit() {
                 <Button
                     variant="contained"
                     onClick={handleClickSaveAndExport}
-                    startIcon={<DownloadIcon />}
+                    startIcon={<DownloadIcon/>}
                     color="primary"
                     disabled={loadingExp}
                 >
