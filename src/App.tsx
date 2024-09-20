@@ -29,14 +29,23 @@ function App() {
 
 function Header() {
 
-    return (<header>
+    return (<header className="header">
+        <div className="buttons">
         <span className="buttons1">
-            <Link to='/'>
-                <Button variant="outline-secondary" className="square border border-5">
-                    Home
-                </Button>
-            </Link>
+          <Link to='/'>
+            <Button variant="outlined" className="custom-button">
+              Home
+            </Button>
+          </Link>
         </span>
+            <span className="buttons2">
+          <Link to='/help'>
+            <Button variant="outlined" className="custom-button help-button">
+              Help
+            </Button>
+          </Link>
+        </span>
+        </div>
     </header>);
 }
 

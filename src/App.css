@@ -17,12 +17,51 @@
   padding-bottom: 0.50em;
 }
 
-.App header .buttons1 Button {
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+  background-color: #282c34;
+}
+
+.buttons {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.buttons1,
+.buttons2 {
+  margin: 0 1em;
+}
+
+.custom-button {
   color: white;
-  background-color: #ffffff;
-  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000;
-  margin-left: 3em;
+  border-color: white;
+  margin-left: 1em;
   font-size: large;
+  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000;
+  border-radius: 12px; /* Angoli smussati */
+}
+
+.custom-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+.buttons2 {
+  margin-right: 2em; /* Margine destro sul bottone destro */
+}
+
+.help-button {
+  color: #ffcc00; /* Colore distintivo per il bottone di Help */
+  border-color: #ffcc00;
+}
+
+.help-button:hover {
+  background-color: rgba(255, 204, 0, 0.1);
+  border-color: #ffcc00;
 }
 
 .App .edit {
