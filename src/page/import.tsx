@@ -146,7 +146,7 @@ function Import() {
                                 if (Object.keys(kb).includes('precedes')) {
                                     for (let i = 0; i < kb['precedes'].length; i++) {
                                         tripleUnit += `
-                                        :Timeline_${kb['precedes'][i]['p1']} :precedes :Timeline_${kb['precedes'][i]['p2']}
+                                        :Timeline_${kb['precedes'][i]['p1']} :hypo_precedes :Timeline_${kb['precedes'][i]['p2']}
                                         
                                         `
                                     }
@@ -155,7 +155,7 @@ function Import() {
                                 if (Object.keys(kb).includes('follows')) {
                                     for (let i = 0; i < kb['follows'].length; i++) {
                                         tripleUnit += `
-                                        :Timeline_${kb['follows'][i]['p1']} :follows :Timeline_${kb['follows'][i]['p2']}
+                                        :Timeline_${kb['follows'][i]['p1']} :is_hypo_preceded_by :Timeline_${kb['follows'][i]['p2']}
                                         
                                         `
                                     }
