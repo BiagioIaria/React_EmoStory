@@ -258,6 +258,15 @@ function TableEdit(params: any) {
                 }
             });
 
+            type ValueType = Record<string, any>;
+
+            function transformValues(values: ValueType): ValueType {
+                return Object.keys(values).reduce((acc: ValueType, key: string) => {
+                    acc[key] = values[key] === null ? 'Balance?' : values[key];
+                    return acc;
+                }, {} as ValueType);
+            }
+
             return {
                 ...prevLabels,
                 ...(elabData[0] !== null && elabData[0] !== undefined ? {plan1: elabData[0]} : {}),
@@ -271,8 +280,8 @@ function TableEdit(params: any) {
                 ...(elabDataGoal[1] !== null && elabDataGoal[1] !== undefined ? {goalplan2: elabDataGoal[1]} : {}),
                 ...(elabDataAgent[0] !== null && elabDataAgent[0] !== undefined ? {agentplan1: elabDataAgent[0]} : {}),
                 ...(elabDataAgent[1] !== null && elabDataAgent[1] !== undefined ? {agentplan2: elabDataAgent[1]} : {}),
-                ...value1,
-                ...value2
+                ...transformValues(value1 as ValueType),
+                ...transformValues(value2 as ValueType),
             };
 
 
