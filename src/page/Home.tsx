@@ -3,6 +3,7 @@ import {Box, Chip, createTheme, IconButton, Menu, MenuItem, Stack, ThemeProvider
 import EditIcon from '@mui/icons-material/Edit';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SummarizeIcon from '@mui/icons-material/Summarize';
 import {Link} from "react-router-dom";
 import {useEffect, useState} from "react";
 import axios from "axios";
@@ -141,6 +142,11 @@ function Home() {
                                         <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
                                             <Link to={'/edit?temp=1&edit=1&unit=' + item}  style={{textDecoration: 'none', color: 'inherit'}}>
                                                 <EditIcon sx={{mr: 1}}/> Edit
+                                            </Link>
+                                        </MenuItem>
+                                        <MenuItem sx={{flex: '1 1 auto'}} onClick={() => handleClose(unit.length)}>
+                                            <Link to={'/summary?&unit=' + item}  style={{textDecoration: 'none', color: 'inherit'}}>
+                                                <SummarizeIcon sx={{mr: 1}}/> Summary
                                             </Link>
                                         </MenuItem>
                                         <MenuItem onClick={() => {

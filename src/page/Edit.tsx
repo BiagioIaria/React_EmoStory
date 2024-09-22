@@ -398,7 +398,7 @@ function Edit() {
                     }
                 }
             };
-            console.log(unitQuery)
+
             fetchDataDelete(unitQuery).then(
                 () => fetchDataInsert().then(
                     () => setUnitQuery(data[0]['value'])

@@ -8,6 +8,7 @@ import {Box, Container, Grid} from "@mui/material";
 
 import Edit from "./page/Edit";
 import Import from "./page/import";
+import Summary from "./page/Summary";
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
                     <Route path="/" element={<Home/>}/>
                     <Route path="/help" element={<Help/>}/>
                     <Route path="/edit" element={<Edit/>}/>
+                    <Route path="/summary" element={<Summary/>}/>
                     <Route path="/import" element={<Import/>}/>
                 </Routes>
             </article>

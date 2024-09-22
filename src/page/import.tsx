@@ -654,6 +654,34 @@ function Import() {
                                 }
 
 
+                            } else if(t === 'DifferentFromAgent'){
+                                let query = ``
+
+                                if (Object.keys(kb).includes('Agent')) {
+
+                                    query = `
+                                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                                    PREFIX : <http://www.purl.org/drammar#>
+                                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                                    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                                    
+                                    INSERT {
+                                      ?agent1 owl:differentFrom ?agent2 .
+                                    }
+                                    WHERE {
+                                      ?agent1 rdf:type :Agent .
+                                      ?agent2 rdf:type :Agent .
+                                      FILTER(?agent1 != ?agent2) .
+                                      FILTER(?label1 != ?label2) .
+                                    }
+                                
+                                `
+                                    await axios.post(variables.API_URL_POST, query, {
+                                        headers: {
+                                            'Content-Type': 'application/sparql-update'
+                                        }
+                                    });
+                                }
                             }
                         } catch
                             (err) {
@@ -676,6 +704,10 @@ function Import() {
 
                             if (Object.keys(kb).includes('Agent')) {
                                 await fetchDataInsert('Agent');
+                            }
+
+                            if (Object.keys(kb).includes('Agent')) {
+                                await fetchDataInsert('DifferentFromAgent');
                             }
 
                             if (Object.keys(kb).includes('Agent')) {
