@@ -89,7 +89,7 @@ function Import() {
                             if (Object.keys(kb).includes('inConflictWith')) {
 
                                 for (let i = 0; i < kb['inConflictWith'].length; i++) {
-                                    comment = `${unit}_${index}`
+                                    comment = `${unit}#${index}`
                                     index += 1
 
                                     const plan1 = kb['inConflictWith'][i]['p1']
@@ -110,7 +110,7 @@ function Import() {
                             } else if (Object.keys(kb).includes('inSupportOf')) {
 
                                 for (let i = 0; i < kb['inSupportOf'].length; i++) {
-                                    comment = `${unit}_${index}`
+                                    comment = `${unit}#${index}`
                                     index += 1
 
                                     const plan1 = kb['inSupportOf'][i]['p1']

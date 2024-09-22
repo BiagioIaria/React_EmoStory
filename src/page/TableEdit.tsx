@@ -330,7 +330,7 @@ function TableEdit(params: any) {
 
         if (unitParam !== '' && editParam === '1') {
             const fetchData = async () => {
-                const comment = unitParam + '_' + params.idTableEdit
+                const comment = unitParam + '#' + params.idTableEdit
                 try {
                     let query = `
                         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -474,7 +474,7 @@ function TableEdit(params: any) {
             const goal2 = (queryLabels['goalplan2'] ?? '').replace(/ /g, '_')
             const agent1 = (queryLabels['agentplan1'] ?? '').replace(/ /g, '_')
             const agent2 = (queryLabels['agentplan2'] ?? '').replace(/ /g, '_')
-            const comment = unit + '_' + params['idTableEdit']
+            const comment = unit + '#' + params['idTableEdit']
 
 
             const fetchDataInsert = async (t: string) => {

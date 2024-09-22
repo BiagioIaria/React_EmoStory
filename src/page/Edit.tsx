@@ -216,8 +216,8 @@ function Edit() {
                     SELECT ?number
                     WHERE {
                       ?individual rdfs:comment ?comment .
-                      FILTER regex(?comment, "^${unitParam}_\\\\d+$")
-                      BIND(xsd:integer(SUBSTR(?comment, STRLEN("${unitParam}_") + 1)) AS ?number)
+                      FILTER regex(?comment, "^${unitParam}#\\\\d+$")
+                      BIND(xsd:integer(SUBSTR(?comment, STRLEN("${unitParam}#") + 1)) AS ?number)
                     }
                     ORDER BY DESC(?number)
                     LIMIT 1
@@ -271,15 +271,17 @@ function Edit() {
                         'Accept': 'application/sparql-results+json',
                     },
                 });
-                if (response.data['results']['bindings'][0]['Vocabulary']['value']) {
+
+                if (response.data['results']['bindings'][0]['Vocabulary']) {
                     setDrammarTitle(response.data['results']['bindings'][0]['Vocabulary']['value'])
                 }
-                if (response.data['results']['bindings'][0]['description2']['value']) {
+                if (response.data['results']['bindings'][0]['description2']) {
                     setDrammarSynopsis(response.data['results']['bindings'][0]['description2']['value'])
                 }
-                if (response.data['results']['bindings'][0]['description1']['value']) {
+                if (response.data['results']['bindings'][0]['description1']) {
                     setUnitSynopsis(response.data['results']['bindings'][0]['description1']['value'])
                 }
+
 
             } catch (err) {
                 console.log(err);
