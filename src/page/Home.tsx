@@ -93,7 +93,7 @@ function Home() {
                         }
                         WHERE {
                           ?individual rdfs:comment ?comment.
-                          FILTER(STRSTARTS(?comment, "${unit}"))
+                          FILTER(?comment = "${unit}" || REGEX(?comment, "^${unit}_[0-9]+$"))
                           OPTIONAL {
                             ?individual ?p ?o .
                           }
