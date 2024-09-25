@@ -2,7 +2,8 @@ import {useLocation} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import axios from "axios";
 import {variables} from "../endPoint";
-import {Box, CircularProgress, Container, List, ListItem, ListItemText, Typography} from "@mui/material";
+import {Box, Button, CircularProgress, Container, List, ListItem, ListItemText, Typography} from "@mui/material";
+import DownloadIcon from "@mui/icons-material/Download";
 
 function useParams() {
     return new URLSearchParams(useLocation().search);
@@ -19,6 +20,8 @@ function Summary() {
     const [emoInf, setEmoInf] = useState([]);
     const [emoForAgent, setEmoForAgent] = useState<EmoForAgent[]>([]);
     const [loading, setLoading] = useState(false);
+    const [loadingExp, setLoadingExp] = useState(false);
+
 
     function setDataQuery(data: any) {
         const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
@@ -116,6 +119,35 @@ function Summary() {
         // eslint-disable-next-line
     }, []);
 
+    const handleClickExport = async () => {
+        setLoadingExp(true);
+
+        try {
+            // Effettua la richiesta GET al tuo endpoint
+            const response = await axios.get('http://localhost:8080/api/inference/export', {
+                responseType: 'blob' // Questo è importante per gestire i dati binari
+            });
+
+            // Crea un URL per il file RDF
+            const url = window.URL.createObjectURL(new Blob([response.data], {type: 'application/rdf+xml'}));
+
+            // Crea un link per il download
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'exported.rdf'); // Nome del file da scaricare
+
+            // Aggiungi il link al DOM, cliccalo, e poi rimuovilo
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+        } catch (error) {
+            console.error('Errore durante l\'export del file:', error);
+        } finally {
+            setLoadingExp(false);
+        }
+    };
+
     return (
         <Container>
             <Box my={4}>
@@ -139,6 +171,20 @@ function Summary() {
                     </Box>
                 )}
             </Box>
+            {!loading && (<Button
+                variant="contained"
+                onClick={handleClickExport}
+                startIcon={<DownloadIcon/>}
+                color="primary"
+                disabled={loadingExp}
+            >
+                Export rdf
+            </Button>)}
+            {loadingExp && (
+                <Box mt={2}>
+                    <CircularProgress/>
+                </Box>
+            )}
         </Container>
     );
 }
