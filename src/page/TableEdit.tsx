@@ -334,6 +334,11 @@ function TableEdit(params: any) {
     }
 
     useEffect(() => {
+        params.updateData(params.idTableEdit + 1, queryLabels)
+
+        // eslint-disable-next-line
+    }, [queryLabels]);
+    useEffect(() => {
         const unitParam = params.data[0]['value']
         const editParam = params.edit
 
@@ -354,16 +359,16 @@ function TableEdit(params: any) {
                             {
                                 SELECT (COUNT(?s) AS ?sCount)
                                 WHERE {
-                                    ?p rdf:type :Plan .
-                                    ?p2 rdf:type :Plan .
+                                    ?p rdf:type :DirectlyExecutablePlan .
+                                    ?p2 rdf:type :DirectlyExecutablePlan .
                                     ?p ?s ?p2 .
                                     ?p rdfs:comment "${comment}" .
                                     ?p2 rdfs:comment "${comment}" .
                                     FILTER(?s = :inConflictWith)
                                 }
                             }
-                            ?p rdf:type :Plan .
-                            ?p2 rdf:type :Plan .
+                            ?p rdf:type :DirectlyExecutablePlan .
+                            ?p2 rdf:type :DirectlyExecutablePlan .
                             OPTIONAL {
                                 ?p :accomplished ?a .
                             }
@@ -386,7 +391,7 @@ function TableEdit(params: any) {
                                 ?val :isValueEngagedOf ?ag .
                             }
                             OPTIONAL {
-                                ?val :isDataOf ?state .
+                                ?state :hasData ?val .
                             }
                             FILTER (?sCount = 0 || BOUND(?s))
                         }
@@ -1000,7 +1005,7 @@ function TableEdit(params: any) {
                 )
 
             }
-            params.updateData(params.idTableEdit + 1, triplesQuery)
+
         } else {
             if (params.data[0]['save'] === true) {
                 params.updateData(0)
@@ -1445,7 +1450,7 @@ function TableEdit(params: any) {
                                 </Menu>
                                 <Box display="flex" alignItems="center">
                                     <Typography variant="body2" style={{marginRight: 8}}>
-                                        G Plan Agent {keyLabel[keyLabel.length - 1]}
+                                        Goal Plan Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
                                     <Tooltip title={<span style={{fontSize: '1.2em'}}>Goal Title</span>} placement="top"
                                              arrow>
@@ -1495,7 +1500,7 @@ function TableEdit(params: any) {
                                 </Menu>
                                 <Box display="flex" alignItems="center">
                                     <Typography variant="body2" style={{marginRight: 8}}>
-                                        P Agent {keyLabel[keyLabel.length - 1]}
+                                        Plan Agent {keyLabel[keyLabel.length - 1]}
                                     </Typography>
                                     <Tooltip title={<span style={{fontSize: '1.2em'}}>Plan Title</span>} placement="top"
                                              arrow>

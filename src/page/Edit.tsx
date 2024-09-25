@@ -3,10 +3,10 @@ import TableEdit from "./TableEdit";
 import {
     Box,
     Button,
-    CircularProgress, Divider,
+    CircularProgress, Divider, FormControlLabel,
     Input,
     Menu,
-    MenuItem,
+    MenuItem, Radio, RadioGroup,
     Table, TableBody,
     TableContainer,
     TableHead,
@@ -93,6 +93,14 @@ export interface Data {
     unit_n: string;
 }
 
+interface AgentFields {
+    [key: string]: any;
+}
+
+interface AgentsData {
+    [key: string]: AgentFields;
+}
+
 function useParams() {
     return new URLSearchParams(useLocation().search);
 }
@@ -131,6 +139,7 @@ function Edit() {
     const [drammarSynopsis, setDrammarSynopsis] = useState('');
     const [unitSynopsis, setUnitSynopsis] = useState('');
     const [drammarTitle, setDrammarTitle] = useState('');
+    const [agentsData, setAgentsData] = useState<AgentsData>({});
 
     let params = useParams();
     const temp = params.get("temp");
@@ -424,9 +433,11 @@ function Edit() {
                         : item
                 );
             } else {
-                return prevData.map((item: { id: any; }) =>
-                    item.id === id ? {...item, value: newValue} : item
-                );
+                return prevData.some((item: { id: any; }) => item.id === id)
+                    ? prevData.map((item: { id: any; }) =>
+                        item.id === id ? {...item, value: newValue} : item
+                    )
+                    : [...prevData, {id, value: newValue}];
             }
         });
     };
@@ -599,6 +610,76 @@ function Edit() {
         }
     };
 
+    const handleInputAgentsChange = (str: string, field: string, value: string) => {
+        const updatedFeedbacks = { ...agentsData };
+
+        if (!updatedFeedbacks[str]) {
+            updatedFeedbacks[str] = {};
+        }
+
+        if(field === 'likes' || field === 'dislikes'){
+            updatedFeedbacks[str][field] = value.split(',').map(s => s.trim());
+        }else{
+            updatedFeedbacks[str][field] = value;
+        }
+
+        setAgentsData(updatedFeedbacks);
+    };
+
+    function createAgentHeaderInput() {
+        const uniqueAgents = new Set<string>();
+
+        data.forEach((item: any) => {
+            uniqueAgents.add(item.value.agentplan1);
+            uniqueAgents.add(item.value.agentplan2);
+        });
+
+        const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
+
+        return Agents.map((str: string, index: number) => (
+            <div key={str + index + 'Header'}>
+                <h3>{str}</h3>
+                <TextField
+                    label="Likes"
+                    variant="outlined"
+                    onChange={(e) => handleInputAgentsChange(str, 'likes', e.target.value)}
+                    InputProps={{style: {minWidth: 150}}}
+                    style={{flex: '1 0 30%', marginRight: '10px'}}
+                />
+                <TextField
+                    label="Dislikes"
+                    variant="outlined"
+                    onChange={(e) => handleInputAgentsChange(str, 'dislikes', e.target.value)}
+                    InputProps={{style: {minWidth: 150}}}
+                    style={{flex: '1 0 30%', marginRight: '10px'}}
+                />
+                <div style={{marginTop: 10}}>Pleasant?</div>
+                <RadioGroup row name={`Pleasant-${index}`} defaultValue={null}>
+                    <FormControlLabel
+                        value="True"
+                        control={<Radio />}
+                        label="True"
+                        onChange={() => handleInputAgentsChange(str, 'pleasant', "True")}
+                    />
+                    <FormControlLabel
+                        value="False"
+                        control={<Radio />}
+                        label="False"
+                        onChange={() => handleInputAgentsChange(str, 'pleasant', "False")}
+                    />
+                    <FormControlLabel
+                        value="null"
+                        control={<Radio />}
+                        label="null"
+                        onChange={() => handleInputAgentsChange(str, 'pleasant', "null")}
+                    />
+                </RadioGroup>
+
+            </div>
+        ));
+    }
+
+
     return (
         <div className='edit'>
             <Paper style={{display: 'flex', flexDirection: 'column', height: '57em'}}>
@@ -738,6 +819,7 @@ function Edit() {
                     </Button>
                 </Tooltip>
             </div>
+            {createAgentHeaderInput()}
             <Box display="flex" justifyContent="center" mt={5} gap={2}>
                 <Button
                     variant="contained"
