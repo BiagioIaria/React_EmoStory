@@ -338,6 +338,7 @@ function TableEdit(params: any) {
 
         // eslint-disable-next-line
     }, [queryLabels]);
+
     useEffect(() => {
         const unitParam = params.data[0]['value']
         const editParam = params.edit
@@ -480,6 +481,7 @@ function TableEdit(params: any) {
         `
 
         if (params.data[0]['value'] !== '' && params.data[0]['save'] === true) {
+            const tripleExtra = params.data[0].tripleExtra
             const editParam = params.edit
             const unit = params.data[0].value.replace(/ /g, '_')
             const plan1 = (queryLabels['plan1'] ?? '').replace(/ /g, '_');
@@ -808,6 +810,26 @@ function TableEdit(params: any) {
                             const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
                             await sendBatchQuery(batch);
                         }
+                    }else if (t === 'tripleExtra') {
+
+                        const sendBatchQuery = async (batch: string) => {
+                            const query = `${prefixQuery}
+                                                   INSERT DATA {
+                                                     ${batch}
+                                                   }`;
+                            await axios.post(variables.API_URL_POST, query, {
+                                headers: {
+                                    'Content-Type': 'application/sparql-update'
+                                }
+                            });
+                        }
+
+                        const BATCH_SIZE = 4;
+                        const triples = tripleExtra.split('\n'); // Divide le triple per riga
+                        for (let i = 0; i < triples.length; i += BATCH_SIZE) {
+                            const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
+                            await sendBatchQuery(batch);
+                        }
                     }
 
                 } catch (err) {
@@ -817,29 +839,8 @@ function TableEdit(params: any) {
 
             const fetchDataDelete = async () => {
                 try {
-                    // Prima query: cancellazione del commento se ci sono altri commenti
-                    const deleteCommentQuery = `
-                        PREFIX : <http://www.purl.org/drammar#>
-                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            
-                        DELETE {
-                          ?individual rdfs:comment "${comment}" .
-                        }
-                        WHERE {
-                          ?individual rdfs:comment "${comment}" .
-                          FILTER(EXISTS { ?individual rdfs:comment ?otherComment . FILTER(?otherComment != "${comment}") })
-                        }
-                    `;
 
-                    const deleteCommentResponse = await axios.post(variables.API_URL_POST, deleteCommentQuery, {
-                        headers: {
-                            'Content-Type': 'application/sparql-update'
-                        }
-                    });
-
-                    // Se la prima query non ha cancellato nulla, esegui la seconda query
-                    if (!deleteCommentResponse.data.includes("deleted")) {
-                        const deleteIndividualQuery = `
+                    const deleteIndividualQuery = `
                             PREFIX : <http://www.purl.org/drammar#>
                             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             
@@ -849,7 +850,6 @@ function TableEdit(params: any) {
                             }
                             WHERE {
                               ?individual rdfs:comment "${comment}" .
-                              FILTER(NOT EXISTS { ?individual rdfs:comment ?otherComment . FILTER(?otherComment != "${comment}") })
                               OPTIONAL {
                                 ?individual ?p ?o .
                               }
@@ -859,12 +859,11 @@ function TableEdit(params: any) {
                             }
                         `;
 
-                        await axios.post(variables.API_URL_POST, deleteIndividualQuery, {
-                            headers: {
-                                'Content-Type': 'application/sparql-update'
-                            }
-                        });
-                    }
+                    await axios.post(variables.API_URL_POST, deleteIndividualQuery, {
+                        headers: {
+                            'Content-Type': 'application/sparql-update'
+                        }
+                    });
                 } catch (err) {
                     console.error(err);
                 }
@@ -941,7 +940,8 @@ function TableEdit(params: any) {
                         Agent1: agent1,
                         Agent2: agent2,
                         Value1: value_1,
-                        Value2: value_2
+                        Value2: value_2,
+                        tripleExtra: tripleExtra
                     }
                 )
 
@@ -952,6 +952,9 @@ function TableEdit(params: any) {
                         await fetchDataInsert('Agent');
                         await fetchDataInsert('Emotion');
                         await fetchDataInsert('Value');
+                        if(tripleExtra!==triplesQuery['tripleExtra']) {
+                            await fetchDataInsert('tripleExtra').then()
+                        }
                         params.updateData(0);
                     } catch (error) {
                         console.error('Errore durante l\'aggiornamento dei dati:', error);
@@ -959,19 +962,8 @@ function TableEdit(params: any) {
                 };
 
                 fetchData().then();
+
             } else {
-                fetchDataDelete().then(
-                    () => fetchDataInsert('Plan').then(
-                        () => fetchDataInsert('Goal').then(
-                            () => fetchDataInsert('Agent').then(
-                                () => fetchDataInsert('Emotion').then(
-                                    () => fetchDataInsert('Value').then(
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
                 const fetchData = async () => {
                     try {
                         await fetchDataDelete();
@@ -980,6 +972,9 @@ function TableEdit(params: any) {
                         await fetchDataInsert('Agent');
                         await fetchDataInsert('Emotion');
                         await fetchDataInsert('Value');
+                        if(tripleExtra!==triplesQuery['tripleExtra']) {
+                            await fetchDataInsert('tripleExtra').then()
+                        }
                         params.updateData(0);
                     } catch (error) {
                         console.error('Errore durante l\'aggiornamento dei dati:', error);
@@ -1000,7 +995,8 @@ function TableEdit(params: any) {
                         Agent1: agent1,
                         Agent2: agent2,
                         Value1: value_1,
-                        Value2: value_2
+                        Value2: value_2,
+                        tripleExtra: tripleExtra
                     }
                 )
 
@@ -1230,7 +1226,12 @@ function TableEdit(params: any) {
                             <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Plan</span>}
                                      placement="top" arrow>
                                 <span>
-                                    <Button style={{ textTransform: 'none', height: '56px', display: 'flex', alignItems: 'center' }}
+                                    <Button style={{
+                                        textTransform: 'none',
+                                        height: '56px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
                                             variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (labels['balPre' + index + '_' + column.dataKey] !== undefined) {
@@ -1277,7 +1278,12 @@ function TableEdit(params: any) {
                             </Menu>
                             <Tooltip title={<span style={{fontSize: '1.2em'}}>Value Title</span>} placement="top" arrow>
                                 <span>
-                                    <Button style={{ textTransform: 'none', height: '56px', display: 'flex', alignItems: 'center' }}
+                                    <Button style={{
+                                        textTransform: 'none',
+                                        height: '56px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
                                             variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (inputs['value' + index + '_' + column.dataKey] !== undefined || queryLabels['value' + index + '_' + column.dataKey] !== '') {
@@ -1321,7 +1327,12 @@ function TableEdit(params: any) {
                             <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value after the Plan</span>}
                                      placement="top" arrow>
                                 <span>
-                                    <Button style={{ textTransform: 'none', height: '56px', display: 'flex', alignItems: 'center' }}
+                                    <Button style={{
+                                        textTransform: 'none',
+                                        height: '56px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
                                             variant="outlined"
                                             onDoubleClick={(e) => {
                                                 if (labels['balEff' + index + '_' + column.dataKey] !== undefined) {
@@ -1614,7 +1625,7 @@ function TableEdit(params: any) {
                                     } else if (el === 1 && posForTemplate[1] === column.dataKey) {
                                         return (
                                             <div key={'Value ' + index + ' ' + column.dataKey}
-                                            style={{height: '72px'}}>
+                                                 style={{height: '72px'}}>
                                             </div>
                                         )
                                     } else if (el === 2 && posForTemplate[0] === column.dataKey) {
@@ -1643,7 +1654,12 @@ function TableEdit(params: any) {
                                                          placement="top"
                                                          arrow>
                                                     <span>
-                                                        <Button style={{ textTransform: 'none', height: '56px', display: 'flex', alignItems: 'center' }}
+                                                        <Button style={{
+                                                            textTransform: 'none',
+                                                            height: '56px',
+                                                            display: 'flex',
+                                                            alignItems: 'center'
+                                                        }}
                                                                 variant="outlined"
                                                                 onDoubleClick={(e) => {
                                                                     if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
@@ -1711,7 +1727,7 @@ function TableEdit(params: any) {
                                     } else {
                                         return (
                                             <div key={'Value ' + index + ' ' + column.dataKey}
-                                            style={{height: '86px'}}>
+                                                 style={{height: '86px'}}>
                                             </div>
                                         )
                                     }

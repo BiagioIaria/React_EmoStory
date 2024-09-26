@@ -3,14 +3,20 @@ import TableEdit from "./TableEdit";
 import {
     Box,
     Button,
-    CircularProgress, Divider, FormControlLabel,
+    CircularProgress,
+    Divider,
+    FormControlLabel,
     Input,
     Menu,
-    MenuItem, Radio, RadioGroup,
-    Table, TableBody,
+    MenuItem,
+    Radio,
+    RadioGroup,
+    Table,
+    TableBody,
     TableContainer,
     TableHead,
-    TextField, Tooltip
+    TextField,
+    Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
@@ -127,7 +133,7 @@ function Edit() {
     });
 
     const [data, setData] = useState([
-        {id: 'unit', value: '', save: false, msgSave: ''},
+        {id: 'unit', value: '', save: false, msgSave: '', tripleExtra: ''},
         {id: 1, value: ''},
     ]);
 
@@ -140,11 +146,26 @@ function Edit() {
     const [unitSynopsis, setUnitSynopsis] = useState('');
     const [drammarTitle, setDrammarTitle] = useState('');
     const [agentsData, setAgentsData] = useState<AgentsData>({});
+    const [objectData, setObjectData] = useState([]);
+    const [footerAgentLabel, setFooterAgentLabel] = useState([]);
+
 
     let params = useParams();
     const temp = params.get("temp");
     const unitParam = params.get("unit");
     const editParam = params.get("edit");
+
+    function setFooterLabel(ris: any) {
+        const elabData = ris.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return {
+                ao: item['entityName']?.['value'] ?? null,
+                likes: item['likes']?.['value'] ?? null,
+                dislikes: item['dislikes']?.['value'] ?? null,
+                pleasure: item['pleasantSample']?.['value'] ?? null
+            };
+        });
+        setFooterAgentLabel(elabData)
+    }
 
     useEffect(() => {
         initialColumns = [
@@ -297,10 +318,61 @@ function Edit() {
             }
         }
 
+        const fetchDataFooter = async () => {
+            try {
+                let query = `
+                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX : <http://www.purl.org/drammar#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                        
+                        SELECT ?entityName
+                               (GROUP_CONCAT(DISTINCT ?likeName; SEPARATOR=", ") AS ?likes)
+                               (GROUP_CONCAT(DISTINCT ?dislikeName; SEPARATOR=", ") AS ?dislikes)
+                               (SAMPLE(?pleasant) AS ?pleasantSample)
+                        WHERE {
+                          {
+                            ?entity a :Object .
+                          } UNION {
+                            ?entity a :Agent .
+                          }
+                        
+                          ?entity rdfs:comment ?comment .
+                          FILTER regex(?comment, "^${unitParam}(#\\\\d+)?$", "i")
+                          
+                          BIND(REPLACE(STR(?entity), "^.*#(.+)$", "$1") AS ?entityName)
+                        
+                          OPTIONAL {
+                            ?entity :likes ?like .
+                            BIND(REPLACE(STR(?like), "^.*#(.+)$", "$1") AS ?likeName)
+                          }
+                          OPTIONAL {
+                            ?entity :dislikes ?dislike .
+                            BIND(REPLACE(STR(?dislike), "^.*#(.+)$", "$1") AS ?dislikeName)
+                          }
+                          OPTIONAL { ?entity :pleasant ?pleasant }
+                        }
+                        GROUP BY ?entityName
+                       `;
+
+                const response = await axios.get(variables.API_URL_GET, {
+                    params: {
+                        query,
+                    },
+                    headers: {
+                        'Accept': 'application/sparql-results+json',
+                    },
+                });
+                setFooterLabel(response.data['results']['bindings']);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
         const fetchData = async () => {
             try {
                 await fetchDataNumber()
                 await fetchDataAnnotations()
+                await fetchDataFooter()
             } catch (error) {
                 console.error('Errore durante l\'aggiornamento dei dati:', error);
             }
@@ -311,6 +383,7 @@ function Edit() {
         }
         // eslint-disable-next-line
     }, []);
+
 
     useEffect(() => {
         setTableEdits(prevTableEdits =>
@@ -324,8 +397,71 @@ function Edit() {
 
     useEffect(() => {
         if ((data[0]['value'] !== '' && data[0]['value'] !== unitQuery) || data[0]['save']) {
+            const unit = data[0]['value'].replace(/ /g, '_')
+
+            const uniqueAgents = new Set<string>();
+
+            data.forEach((item: any) => {
+                uniqueAgents.add(item.value.agentplan1);
+                uniqueAgents.add(item.value.agentplan2);
+            });
+
+            let triple = ''
+            const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
+            for (let i = 0; i < objectData.length; i++) {
+                if (objectData[i] !== '' && !Agents.includes(objectData[i])) {
+                    triple += `
+                        :${objectData[i]} rdf:type :Object.
+                        :${objectData[i]} rdfs:comment "${unit}" .
+                    `
+                }
+            }
+
+            for (let i = 0; i < Object.keys(agentsData).length; i++) {
+                if (Object.keys(agentsData[Object.keys(agentsData)[i]]).includes('pleasant')) {
+                    if (agentsData[Object.keys(agentsData)[i]]['pleasant'] === 'True') {
+                        triple += `
+                                    :${Object.keys(agentsData)[i]} :pleasant true.   
+                                    
+                                    `
+                    } else if (agentsData[Object.keys(agentsData)[i]]['pleasant'] === 'False') {
+                        triple += `
+                                    :${Object.keys(agentsData)[i]} :pleasant false.   
+                                    
+                                    `
+                    }
+                }
+                if (Object.keys(agentsData[Object.keys(agentsData)[i]]).includes('likes')) {
+                    for (let j = 0; j < agentsData[Object.keys(agentsData)[i]]['likes'].length; j++) {
+                        if (agentsData[Object.keys(agentsData)[i]]['likes'][j] !== '') {
+                            triple += `
+                                    :${Object.keys(agentsData)[i]} :likes :${agentsData[Object.keys(agentsData)[i]]['likes'][j]}.   
+                                    
+                                    `
+                        }
+                    }
+                }
+
+                if (Object.keys(agentsData[Object.keys(agentsData)[i]]).includes('dislikes')) {
+                    for (let j = 0; j < agentsData[Object.keys(agentsData)[i]]['dislikes'].length; j++) {
+                        if (agentsData[Object.keys(agentsData)[i]]['dislikes'][j] !== '') {
+                            triple += `
+                                    :${Object.keys(agentsData)[i]} :dislikes :${agentsData[Object.keys(agentsData)[i]]['dislikes'][j]}.   
+                                    
+                                    `
+                        }
+                    }
+                }
+            }
+
+            setData(prevData => {
+                const newData = [...prevData];
+                // @ts-ignore
+                newData[0] = {...newData[0], tripleExtra: triple};
+                return newData;
+            });
+
             const fetchDataInsert = async () => {
-                const unit = data[0]['value'].replace(/ /g, '_')
                 const prefixQuery = `
                 PREFIX dc: <http://purl.org/dc/elements/1.1/>
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -364,6 +500,7 @@ function Edit() {
                                                    INSERT DATA {
                                                      ${tripleUnit}
                                                    }`;
+
 
                     await axios.post(variables.API_URL_POST, query, {
                         headers: {
@@ -611,22 +748,47 @@ function Edit() {
     };
 
     const handleInputAgentsChange = (str: string, field: string, value: string) => {
-        const updatedFeedbacks = { ...agentsData };
+        const updatedFeedbacks = {...agentsData};
+        let obj: any
 
         if (!updatedFeedbacks[str]) {
             updatedFeedbacks[str] = {};
         }
 
-        if(field === 'likes' || field === 'dislikes'){
-            updatedFeedbacks[str][field] = value.split(',').map(s => s.trim());
-        }else{
-            updatedFeedbacks[str][field] = value;
+        const uniqueAgents = new Set<string>();
+
+        data.forEach((item: any) => {
+            uniqueAgents.add(item.value.agentplan1);
+            uniqueAgents.add(item.value.agentplan2);
+        });
+
+        const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
+
+        function includesCaseInsensitive(arr: string[], val: string): boolean {
+            return arr.map(el => el.toLowerCase()).includes(val.toLowerCase());
         }
 
+        if (field === 'likes' || field === 'dislikes') {
+            updatedFeedbacks[str][field] = value.split(',').map(s => s.trim());
+            let object1 = []
+            if (updatedFeedbacks[str]['likes']) {
+                object1 = updatedFeedbacks[str]['likes'].filter((element: any) => !includesCaseInsensitive(Agents, element));
+            }
+            let object2 = []
+            if (updatedFeedbacks[str]['dislikes']) {
+                object2 = updatedFeedbacks[str]['dislikes'].filter((element: any) => !includesCaseInsensitive(Agents, element));
+            }
+            obj = [...object1, ...object2]
+        } else {
+            updatedFeedbacks[str][field] = value;
+        }
+        if (obj) {
+            setObjectData(Array.from(new Set(obj)))
+        }
         setAgentsData(updatedFeedbacks);
     };
 
-    function createAgentHeaderInput() {
+    function createAgentFooterInput() {
         const uniqueAgents = new Set<string>();
 
         data.forEach((item: any) => {
@@ -657,24 +819,23 @@ function Edit() {
                 <RadioGroup row name={`Pleasant-${index}`} defaultValue={null}>
                     <FormControlLabel
                         value="True"
-                        control={<Radio />}
+                        control={<Radio/>}
                         label="True"
                         onChange={() => handleInputAgentsChange(str, 'pleasant', "True")}
                     />
                     <FormControlLabel
                         value="False"
-                        control={<Radio />}
+                        control={<Radio/>}
                         label="False"
                         onChange={() => handleInputAgentsChange(str, 'pleasant', "False")}
                     />
                     <FormControlLabel
                         value="null"
-                        control={<Radio />}
+                        control={<Radio/>}
                         label="null"
                         onChange={() => handleInputAgentsChange(str, 'pleasant', "null")}
                     />
                 </RadioGroup>
-
             </div>
         ));
     }
@@ -819,7 +980,36 @@ function Edit() {
                     </Button>
                 </Tooltip>
             </div>
-            {createAgentHeaderInput()}
+            {createAgentFooterInput()}
+            <Divider/>
+            <h3>Object Pleasant</h3>
+            {objectData.map((item, index) => (
+                item !== '' && (
+                    <div key={index} style={{marginTop: 10}}>
+                        <div>{item} Pleasant?</div>
+                        <RadioGroup row name={`Pleasant-${index}`} defaultValue={null}>
+                            <FormControlLabel
+                                value="True"
+                                control={<Radio />}
+                                label="True"
+                                onChange={() => handleInputAgentsChange(item, 'pleasant', 'True')}
+                            />
+                            <FormControlLabel
+                                value="False"
+                                control={<Radio />}
+                                label="False"
+                                onChange={() => handleInputAgentsChange(item, 'pleasant', 'False')}
+                            />
+                            <FormControlLabel
+                                value="null"
+                                control={<Radio />}
+                                label="null"
+                                onChange={() => handleInputAgentsChange(item, 'pleasant', 'null')}
+                            />
+                        </RadioGroup>
+                    </div>
+                )
+            ))}
             <Box display="flex" justifyContent="center" mt={5} gap={2}>
                 <Button
                     variant="contained"
