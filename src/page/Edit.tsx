@@ -165,6 +165,23 @@ function Edit() {
             };
         });
         setFooterAgentLabel(elabData)
+        const obj: any = []
+        for (let i = 0; i < elabData.length; i++) {
+            const likesArray = (String(elabData[i]['likes']).split(',').map((s: string) => s.trim()))
+            for (let j = 0; j < likesArray.length; j++) {
+                if (likesArray[j] === "undefined") {
+                    obj.push(elabData[i]['ao'])
+                }
+            }
+            const dislikesArray = (String(elabData[i]['dislikes']).split(',').map((s: string) => s.trim()))
+            for (let j = 0; j < dislikesArray.length; j++) {
+                if (dislikesArray[j] === "undefined") {
+                    obj.push(elabData[i]['ao'])
+                }
+            }
+        }
+
+        setObjectData(Array.from(new Set(obj)))
     }
 
     useEffect(() => {
@@ -384,7 +401,6 @@ function Edit() {
         // eslint-disable-next-line
     }, []);
 
-
     useEffect(() => {
         setTableEdits(prevTableEdits =>
             prevTableEdits.map((edit, index) => (
@@ -408,50 +424,51 @@ function Edit() {
 
             let triple = ''
             const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
-            for (let i = 0; i < objectData.length; i++) {
-                if (objectData[i] !== '' && !Agents.includes(objectData[i])) {
+            for (let i = 0; i < footerAgentLabel.length; i++) {
+                if (footerAgentLabel[i]['ao'] !== '' && !Agents.includes(footerAgentLabel[i]['ao'])) {
                     triple += `
-                        :${objectData[i]} rdf:type :Object.
-                        :${objectData[i]} rdfs:comment "${unit}" .
+                        :${footerAgentLabel[i]['ao']} rdf:type :Object.
+                        :${footerAgentLabel[i]['ao']} rdfs:comment "${unit}" .
                     `
                 }
             }
 
-            for (let i = 0; i < Object.keys(agentsData).length; i++) {
-                if (Object.keys(agentsData[Object.keys(agentsData)[i]]).includes('pleasant')) {
-                    if (agentsData[Object.keys(agentsData)[i]]['pleasant'] === 'True') {
-                        triple += `
-                                    :${Object.keys(agentsData)[i]} :pleasant true.   
-                                    
-                                    `
-                    } else if (agentsData[Object.keys(agentsData)[i]]['pleasant'] === 'False') {
-                        triple += `
-                                    :${Object.keys(agentsData)[i]} :pleasant false.   
-                                    
-                                    `
-                    }
+            for (let i = 0; i < footerAgentLabel.length; i++) {
+
+                if (footerAgentLabel[i]['pleasure'] === 'True') {
+                    triple += `
+                        :${footerAgentLabel[i]['ao']} :pleasant true.   
+                        
+                        `
+                } else if (footerAgentLabel[i]['pleasure'] === 'False') {
+                    triple += `
+                        :${footerAgentLabel[i]['ao']} :pleasant false.   
+                        
+                        `
                 }
-                if (Object.keys(agentsData[Object.keys(agentsData)[i]]).includes('likes')) {
-                    for (let j = 0; j < agentsData[Object.keys(agentsData)[i]]['likes'].length; j++) {
-                        if (agentsData[Object.keys(agentsData)[i]]['likes'][j] !== '') {
-                            triple += `
-                                    :${Object.keys(agentsData)[i]} :likes :${agentsData[Object.keys(agentsData)[i]]['likes'][j]}.   
-                                    
-                                    `
-                        }
+
+                const likesArray = (String(footerAgentLabel[i]['likes']).split(',').map((s: string) => s.trim()))
+
+                for (let j = 0; j < likesArray.length; j++) {
+                    if (likesArray[j] !== '') {
+                        triple += `
+                            :${footerAgentLabel[i]['ao']} :likes :${likesArray[j]}.   
+                            
+                            `
                     }
                 }
 
-                if (Object.keys(agentsData[Object.keys(agentsData)[i]]).includes('dislikes')) {
-                    for (let j = 0; j < agentsData[Object.keys(agentsData)[i]]['dislikes'].length; j++) {
-                        if (agentsData[Object.keys(agentsData)[i]]['dislikes'][j] !== '') {
-                            triple += `
-                                    :${Object.keys(agentsData)[i]} :dislikes :${agentsData[Object.keys(agentsData)[i]]['dislikes'][j]}.   
-                                    
-                                    `
-                        }
+                const dislikesArray = (String(footerAgentLabel[i]['dislikes']).split(',').map((s: string) => s.trim()))
+
+                for (let j = 0; j < dislikesArray.length; j++) {
+                    if (dislikesArray[j] !== '') {
+                        triple += `
+                            :${footerAgentLabel[i]['ao']} :dislikes :${dislikesArray[j]}.   
+                            
+                            `
                     }
                 }
+
             }
 
             setData(prevData => {
@@ -768,6 +785,27 @@ function Edit() {
             return arr.map(el => el.toLowerCase()).includes(val.toLowerCase());
         }
 
+        setFooterAgentLabel((prevState: any) => {
+            // Aggiorna lo stato degli oggetti esistenti
+            const updatedState = prevState.map((item: { ao: string; }) =>
+                item.ao === str ? {...item, [field]: value} : item
+            );
+
+            // Controlla se l'oggetto con ao uguale a str esiste già
+            const exists = prevState.some((item: { ao: string; }) => item.ao === str);
+
+            // Se non esiste, aggiungi un nuovo oggetto
+            if (!exists) {
+                return [
+                    ...updatedState,
+                    {ao: str, [field]: value} // Aggiungi altre chiavi se necessario
+                ];
+            }
+
+            // Ritorna lo stato aggiornato
+            return updatedState;
+        });
+
         if (field === 'likes' || field === 'dislikes') {
             updatedFeedbacks[str][field] = value.split(',').map(s => s.trim());
             let object1 = []
@@ -798,48 +836,59 @@ function Edit() {
 
         const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
 
-        return Agents.map((str: string, index: number) => (
-            <div key={str + index + 'Header'}>
-                <h3>{str}</h3>
-                <TextField
-                    label="Likes"
-                    variant="outlined"
-                    onChange={(e) => handleInputAgentsChange(str, 'likes', e.target.value)}
-                    InputProps={{style: {minWidth: 150}}}
-                    style={{flex: '1 0 30%', marginRight: '10px'}}
-                />
-                <TextField
-                    label="Dislikes"
-                    variant="outlined"
-                    onChange={(e) => handleInputAgentsChange(str, 'dislikes', e.target.value)}
-                    InputProps={{style: {minWidth: 150}}}
-                    style={{flex: '1 0 30%', marginRight: '10px'}}
-                />
-                <div style={{marginTop: 10}}>Pleasant?</div>
-                <RadioGroup row name={`Pleasant-${index}`} defaultValue={null}>
-                    <FormControlLabel
-                        value="True"
-                        control={<Radio/>}
-                        label="True"
-                        onChange={() => handleInputAgentsChange(str, 'pleasant', "True")}
-                    />
-                    <FormControlLabel
-                        value="False"
-                        control={<Radio/>}
-                        label="False"
-                        onChange={() => handleInputAgentsChange(str, 'pleasant', "False")}
-                    />
-                    <FormControlLabel
-                        value="null"
-                        control={<Radio/>}
-                        label="null"
-                        onChange={() => handleInputAgentsChange(str, 'pleasant', "null")}
-                    />
-                </RadioGroup>
-            </div>
-        ));
-    }
+        return Agents.map((str: string, index: number) => {
 
+            const label: any = footerAgentLabel.find((item: any) => item.ao === str);
+
+            let radioGroupValue = "null"
+            if (label["pleasure"] !== null && label["pleasure"] !== "null") {
+                radioGroupValue = label["pleasure"].charAt(0).toUpperCase() + label["pleasure"].slice(1)
+            }
+
+            return (
+                <div key={str + index + 'Header'}>
+                    <h3>{str}</h3>
+                    <TextField
+                        label="Likes"
+                        variant="outlined"
+                        value={label["likes"]}
+                        onChange={(e) => handleInputAgentsChange(str, 'likes', e.target.value)}
+                        InputProps={{style: {minWidth: 150}}}
+                        style={{flex: '1 0 30%', marginRight: '10px'}}
+                    />
+                    <TextField
+                        label="Dislikes"
+                        variant="outlined"
+                        value={label["dislikes"]}
+                        onChange={(e) => handleInputAgentsChange(str, 'dislikes', e.target.value)}
+                        InputProps={{style: {minWidth: 150}}}
+                        style={{flex: '1 0 30%', marginRight: '10px'}}
+                    />
+                    <div style={{marginTop: 10}}>Pleasant?</div>
+                    <RadioGroup row name={`Pleasant-${index}`} value={radioGroupValue}>
+                        <FormControlLabel
+                            value="True"
+                            control={<Radio/>}
+                            label="True"
+                            onChange={() => handleInputAgentsChange(str, 'pleasure', "True")}
+                        />
+                        <FormControlLabel
+                            value="False"
+                            control={<Radio/>}
+                            label="False"
+                            onChange={() => handleInputAgentsChange(str, 'pleasure', "False")}
+                        />
+                        <FormControlLabel
+                            value="null"
+                            control={<Radio/>}
+                            label="null"
+                            onChange={() => handleInputAgentsChange(str, 'pleasure', "null")}
+                        />
+                    </RadioGroup>
+                </div>
+            )
+        });
+    }
 
     return (
         <div className='edit'>
@@ -983,33 +1032,44 @@ function Edit() {
             {createAgentFooterInput()}
             <Divider/>
             <h3>Object Pleasant</h3>
-            {objectData.map((item, index) => (
-                item !== '' && (
-                    <div key={index} style={{marginTop: 10}}>
-                        <div>{item} Pleasant?</div>
-                        <RadioGroup row name={`Pleasant-${index}`} defaultValue={null}>
-                            <FormControlLabel
-                                value="True"
-                                control={<Radio />}
-                                label="True"
-                                onChange={() => handleInputAgentsChange(item, 'pleasant', 'True')}
-                            />
-                            <FormControlLabel
-                                value="False"
-                                control={<Radio />}
-                                label="False"
-                                onChange={() => handleInputAgentsChange(item, 'pleasant', 'False')}
-                            />
-                            <FormControlLabel
-                                value="null"
-                                control={<Radio />}
-                                label="null"
-                                onChange={() => handleInputAgentsChange(item, 'pleasant', 'null')}
-                            />
-                        </RadioGroup>
-                    </div>
-                )
-            ))}
+            {objectData.map((item, index) => {
+                const label: any = footerAgentLabel.find((elem: any) => elem['ao'] === item);
+                if(label) {
+                    let radioGroupValue = "null"
+                    if (label["pleasure"] !== null && label["pleasure"] !== "null") {
+                        radioGroupValue = label["pleasure"].charAt(0).toUpperCase() + label["pleasure"].slice(1)
+                    }
+                    return (
+                        item !== '' && (
+                            <div key={index} style={{marginTop: 10}}>
+                                <div>{item} Pleasant?</div>
+                                <RadioGroup row name={`Pleasant-${index}`} value={radioGroupValue}>
+                                    <FormControlLabel
+                                        value="True"
+                                        control={<Radio/>}
+                                        label="True"
+                                        onChange={() => handleInputAgentsChange(item, 'pleasure', 'True')}
+                                    />
+                                    <FormControlLabel
+                                        value="False"
+                                        control={<Radio/>}
+                                        label="False"
+                                        onChange={() => handleInputAgentsChange(item, 'pleasure', 'False')}
+                                    />
+                                    <FormControlLabel
+                                        value="null"
+                                        control={<Radio/>}
+                                        label="null"
+                                        onChange={() => handleInputAgentsChange(item, 'pleasure', 'null')}
+                                    />
+                                </RadioGroup>
+                            </div>
+                        )
+                    )
+                }else{
+                    return <></>
+                }
+            })}
             <Box display="flex" justifyContent="center" mt={5} gap={2}>
                 <Button
                     variant="contained"
