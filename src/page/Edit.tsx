@@ -99,14 +99,6 @@ export interface Data {
     unit_n: string;
 }
 
-interface AgentFields {
-    [key: string]: any;
-}
-
-interface AgentsData {
-    [key: string]: AgentFields;
-}
-
 function useParams() {
     return new URLSearchParams(useLocation().search);
 }
@@ -145,7 +137,6 @@ function Edit() {
     const [drammarSynopsis, setDrammarSynopsis] = useState('');
     const [unitSynopsis, setUnitSynopsis] = useState('');
     const [drammarTitle, setDrammarTitle] = useState('');
-    const [agentsData, setAgentsData] = useState<AgentsData>({});
     const [objectData, setObjectData] = useState([]);
     const [footerAgentLabel, setFooterAgentLabel] = useState([]);
 
@@ -765,12 +756,12 @@ function Edit() {
     };
 
     const handleInputAgentsChange = (str: string, field: string, value: string) => {
-        const updatedFeedbacks = {...agentsData};
-        let obj: any
-
-        if (!updatedFeedbacks[str]) {
-            updatedFeedbacks[str] = {};
+        let label: any = footerAgentLabel.find((elem: any) => elem['ao'] === str);
+        if (!label) {
+            label = {ao: str}
         }
+
+        let obj: any = []
 
         const uniqueAgents = new Set<string>();
 
@@ -785,45 +776,52 @@ function Edit() {
             return arr.map(el => el.toLowerCase()).includes(val.toLowerCase());
         }
 
-        setFooterAgentLabel((prevState: any) => {
-            // Aggiorna lo stato degli oggetti esistenti
-            const updatedState = prevState.map((item: { ao: string; }) =>
-                item.ao === str ? {...item, [field]: value} : item
-            );
-
-            // Controlla se l'oggetto con ao uguale a str esiste già
-            const exists = prevState.some((item: { ao: string; }) => item.ao === str);
-
-            // Se non esiste, aggiungi un nuovo oggetto
-            if (!exists) {
-                return [
-                    ...updatedState,
-                    {ao: str, [field]: value} // Aggiungi altre chiavi se necessario
-                ];
-            }
-
-            // Ritorna lo stato aggiornato
-            return updatedState;
-        });
-
         if (field === 'likes' || field === 'dislikes') {
-            updatedFeedbacks[str][field] = value.split(',').map(s => s.trim());
-            let object1 = []
-            if (updatedFeedbacks[str]['likes']) {
-                object1 = updatedFeedbacks[str]['likes'].filter((element: any) => !includesCaseInsensitive(Agents, element));
+            label[field] = value.split(',').map(s => s.trim());
+            if (label['likes']) {
+                label['likes'] = String(label['likes'])
             }
-            let object2 = []
-            if (updatedFeedbacks[str]['dislikes']) {
-                object2 = updatedFeedbacks[str]['dislikes'].filter((element: any) => !includesCaseInsensitive(Agents, element));
+            if (label['dislikes']) {
+                label['dislikes'] = String(label['dislikes'])
             }
-            obj = [...object1, ...object2]
+            for (let i = 0; i < footerAgentLabel.length; i++) {
+                let object1: any = []
+                const arrayLike = String(footerAgentLabel[i]['likes']).split(',').map(s => s.trim());
+                if (footerAgentLabel[i]['likes'] !== 'undefined' && footerAgentLabel[i]['likes'] !== '') {
+                    object1 = arrayLike.filter((element: any) => !includesCaseInsensitive(Agents, element));
+                }
+                let object2: any = []
+                const arrayDislike = String(footerAgentLabel[i]['dislikes']).split(',').map(s => s.trim());
+                if (footerAgentLabel[i]['dislikes'] !== 'undefined' && footerAgentLabel[i]['dislikes'] !== '') {
+                    object2 = arrayDislike.filter((element: any) => !includesCaseInsensitive(Agents, element));
+                }
+                obj = [...obj, ...object1, ...object2]
+            }
         } else {
-            updatedFeedbacks[str][field] = value;
+            label[field] = value;
         }
-        if (obj) {
-            setObjectData(Array.from(new Set(obj)))
-        }
-        setAgentsData(updatedFeedbacks);
+        setObjectData(Array.from(new Set(obj)))
+
+        setFooterAgentLabel(prevArray => {
+            const index = prevArray.findIndex((elem: any) => elem.ao === label.ao);
+
+            if (index === -1) return prevArray;
+
+            let newArray: any = [...prevArray];
+            newArray[index] = label;
+
+            obj.forEach((str: any) => {
+                if (!newArray.some((elem: { ao: any; }) => elem.ao === str)) {
+                    newArray.push({ao: str, likes: "undefined", dislikes: "undefined", pleasure: null});
+                }
+            });
+
+            newArray = newArray.filter((elem: { likes: string; dislikes: string; ao: any; }) => {
+                return !(elem.likes === "undefined" && elem.dislikes === "undefined" && !obj.includes(elem.ao));
+            });
+
+            return newArray;
+        });
     };
 
     function createAgentFooterInput() {
@@ -835,10 +833,17 @@ function Edit() {
         });
 
         const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
-
         return Agents.map((str: string, index: number) => {
 
-            const label: any = footerAgentLabel.find((item: any) => item.ao === str);
+            let label: any = footerAgentLabel.find((item: any) => item.ao === str);
+            if (!label) {
+                setFooterAgentLabel(prevArray => {
+                    let newArray: any = [...prevArray];
+                    newArray.push({ ao: str, likes: '', dislikes: '', pleasure: null })
+                    return newArray;
+                });
+                label={ ao: str, likes: '', dislikes: '', pleasure: null }
+            }
 
             let radioGroupValue = "null"
             if (label["pleasure"] !== null && label["pleasure"] !== "null") {
@@ -1034,7 +1039,7 @@ function Edit() {
             <h3>Object Pleasant</h3>
             {objectData.map((item, index) => {
                 const label: any = footerAgentLabel.find((elem: any) => elem['ao'] === item);
-                if(label) {
+                if (label) {
                     let radioGroupValue = "null"
                     if (label["pleasure"] !== null && label["pleasure"] !== "null") {
                         radioGroupValue = label["pleasure"].charAt(0).toUpperCase() + label["pleasure"].slice(1)
@@ -1066,7 +1071,7 @@ function Edit() {
                             </div>
                         )
                     )
-                }else{
+                } else {
                     return <></>
                 }
             })}
