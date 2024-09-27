@@ -810,7 +810,7 @@ function TableEdit(params: any) {
                             const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
                             await sendBatchQuery(batch);
                         }
-                    }else if (t === 'tripleExtra') {
+                    } else if (t === 'tripleExtra') {
 
                         const sendBatchQuery = async (batch: string) => {
                             const query = `${prefixQuery}
@@ -952,9 +952,7 @@ function TableEdit(params: any) {
                         await fetchDataInsert('Agent');
                         await fetchDataInsert('Emotion');
                         await fetchDataInsert('Value');
-                        if(tripleExtra!==triplesQuery['tripleExtra']) {
-                            await fetchDataInsert('tripleExtra').then()
-                        }
+                        await fetchDataInsert('tripleExtra').then()
                         params.updateData(0);
                     } catch (error) {
                         console.error('Errore durante l\'aggiornamento dei dati:', error);
@@ -972,9 +970,7 @@ function TableEdit(params: any) {
                         await fetchDataInsert('Agent');
                         await fetchDataInsert('Emotion');
                         await fetchDataInsert('Value');
-                        if(tripleExtra!==triplesQuery['tripleExtra']) {
-                            await fetchDataInsert('tripleExtra').then()
-                        }
+                        await fetchDataInsert('tripleExtra')
                         params.updateData(0);
                     } catch (error) {
                         console.error('Errore durante l\'aggiornamento dei dati:', error);
@@ -1008,7 +1004,7 @@ function TableEdit(params: any) {
             }
         }
         // eslint-disable-next-line
-    }, [params.data[0], queryLabels]);
+    }, [params.data[0]['save']]);
 
     let template: string | any[] | readonly Sample[]
     let posForTemplate = ['']

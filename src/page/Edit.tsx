@@ -406,69 +406,6 @@ function Edit() {
         if ((data[0]['value'] !== '' && data[0]['value'] !== unitQuery) || data[0]['save']) {
             const unit = data[0]['value'].replace(/ /g, '_')
 
-            const uniqueAgents = new Set<string>();
-
-            data.forEach((item: any) => {
-                uniqueAgents.add(item.value.agentplan1);
-                uniqueAgents.add(item.value.agentplan2);
-            });
-
-            let triple = ''
-            const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
-            for (let i = 0; i < footerAgentLabel.length; i++) {
-                if (footerAgentLabel[i]['ao'] !== '' && !Agents.includes(footerAgentLabel[i]['ao'])) {
-                    triple += `
-                        :${footerAgentLabel[i]['ao']} rdf:type :Object.
-                        :${footerAgentLabel[i]['ao']} rdfs:comment "${unit}" .
-                    `
-                }
-            }
-
-            for (let i = 0; i < footerAgentLabel.length; i++) {
-
-                if (footerAgentLabel[i]['pleasure'] === 'True') {
-                    triple += `
-                        :${footerAgentLabel[i]['ao']} :pleasant true.   
-                        
-                        `
-                } else if (footerAgentLabel[i]['pleasure'] === 'False') {
-                    triple += `
-                        :${footerAgentLabel[i]['ao']} :pleasant false.   
-                        
-                        `
-                }
-
-                const likesArray = (String(footerAgentLabel[i]['likes']).split(',').map((s: string) => s.trim()))
-
-                for (let j = 0; j < likesArray.length; j++) {
-                    if (likesArray[j] !== '') {
-                        triple += `
-                            :${footerAgentLabel[i]['ao']} :likes :${likesArray[j]}.   
-                            
-                            `
-                    }
-                }
-
-                const dislikesArray = (String(footerAgentLabel[i]['dislikes']).split(',').map((s: string) => s.trim()))
-
-                for (let j = 0; j < dislikesArray.length; j++) {
-                    if (dislikesArray[j] !== '') {
-                        triple += `
-                            :${footerAgentLabel[i]['ao']} :dislikes :${dislikesArray[j]}.   
-                            
-                            `
-                    }
-                }
-
-            }
-
-            setData(prevData => {
-                const newData = [...prevData];
-                // @ts-ignore
-                newData[0] = {...newData[0], tripleExtra: triple};
-                return newData;
-            });
-
             const fetchDataInsert = async () => {
                 const prefixQuery = `
                 PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -676,12 +613,7 @@ function Edit() {
 
     const handleClickSaveAndInference = async () => {
         setLoading(true);
-        setData(prevData => {
-            const newData = [...prevData];
-            // @ts-ignore
-            newData[0] = {...newData[0], save: true};
-            return newData;
-        });
+        save()
 
         await new Promise<void>(resolve => {
             const interval = setInterval(() => {
@@ -711,12 +643,7 @@ function Edit() {
 
     const handleClickSaveAndExport = async () => {
         setLoadingExp(true);
-        setData(prevData => {
-            const newData = [...prevData];
-            // @ts-ignore
-            newData[0] = {...newData[0], save: true};
-            return newData;
-        });
+        save()
 
         await new Promise<void>(resolve => {
             const interval = setInterval(() => {
@@ -754,7 +681,6 @@ function Edit() {
             setLoadingExp(false);
         }
     };
-
     const handleInputAgentsChange = (str: string, field: string, value: string) => {
         let label: any = footerAgentLabel.find((elem: any) => elem['ao'] === str);
         if (!label) {
@@ -784,24 +710,25 @@ function Edit() {
             if (label['dislikes']) {
                 label['dislikes'] = String(label['dislikes'])
             }
-            for (let i = 0; i < footerAgentLabel.length; i++) {
-                let object1: any = []
-                const arrayLike = String(footerAgentLabel[i]['likes']).split(',').map(s => s.trim());
-                if (footerAgentLabel[i]['likes'] !== 'undefined' && footerAgentLabel[i]['likes'] !== '') {
-                    object1 = arrayLike.filter((element: any) => !includesCaseInsensitive(Agents, element));
-                }
-                let object2: any = []
-                const arrayDislike = String(footerAgentLabel[i]['dislikes']).split(',').map(s => s.trim());
-                if (footerAgentLabel[i]['dislikes'] !== 'undefined' && footerAgentLabel[i]['dislikes'] !== '') {
-                    object2 = arrayDislike.filter((element: any) => !includesCaseInsensitive(Agents, element));
-                }
-                obj = [...obj, ...object1, ...object2]
-            }
         } else {
             label[field] = value;
         }
-        setObjectData(Array.from(new Set(obj)))
 
+        for (let i = 0; i < footerAgentLabel.length; i++) {
+            let object1: any = []
+            const arrayLike = String(footerAgentLabel[i]['likes']).split(',').map(s => s.trim());
+            if (footerAgentLabel[i]['likes'] !== 'undefined' && footerAgentLabel[i]['likes'] !== '') {
+                object1 = arrayLike.filter((element: any) => !includesCaseInsensitive(Agents, element));
+            }
+            let object2: any = []
+            const arrayDislike = String(footerAgentLabel[i]['dislikes']).split(',').map(s => s.trim());
+            if (footerAgentLabel[i]['dislikes'] !== 'undefined' && footerAgentLabel[i]['dislikes'] !== '') {
+                object2 = arrayDislike.filter((element: any) => !includesCaseInsensitive(Agents, element));
+            }
+            obj = [...obj, ...object1, ...object2]
+        }
+
+        setObjectData(Array.from(new Set(obj)))
         setFooterAgentLabel(prevArray => {
             const index = prevArray.findIndex((elem: any) => elem.ao === label.ao);
 
@@ -823,7 +750,6 @@ function Edit() {
             return newArray;
         });
     };
-
     function createAgentFooterInput() {
         const uniqueAgents = new Set<string>();
 
@@ -831,15 +757,17 @@ function Edit() {
             uniqueAgents.add(item.value.agentplan1);
             uniqueAgents.add(item.value.agentplan2);
         });
-
         const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
         return Agents.map((str: string, index: number) => {
-
             let label: any = footerAgentLabel.find((item: any) => item.ao === str);
             if (!label) {
                 setFooterAgentLabel(prevArray => {
-                    let newArray: any = [...prevArray];
+                    let newArray:any = prevArray
+                        .filter((item:any) => item.likes === '' && item.dislikes === '' && Agents.includes(item.ao))
                     newArray.push({ ao: str, likes: '', dislikes: '', pleasure: null })
+                    objectData.forEach(str => {
+                        newArray.push({ ao: str, likes: 'undefined', dislikes: 'undefined', pleasure: null });
+                    });
                     return newArray;
                 });
                 label={ ao: str, likes: '', dislikes: '', pleasure: null }
@@ -892,6 +820,72 @@ function Edit() {
                     </RadioGroup>
                 </div>
             )
+        });
+    }
+    function save() {
+        const unit = data[0]['value'].replace(/ /g, '_')
+
+        const uniqueAgents = new Set<string>();
+
+        data.forEach((item: any) => {
+            uniqueAgents.add(item.value.agentplan1);
+            uniqueAgents.add(item.value.agentplan2);
+        });
+
+        let triple = ''
+        const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
+        for (let i = 0; i < footerAgentLabel.length; i++) {
+            if (footerAgentLabel[i]['ao'] !== '' && !Agents.includes(footerAgentLabel[i]['ao'])) {
+                triple += `
+                        :${footerAgentLabel[i]['ao']} rdf:type :Object.
+                        :${footerAgentLabel[i]['ao']} rdfs:comment "${unit}" .
+                    `
+            }
+        }
+
+        for (let i = 0; i < footerAgentLabel.length; i++) {
+
+            if (footerAgentLabel[i]['pleasure'] === 'True') {
+                triple += `
+                        :${footerAgentLabel[i]['ao']} :pleasant true.   
+                        
+                        `
+            } else if (footerAgentLabel[i]['pleasure'] === 'False') {
+                triple += `
+                        :${footerAgentLabel[i]['ao']} :pleasant false.   
+                        
+                        `
+            }
+
+            const likesArray = (String(footerAgentLabel[i]['likes']).split(',').map((s: string) => s.trim()))
+
+            for (let j = 0; j < likesArray.length; j++) {
+                if (likesArray[j] !== '') {
+                    triple += `
+                            :${footerAgentLabel[i]['ao']} :likes :${likesArray[j]}.   
+                            
+                            `
+                }
+            }
+
+            const dislikesArray = (String(footerAgentLabel[i]['dislikes']).split(',').map((s: string) => s.trim()))
+
+            for (let j = 0; j < dislikesArray.length; j++) {
+                if (dislikesArray[j] !== '') {
+                    triple += `
+                            :${footerAgentLabel[i]['ao']} :dislikes :${dislikesArray[j]}.   
+                            
+                            `
+                }
+            }
+
+        }
+
+        setData(prevData => {
+            const newData = [...prevData];
+            // @ts-ignore
+            newData[0] = {...newData[0], save: true, tripleExtra: triple};
+            return newData;
         });
     }
 
@@ -1072,7 +1066,7 @@ function Edit() {
                         )
                     )
                 } else {
-                    return <></>
+                    return <div key={index}></div>
                 }
             })}
             <Box display="flex" justifyContent="center" mt={5} gap={2}>
@@ -1081,12 +1075,7 @@ function Edit() {
                     color="success"
                     startIcon={<SaveIcon/>}
                     onClick={() => {
-                        setData(prevData => {
-                            const newData = [...prevData];
-                            // @ts-ignore
-                            newData[0] = {...newData[0], save: true};
-                            return newData;
-                        });
+                        save();
                     }}
                 >
                     Save
