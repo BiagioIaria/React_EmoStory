@@ -27,6 +27,7 @@ import TableCell from "@mui/material/TableCell";
 import {useLocation} from "react-router-dom";
 import axios from "axios";
 import {variables} from "../endPoint";
+import {emotions} from "../emotionsExplanation";
 
 interface Labels {
     [key: string]: any;
@@ -889,6 +890,18 @@ function Edit() {
         });
     }
 
+    function createEmoExplanation() {
+
+        return emoInf.map((emo: any, index: number) => {
+            const str = emo['emo']['value'].split('#')[1].split('_')[0]
+
+            return (
+                <div key={str + index + 'Explanation'}>
+                    <h4>{str}: {emotions[str]}</h4>
+                </div>
+            )
+        });
+    }
     return (
         <div className='edit'>
             <Paper style={{display: 'flex', flexDirection: 'column', height: '57em'}}>
@@ -1069,6 +1082,9 @@ function Edit() {
                     return <div key={index}></div>
                 }
             })}
+            <Divider/>
+            <h3>Emotions Explanation</h3>
+            {createEmoExplanation()}
             <Box display="flex" justifyContent="center" mt={5} gap={2}>
                 <Button
                     variant="contained"
