@@ -891,15 +891,21 @@ function Edit() {
     }
 
     function createEmoExplanation() {
-
+        const checkEmo:any = new Set([])
         return emoInf.map((emo: any, index: number) => {
             const str = emo['emo']['value'].split('#')[1].split('_')[0]
+            const lengthBefore = checkEmo.size
+            checkEmo.add(str)
+            if(lengthBefore !== checkEmo.size){
+                return (
+                    <div key={str + index + 'Explanation'}>
+                        <h4>{str}: {emotions[str]}</h4>
+                    </div>
+                )
+            }else{
+                return null
+            }
 
-            return (
-                <div key={str + index + 'Explanation'}>
-                    <h4>{str}: {emotions[str]}</h4>
-                </div>
-            )
         });
     }
     return (
