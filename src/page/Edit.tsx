@@ -845,13 +845,12 @@ function Edit() {
         }
 
         for (let i = 0; i < footerAgentLabel.length; i++) {
-
-            if (footerAgentLabel[i]['pleasure'] === 'True') {
+            if (footerAgentLabel[i]['pleasure'] === 'true' || footerAgentLabel[i]['pleasure'] === 'True') {
                 triple += `
                         :${footerAgentLabel[i]['ao']} :pleasant true.   
                         
                         `
-            } else if (footerAgentLabel[i]['pleasure'] === 'False') {
+            } else if (footerAgentLabel[i]['pleasure'] === 'false' || footerAgentLabel[i]['pleasure'] === 'False') {
                 triple += `
                         :${footerAgentLabel[i]['ao']} :pleasant false.   
                         
