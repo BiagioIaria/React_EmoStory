@@ -92,8 +92,8 @@ function Import() {
                                     comment = `${unit}#${index}`
                                     index += 1
 
-                                    const plan1 = kb['inConflictWith'][i]['p1']
-                                    const plan2 = kb['inConflictWith'][i]['p2']
+                                    const plan1 = kb['inConflictWith'][i]['p1'].replace(/ /g, '_')
+                                    const plan2 = kb['inConflictWith'][i]['p2'].replace(/ /g, '_')
 
                                     if (Object.keys(commentIndex).includes(plan1)) {
                                         commentIndex[plan1].push(comment)
@@ -107,14 +107,14 @@ function Import() {
                                     }
                                 }
 
-                            } else if (Object.keys(kb).includes('inSupportOf')) {
-
+                            }
+                            if (Object.keys(kb).includes('inSupportOf')) {
                                 for (let i = 0; i < kb['inSupportOf'].length; i++) {
                                     comment = `${unit}#${index}`
                                     index += 1
 
-                                    const plan1 = kb['inSupportOf'][i]['p1']
-                                    const plan2 = kb['inSupportOf'][i]['p2']
+                                    const plan1 = kb['inSupportOf'][i]['p1'].replace(/ /g, '_')
+                                    const plan2 = kb['inSupportOf'][i]['p2'].replace(/ /g, '_')
 
                                     if (Object.keys(commentIndex).includes(plan1)) {
                                         commentIndex[plan1].push(comment)
@@ -146,7 +146,7 @@ function Import() {
                                 if (Object.keys(kb).includes('precedes')) {
                                     for (let i = 0; i < kb['precedes'].length; i++) {
                                         tripleUnit += `
-                                        :Timeline_${kb['precedes'][i]['p1']} :hypo_precedes :Timeline_${kb['precedes'][i]['p2']}
+                                        :Timeline_${kb['precedes'][i]['p1'].replace(/ /g, '_')} :hypo_precedes :Timeline_${kb['precedes'][i]['p2'].replace(/ /g, '_')}.
                                         
                                         `
                                     }
@@ -155,7 +155,7 @@ function Import() {
                                 if (Object.keys(kb).includes('follows')) {
                                     for (let i = 0; i < kb['follows'].length; i++) {
                                         tripleUnit += `
-                                        :Timeline_${kb['follows'][i]['p1']} :is_hypo_preceded_by :Timeline_${kb['follows'][i]['p2']}
+                                        :Timeline_${kb['follows'][i]['p1'].replace(/ /g, '_')} :is_hypo_preceded_by :Timeline_${kb['follows'][i]['p2'].replace(/ /g, '_')}.
                                         
                                         `
                                     }
@@ -181,22 +181,23 @@ function Import() {
 
                                     for (let i = 0; i < kb['inConflictWith'].length; i++) {
 
-                                        plan1 = kb['inConflictWith'][i]['p1']
-                                        plan2 = kb['inConflictWith'][i]['p2']
+                                        plan1 = kb['inConflictWith'][i]['p1'].replace(/ /g, '_')
+                                        plan2 = kb['inConflictWith'][i]['p2'].replace(/ /g, '_')
 
-                                        conflict = `:${plan1} :inConflictWith :${plan2}
-                                            :${plan2} :inConflictWith :${plan1}`
+                                        conflict = `:${plan1} :inConflictWith :${plan2}.
+                                            :${plan2} :inConflictWith :${plan1}.`
 
                                         if (Object.keys(kb).includes('accomplished') || Object.keys(kb).includes('unaccomplished')) {
-                                            if (kb['accomplished'].includes(plan1)) {
+
+                                            if (kb['accomplished'].includes(kb['inConflictWith'][i]['p1'])) {
                                                 accomplished1 = `:${plan1} :accomplished true .`
-                                            } else if (kb['unaccomplished'].includes(plan1)) {
+                                            } else if (kb['unaccomplished'].includes(kb['inConflictWith'][i]['p1'])) {
                                                 accomplished1 = `:${plan1} :accomplished false .`
                                             }
 
-                                            if (kb['accomplished'].includes(plan2)) {
+                                            if (kb['accomplished'].includes(kb['inConflictWith'][i]['p2'])) {
                                                 accomplished2 = `:${plan2} :accomplished true .`
-                                            } else if (kb['unaccomplished'].includes(plan2)) {
+                                            } else if (kb['unaccomplished'].includes(kb['inConflictWith'][i]['p2'])) {
                                                 accomplished2 = `:${plan2} :accomplished false .`
                                             }
                                         }
@@ -225,24 +226,25 @@ function Import() {
                                 
                                 `
                                     }
-                                } else if (Object.keys(kb).includes('inSupportOf')) {
+                                }
+                                if (Object.keys(kb).includes('inSupportOf')) {
 
                                     for (let i = 0; i < kb['inSupportOf'].length; i++) {
 
-                                        plan1 = kb['inSupportOf'][i]['p1']
-                                        plan2 = kb['inSupportOf'][i]['p2']
+                                        plan1 = kb['inSupportOf'][i]['p1'].replace(/ /g, '_')
+                                        plan2 = kb['inSupportOf'][i]['p2'].replace(/ /g, '_')
 
-                                        conflict = `:${plan1} :inSupportOf :${plan2}`
+                                        conflict = `:${plan1} :inSupportOf :${plan2}.`
                                         if (Object.keys(kb).includes('accomplished') || Object.keys(kb).includes('unaccomplished')) {
-                                            if (kb['accomplished'].includes(plan1)) {
+                                            if (kb['accomplished'].includes(kb['inSupportOf'][i]['p1'])) {
                                                 accomplished1 = `:${plan1} :accomplished true .`
-                                            } else if (kb['unaccomplished'].includes(plan1)) {
+                                            } else if (kb['unaccomplished'].includes(kb['inSupportOf'][i]['p1'])) {
                                                 accomplished1 = `:${plan1} :accomplished false .`
                                             }
 
-                                            if (kb['accomplished'].includes(plan2)) {
+                                            if (kb['accomplished'].includes(kb['inSupportOf'][i]['p2'])) {
                                                 accomplished2 = `:${plan2} :accomplished true .`
-                                            } else if (kb['unaccomplished'].includes(plan2)) {
+                                            } else if (kb['unaccomplished'].includes(kb['inSupportOf'][i]['p2'])) {
                                                 accomplished2 = `:${plan2} :accomplished false .`
                                             }
                                         }
@@ -273,7 +275,6 @@ function Import() {
                                 `
                                     }
                                 }
-
                                 const BATCH_SIZE = 4;
                                 const triples = triplePlan.split('\n'); // Divide le triple per riga
                                 for (let i = 0; i < triples.length; i += BATCH_SIZE) {
@@ -290,8 +291,8 @@ function Import() {
                                 if (Object.keys(kb).includes('achieves')) {
 
                                     for (let i = 0; i < kb['achieves'].length; i++) {
-                                        plan = kb['achieves'][i]['p']
-                                        goal = kb['achieves'][i]['g']
+                                        plan = kb['achieves'][i]['p'].replace(/ /g, '_')
+                                        goal = kb['achieves'][i]['g'].replace(/ /g, '_')
                                         for (let j = 0; j < commentIndex[plan].length; j++) {
                                             comment += `:${plan} rdfs:comment "${commentIndex[plan][j]}" .
                                     `
@@ -308,7 +309,6 @@ function Import() {
                                 `
                                     }
                                 }
-
 
                                 const BATCH_SIZE = 4;
                                 const triples = tripleGoal.split('\n'); // Divide le triple per riga
@@ -327,12 +327,12 @@ function Import() {
                                 if (Object.keys(kb).includes('intends')) {
 
                                     for (let i = 0; i < kb['intends'].length; i++) {
-                                        agent = kb['intends'][i]['a']
-                                        plan = kb['intends'][i]['p']
+                                        agent = kb['intends'][i]['a'].replace(/ /g, '_')
+                                        plan = kb['intends'][i]['p'].replace(/ /g, '_')
                                         goal = ''
                                         for (let j = 0; j < kb['achieves'].length; j++) {
-                                            if (kb['achieves'][j]['p'] === plan) {
-                                                goal = kb['achieves'][j]['g']
+                                            if (kb['achieves'][j]['p'].replace(/ /g, '_') === plan) {
+                                                goal = kb['achieves'][j]['g'].replace(/ /g, '_')
                                                 break
                                             }
                                         }
@@ -384,8 +384,8 @@ function Import() {
 
                                 if (Object.keys(kb).includes('Like')) {
                                     for (let i = 0; i < kb['Like'].length; i++) {
-                                        agent = kb['Like'][i]['a']
-                                        const ao = kb['Like'][i]['ao']
+                                        agent = kb['Like'][i]['a'].replace(/ /g, '_')
+                                        const ao = kb['Like'][i]['ao'].replace(/ /g, '_')
                                         if (kb['Agent'].includes(ao)) {
                                             tripleAgent += `
                                             :${agent} :likes :${ao}.                             
@@ -403,8 +403,8 @@ function Import() {
                                 }
                                 if (Object.keys(kb).includes('Dislike')) {
                                     for (let i = 0; i < kb['Dislike'].length; i++) {
-                                        agent = kb['Dislike'][i]['a']
-                                        const ao = kb['Dislike'][i]['ao']
+                                        agent = kb['Dislike'][i]['a'].replace(/ /g, '_')
+                                        const ao = kb['Dislike'][i]['ao'].replace(/ /g, '_')
                                         if (kb['Agent'].includes(ao)) {
                                             tripleAgent += `
                                             :${agent} :dislikes :${ao}.                             
@@ -434,12 +434,12 @@ function Import() {
 
                                 if (Object.keys(kb).includes('Agent')) {
                                     for (let agentIndex = 0; agentIndex < kb['Agent'].length; agentIndex++) {
-                                        let agent = kb['Agent'][agentIndex];
+                                        let agent = kb['Agent'][agentIndex].replace(/ /g, '_');
                                         let plan = '';
 
                                         for (let intendIndex = 0; intendIndex < kb['intends'].length; intendIndex++) {
-                                            if (kb['intends'][intendIndex]['a'] === agent) {
-                                                plan = kb['intends'][intendIndex]['p'];
+                                            if (kb['intends'][intendIndex]['a'].replace(/ /g, '_') === agent) {
+                                                plan = kb['intends'][intendIndex]['p'].replace(/ /g, '_');
                                                 break;
                                             }
                                         }
@@ -485,34 +485,34 @@ function Import() {
                                             return c
                                         }
 
-                                        let value = kb['Value'][valueIndex];
+                                        let value = kb['Value'][valueIndex].replace(/ /g, '_');
 
                                         for (let hasValueIndex = 0; hasValueIndex < kb['hasValue'].length; hasValueIndex++) {
-                                            if (kb['hasValue'][hasValueIndex]['v'] === value) {
-                                                agent = kb['hasValue'][hasValueIndex]['a'];
+                                            if (kb['hasValue'][hasValueIndex]['v'].replace(/ /g, '_') === value) {
+                                                agent = kb['hasValue'][hasValueIndex]['a'].replace(/ /g, '_');
                                                 break;
                                             }
                                         }
 
                                         let stake = []
                                         for (let stakeInSetIndex = 0; stakeInSetIndex < kb['atStakeInSet'].length; stakeInSetIndex++) {
-                                            if (kb['atStakeInSet'][stakeInSetIndex]['v'] === value) {
-                                                stake.push(kb['atStakeInSet'][stakeInSetIndex]['s'])
+                                            if (kb['atStakeInSet'][stakeInSetIndex]['v'].replace(/ /g, '_') === value) {
+                                                stake.push(kb['atStakeInSet'][stakeInSetIndex]['s'].replace(/ /g, '_'))
                                             }
                                         }
 
                                         let balance = []
                                         for (let balanceInSetIndex = 0; balanceInSetIndex < kb['inBalanceInSet'].length; balanceInSetIndex++) {
-                                            if (kb['inBalanceInSet'][balanceInSetIndex]['v'] === value) {
-                                                balance.push(kb['inBalanceInSet'][balanceInSetIndex]['s'])
+                                            if (kb['inBalanceInSet'][balanceInSetIndex]['v'].replace(/ /g, '_') === value) {
+                                                balance.push(kb['inBalanceInSet'][balanceInSetIndex]['s'].replace(/ /g, '_'))
                                             }
                                         }
 
                                         for (let stakeIndex = 0; stakeIndex < stake.length; stakeIndex++) {
                                             for (let k = 0; k < kb['hasPrecondition'].length; k++) {
-                                                if (kb['hasPrecondition'][k]['s'] === stake[stakeIndex]) {
-                                                    if (kb['hasPrecondition'][k]['pu'] !== unit) {
-                                                        plans.push(kb['hasPrecondition'][k]['pu'])
+                                                if (kb['hasPrecondition'][k]['s'].replace(/ /g, '_') === stake[stakeIndex]) {
+                                                    if (kb['hasPrecondition'][k]['pu'].replace(/ /g, '_') !== unit) {
+                                                        plans.push(kb['hasPrecondition'][k]['pu'].replace(/ /g, '_'))
                                                     } else {
                                                         tripleValue += `
                                                         :Precondition_${unit}_${value}_atStake rdf:type :SetMember.
@@ -525,9 +525,9 @@ function Import() {
                                                 }
                                             }
                                             for (let k = 0; k < kb['hasEffect'].length; k++) {
-                                                if (kb['hasEffect'][k]['s'] === stake[stakeIndex]) {
-                                                    if (kb['hasEffect'][k]['pu'] !== unit) {
-                                                        plans.push(kb['hasEffect'][k]['pu'])
+                                                if (kb['hasEffect'][k]['s'].replace(/ /g, '_') === stake[stakeIndex]) {
+                                                    if (kb['hasEffect'][k]['pu'].replace(/ /g, '_') !== unit) {
+                                                        plans.push(kb['hasEffect'][k]['pu'].replace(/ /g, '_'))
                                                     } else {
                                                         tripleValue += `
                                                         :Effect_${unit}_${value}_atStake rdf:type :SetMember.
@@ -543,9 +543,9 @@ function Import() {
 
                                         for (let balanceIndex = 0; balanceIndex < balance.length; balanceIndex++) {
                                             for (let k = 0; k < kb['hasPrecondition'].length; k++) {
-                                                if (kb['hasPrecondition'][k]['s'] === balance[balanceIndex]) {
-                                                    if (kb['hasPrecondition'][k]['pu'] !== unit) {
-                                                        plans.push(kb['hasPrecondition'][k]['pu'])
+                                                if (kb['hasPrecondition'][k]['s'].replace(/ /g, '_') === balance[balanceIndex]) {
+                                                    if (kb['hasPrecondition'][k]['pu'].replace(/ /g, '_') !== unit) {
+                                                        plans.push(kb['hasPrecondition'][k]['pu'].replace(/ /g, '_'))
                                                     } else {
                                                         tripleValue += `
                                                         :Precondition_${unit}_${value}_inBalance rdf:type :SetMember.
@@ -558,9 +558,9 @@ function Import() {
                                                 }
                                             }
                                             for (let k = 0; k < kb['hasEffect'].length; k++) {
-                                                if (kb['hasEffect'][k]['s'] === balance[balanceIndex]) {
-                                                    if (kb['hasEffect'][k]['pu'] !== unit) {
-                                                        plans.push(kb['hasEffect'][k]['pu'])
+                                                if (kb['hasEffect'][k]['s'].replace(/ /g, '_') === balance[balanceIndex]) {
+                                                    if (kb['hasEffect'][k]['pu'].replace(/ /g, '_') !== unit) {
+                                                        plans.push(kb['hasEffect'][k]['pu'].replace(/ /g, '_'))
                                                     } else {
                                                         tripleValue += `
                                                         :Effect_${unit}_${value}_inBalance rdf:type :SetMember.
@@ -583,14 +583,14 @@ function Import() {
                                                 let stakeEffPlan = ''
                                                 for (let stakeIndex = 0; stakeIndex < stake.length; stakeIndex++) {
                                                     for (let k = 0; k < kb['hasPrecondition'].length; k++) {
-                                                        if (kb['hasPrecondition'][k]['s'] === stake[stakeIndex] &&
-                                                            kb['hasPrecondition'][k]['pu'] === p[planIndex]) {
+                                                        if (kb['hasPrecondition'][k]['s'].replace(/ /g, '_') === stake[stakeIndex] &&
+                                                            kb['hasPrecondition'][k]['pu'].replace(/ /g, '_') === p[planIndex]) {
                                                             stakePrePlan = 'atStake'
                                                         }
                                                     }
                                                     for (let k = 0; k < kb['hasEffect'].length; k++) {
-                                                        if (kb['hasEffect'][k]['s'] === stake[stakeIndex] &&
-                                                            kb['hasEffect'][k]['pu'] === p[planIndex]) {
+                                                        if (kb['hasEffect'][k]['s'].replace(/ /g, '_') === stake[stakeIndex] &&
+                                                            kb['hasEffect'][k]['pu'].replace(/ /g, '_') === p[planIndex]) {
                                                             stakeEffPlan = 'atStake'
                                                         }
                                                     }
@@ -598,14 +598,14 @@ function Import() {
 
                                                 for (let balanceIndex = 0; balanceIndex < balance.length; balanceIndex++) {
                                                     for (let k = 0; k < kb['hasPrecondition'].length; k++) {
-                                                        if (kb['hasPrecondition'][k]['s'] === balance[balanceIndex] &&
-                                                            kb['hasPrecondition'][k]['pu'] === p[planIndex]) {
+                                                        if (kb['hasPrecondition'][k]['s'].replace(/ /g, '_') === balance[balanceIndex] &&
+                                                            kb['hasPrecondition'][k]['pu'].replace(/ /g, '_') === p[planIndex]) {
                                                             stakePrePlan = 'inBalance'
                                                         }
                                                     }
                                                     for (let k = 0; k < kb['hasEffect'].length; k++) {
-                                                        if (kb['hasEffect'][k]['s'] === balance[balanceIndex] &&
-                                                            kb['hasEffect'][k]['pu'] === p[planIndex]) {
+                                                        if (kb['hasEffect'][k]['s'].replace(/ /g, '_') === balance[balanceIndex] &&
+                                                            kb['hasEffect'][k]['pu'].replace(/ /g, '_') === p[planIndex]) {
                                                             stakeEffPlan = 'inBalance'
                                                         }
                                                     }
