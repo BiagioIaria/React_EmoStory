@@ -435,9 +435,9 @@ function Edit() {
 
                     if (drammarTitle !== '') {
                         tripleUnit += `
-                        :${drammarTitle} rdf:type :Vocabulary .
-                        :${drammarTitle} rdfs:comment "${unit}" .
-                        :${drammarTitle} dc:description "${drammarSynopsis}" .
+                        :${drammarTitle.replace(/\s|\n/g, "_")} rdf:type :Vocabulary .
+                        :${drammarTitle.replace(/\s|\n/g, "_")} rdfs:comment "${unit}" .
+                        :${drammarTitle.replace(/\s|\n/g, "_")} dc:description "${drammarSynopsis}" .
                         
                         `
                     }
@@ -751,7 +751,6 @@ function Edit() {
             return newArray;
         });
     };
-
     function createAgentFooterInput() {
         const uniqueAgents = new Set<string>();
 
@@ -920,10 +919,26 @@ function Edit() {
                                 <TableCell align="center" colSpan={initialColumns.length}
                                            sx={{ textAlign: 'center' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                                        <TextField id="Title" label="Title" variant="standard"
-                                                   value={drammarTitle}
-                                                   onChange={(event) => setDrammarTitle(event.target.value)}
-                                                   style={{ width: '10em', marginRight: '1.6em' }}
+                                        <TextField
+                                            id="Title"
+                                            label="Title"
+                                            variant="standard"
+                                            value={drammarTitle.replace(/_/g, ' ')}
+                                            onChange={(event) => setDrammarTitle(event.target.value)}
+                                            style={{
+                                                width: '33%',
+                                                marginRight: '1.6em',
+                                                overflowX: 'auto',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                            inputProps={{
+                                                style: {
+                                                    overflowX: 'auto',
+                                                    whiteSpace: 'nowrap'
+                                                }
+                                            }}
+                                            rows={2}
+                                            multiline
                                         />
                                         <div style={{ position: 'relative', flex: 1 }}>
                                             <span className="backgroundText">Synopsis</span>
@@ -944,7 +959,7 @@ function Edit() {
                                 <TableCell key={'unit'} align="center" colSpan={initialColumns.length} sx={{ textAlign: 'center' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                                         <Tooltip title={<span style={{fontSize: '1.2em'}}>Unit Title</span>} placement="top" arrow>
-                                            <Button variant="outlined" style={{ textTransform: 'none', width: '10em', marginRight: '1em' }}
+                                            <Button variant="outlined" style={{ textTransform: 'none', width: '33%', marginRight: '1em' }}
                                                     onDoubleClick={(e) => {
                                                         if (inputs['unit'] !== undefined || unitQuery !== '') {
                                                             handleClick(e, 'unit');

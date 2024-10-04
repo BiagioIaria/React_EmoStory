@@ -1217,7 +1217,8 @@ function TableEdit(params: any) {
                 );
             } else {
                 return (
-                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block">
+                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block" justifyContent="center"
+                         alignItems="center">
                         <Stack direction="row" spacing={2} alignItems={"center"}>
                             <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Plan</span>}
                                      placement="top" arrow>
