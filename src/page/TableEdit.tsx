@@ -1295,7 +1295,7 @@ function TableEdit(params: any) {
                                                 fontWeight: labels['value' + index + '_' + column.dataKey] !== 'Value?' && labels['value' + index + '_' + column.dataKey] !== undefined ? 'bold' : 'normal',
                                             }}
                                     >
-                                        {labels['value' + index + '_' + column.dataKey] === undefined ? 'Value?' : labels['value' + index + '_' + column.dataKey]}
+                                        {labels['value' + index + '_' + column.dataKey] === undefined ? 'Value?' : labels['value' + index + '_' + column.dataKey].replace(/_/g, ' ')}
                                     </Button>
                                 </span>
                             </Tooltip>
@@ -1407,7 +1407,7 @@ function TableEdit(params: any) {
                             >
                                 <Box display="flex" alignItems="center">
                                     <Typography variant="body2" style={{marginRight: 8}}>
-                                        Agent {keyLabel[keyLabel.length - 1]}
+                                        Agent
                                     </Typography>
                                     <Tooltip title={<span style={{fontSize: '1.2em'}}>Agent Title</span>}
                                              placement="top" arrow>
@@ -1427,10 +1427,12 @@ function TableEdit(params: any) {
                                                 }}
                                                 sx={{
                                                     m: 1,
-                                                    fontWeight: queryLabels['agent' + keyLabel] !== '' ? 'bold' : 'normal'
+                                                    fontWeight: queryLabels['agent' + keyLabel] !== '' ? 'bold' : 'normal',
+                                                    width: '150px',
+                                                    height: 'auto'
                                                 }}
                                             >
-                                                {labels['agent' + keyLabel]}
+                                                {labels['agent' + keyLabel].replace(/_/g, ' ')}
                                             </Button>
                                         </span>
                                     </Tooltip>
@@ -1457,7 +1459,7 @@ function TableEdit(params: any) {
                                 </Menu>
                                 <Box display="flex" alignItems="center">
                                     <Typography variant="body2" style={{marginRight: 8}}>
-                                        Goal Plan Agent {keyLabel[keyLabel.length - 1]}
+                                        Goal
                                     </Typography>
                                     <Tooltip title={<span style={{fontSize: '1.2em'}}>Goal Title</span>} placement="top"
                                              arrow>
@@ -1477,10 +1479,12 @@ function TableEdit(params: any) {
                                                 }}
                                                 sx={{
                                                     m: 1,
-                                                    fontWeight: queryLabels['goal' + keyLabel] !== '' ? 'bold' : 'normal'
+                                                    fontWeight: queryLabels['goal' + keyLabel] !== '' ? 'bold' : 'normal',
+                                                    width: '150px',
+                                                    height: 'auto'
                                                 }}
                                             >
-                                                {labels['goal' + keyLabel]}
+                                                {labels['goal' + keyLabel].replace(/_/g, ' ')}
                                             </Button>
                                         </span>
                                     </Tooltip>
@@ -1507,7 +1511,7 @@ function TableEdit(params: any) {
                                 </Menu>
                                 <Box display="flex" alignItems="center">
                                     <Typography variant="body2" style={{marginRight: 8}}>
-                                        Plan Agent {keyLabel[keyLabel.length - 1]}
+                                        Plan
                                     </Typography>
                                     <Tooltip title={<span style={{fontSize: '1.2em'}}>Plan Title</span>} placement="top"
                                              arrow>
@@ -1527,10 +1531,12 @@ function TableEdit(params: any) {
                                                 }}
                                                 sx={{
                                                     m: 1,
-                                                    fontWeight: queryLabels[keyLabel] !== '' ? 'bold' : 'normal'
+                                                    fontWeight: queryLabels[keyLabel] !== '' ? 'bold' : 'normal',
+                                                    width: '150px',
+                                                    height: 'auto'
                                                 }}
                                             >
-                                                {labels[keyLabel]}
+                                                {labels[keyLabel].replace(/_/g, ' ')}
                                             </Button>
                                         </span>
                                     </Tooltip>
@@ -1649,12 +1655,13 @@ function TableEdit(params: any) {
                                                 <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Unit</span>}
                                                          placement="top"
                                                          arrow>
-                                                    <span>
                                                         <Button style={{
                                                             textTransform: 'none',
                                                             height: '56px',
+                                                            width: '33px',
                                                             display: 'flex',
-                                                            alignItems: 'center'
+                                                            alignItems: 'center',
+                                                            marginTop: '1.1em'
                                                         }}
                                                                 variant="outlined"
                                                                 onDoubleClick={(e) => {
@@ -1684,7 +1691,7 @@ function TableEdit(params: any) {
                                                                 }}>
                                                             {labels['balPreUnit' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPreUnit' + index + '_' + column.dataKey]}
                                                         </Button>
-                                                    </span>
+
                                                 </Tooltip>
                                                 <Menu
                                                     anchorEl={anchorEls['balPreUnit' + index + '_' + column.dataKey]}
@@ -1871,19 +1878,6 @@ function TableEdit(params: any) {
                             sx={{borderRight: '1px solid rgba(224, 224, 224, 1)', width: column.width}}
                         >
                             {cellContent}
-                            <Typography
-                                variant="caption"
-                                display="block"
-                                gutterBottom
-                                sx={{
-                                    fontSize: '0.6rem',
-                                    color: 'rgba(128, 128, 128, 0.7)',
-                                    bottom: 0,
-                                    right: 0,
-                                }}
-                            >
-                                {row[column.dataKey]}
-                            </Typography>
                         </TableCell>
                     );
                 })}

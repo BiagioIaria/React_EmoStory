@@ -584,7 +584,7 @@ function Edit() {
                         return (
                             <TableCell key={col.dataKey}
                                        style={{width: col.width, textAlign: "center"}}
-                            >{col.label}</TableCell>
+                            >{col.label.replace(/_/g, ' ')}</TableCell>
                         )
                     } else {
                         return (
@@ -751,6 +751,7 @@ function Edit() {
             return newArray;
         });
     };
+
     function createAgentFooterInput() {
         const uniqueAgents = new Set<string>();
 
@@ -763,15 +764,15 @@ function Edit() {
             let label: any = footerAgentLabel.find((item: any) => item.ao === str);
             if (!label) {
                 setFooterAgentLabel(prevArray => {
-                    let newArray:any = prevArray
-                        .filter((item:any) => item.likes === '' && item.dislikes === '' && Agents.includes(item.ao))
-                    newArray.push({ ao: str, likes: '', dislikes: '', pleasure: null })
+                    let newArray: any = prevArray
+                        .filter((item: any) => item.likes === '' && item.dislikes === '' && Agents.includes(item.ao))
+                    newArray.push({ao: str, likes: '', dislikes: '', pleasure: null})
                     objectData.forEach(str => {
-                        newArray.push({ ao: str, likes: 'undefined', dislikes: 'undefined', pleasure: null });
+                        newArray.push({ao: str, likes: 'undefined', dislikes: 'undefined', pleasure: null});
                     });
                     return newArray;
                 });
-                label={ ao: str, likes: '', dislikes: '', pleasure: null }
+                label = {ao: str, likes: '', dislikes: '', pleasure: null}
             }
 
             let radioGroupValue = "null"
@@ -823,6 +824,7 @@ function Edit() {
             )
         });
     }
+
     function save() {
         const unit = data[0]['value'].replace(/ /g, '_')
 
@@ -890,119 +892,104 @@ function Edit() {
     }
 
     function createEmoExplanation() {
-        const checkEmo:any = new Set([])
+        const checkEmo: any = new Set([])
         return emoInf.map((emo: any, index: number) => {
             const str = emo['emo']['value'].split('#')[1].split('_')[0]
             const lengthBefore = checkEmo.size
             checkEmo.add(str)
-            if(lengthBefore !== checkEmo.size){
+            if (lengthBefore !== checkEmo.size) {
                 return (
                     <div key={str + index + 'Explanation'}>
                         <h4>{str}: {emotions[str]}</h4>
                     </div>
                 )
-            }else{
+            } else {
                 return null
             }
 
         });
     }
+
     return (
         <div className='edit'>
-            <Paper style={{display: 'flex', flexDirection: 'column', height: '57em'}}>
+            <Paper style={{display: 'flex', flexDirection: 'column'}}>
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead style={{position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1}}>
                             <TableRow>
                                 <TableCell align="center" colSpan={initialColumns.length}
-                                           sx={{
-                                               textAlign: 'center',
-                                           }}>
-                                    <TextField id="Title" label="Drammar Title" variant="standard"
-                                               value={drammarTitle}
-                                               onChange={(event) => setDrammarTitle(event.target.value)}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align="center" colSpan={initialColumns.length}
-                                           sx={{
-                                               textAlign: 'center',
-                                           }}>
-                                    <div style={{position: 'relative', width: '100%'}}>
-                                        <span className="backgroundText">Synopsis Drammar</span>
-                                        <TextField
-                                            multiline
-                                            rows={2}
-                                            variant="outlined"
-                                            style={{width: '55em'}}
-                                            value={drammarSynopsis}
-                                            onChange={(event) => setDrammarSynopsis(event.target.value)}
+                                           sx={{ textAlign: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                        <TextField id="Title" label="Title" variant="standard"
+                                                   value={drammarTitle}
+                                                   onChange={(event) => setDrammarTitle(event.target.value)}
+                                                   style={{ width: '10em', marginRight: '1.6em' }}
                                         />
+                                        <div style={{ position: 'relative', flex: 1 }}>
+                                            <span className="backgroundText">Synopsis</span>
+                                            <TextField
+                                                multiline
+                                                rows={2}
+                                                variant="outlined"
+                                                value={drammarSynopsis}
+                                                onChange={(event) => setDrammarSynopsis(event.target.value)}
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
                                     </div>
                                 </TableCell>
                             </TableRow>
+
                             <TableRow>
-                                <TableCell key={'unit'}
-                                           align="center" colSpan={initialColumns.length}
-                                           sx={{
-                                               textAlign: 'center',
-                                           }}
-                                >
-                                    <Tooltip title={<span style={{fontSize: '1.2em'}}>Unit Title</span>} placement="top"
-                                             arrow>
-                                        <Button variant="outlined" style={{textTransform: 'none'}}
-                                                onDoubleClick={(e) => {
-                                                    if (inputs['unit'] !== undefined || unitQuery !== '') {
-                                                        handleClick(e, 'unit');
-                                                    }
-                                                }}
-                                                onClick={(e) => {
-                                                    if (inputs['unit'] === undefined && unitQuery === '') {
-                                                        handleClick(e, 'unit');
-                                                    }
-                                                }}
-                                                sx={{m: 1}}>
-                                            {labels['unit']}
-                                        </Button>
-                                    </Tooltip>
-                                    <Menu
-                                        anchorEl={anchorEls['unit']}
-                                        open={Boolean(anchorEls['unit'])}
-                                        onClose={() => handleClose('unit')}
-                                    >
-                                        <MenuItem>
-                                            <Input
-                                                placeholder="Unit"
-                                                value={inputs['unit']?.input || ''}
-                                                onChange={(e) => handleInputChange('unit', 'input', e.target.value)}
-                                                fullWidth
-                                                onKeyDown={handleKeyDown}
-                                            />
-                                        </MenuItem>
-                                        <MenuItem>
-                                            <Button variant="contained" onClick={() => handleConfirm('unit')}>
-                                                Confirm
+                                <TableCell key={'unit'} align="center" colSpan={initialColumns.length} sx={{ textAlign: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                        <Tooltip title={<span style={{fontSize: '1.2em'}}>Unit Title</span>} placement="top" arrow>
+                                            <Button variant="outlined" style={{ textTransform: 'none', width: '10em', marginRight: '1em' }}
+                                                    onDoubleClick={(e) => {
+                                                        if (inputs['unit'] !== undefined || unitQuery !== '') {
+                                                            handleClick(e, 'unit');
+                                                        }
+                                                    }}
+                                                    onClick={(e) => {
+                                                        if (inputs['unit'] === undefined && unitQuery === '') {
+                                                            handleClick(e, 'unit');
+                                                        }
+                                                    }}
+                                                    sx={{ m: 1 }}>
+                                                {labels['unit'].replace(/_/g, ' ')}
                                             </Button>
-                                        </MenuItem>
-                                    </Menu>
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell key={'Synopsis Unit'} align="center" colSpan={initialColumns.length}
-                                           sx={{
-                                               textAlign: 'center',
-                                           }}>
-                                    <div style={{position: 'relative', width: '100%'}}>
-                                        <span className="backgroundText">Synopsis Unit</span>
-                                        <TextField
-                                            multiline
-                                            rows={2}
-                                            variant="outlined"
-                                            style={{width: '55em'}}
-                                            value={unitSynopsis}
-                                            onChange={(event) => setUnitSynopsis(event.target.value)}
-                                        />
+                                        </Tooltip>
+                                        <Menu
+                                            anchorEl={anchorEls['unit']}
+                                            open={Boolean(anchorEls['unit'])}
+                                            onClose={() => handleClose('unit')}
+                                        >
+                                            <MenuItem>
+                                                <Input
+                                                    placeholder="Unit"
+                                                    value={inputs['unit']?.input || ''}
+                                                    onChange={(e) => handleInputChange('unit', 'input', e.target.value)}
+                                                    fullWidth
+                                                    onKeyDown={handleKeyDown}
+                                                />
+                                            </MenuItem>
+                                            <MenuItem>
+                                                <Button variant="contained" onClick={() => handleConfirm('unit')}>
+                                                    Confirm
+                                                </Button>
+                                            </MenuItem>
+                                        </Menu>
+                                        <div style={{ position: 'relative', flex: 1 }}>
+                                            <span className="backgroundText">Synopsis Unit</span>
+                                            <TextField
+                                                multiline
+                                                rows={2}
+                                                variant="outlined"
+                                                value={unitSynopsis}
+                                                onChange={(event) => setUnitSynopsis(event.target.value)}
+                                                style={{ width: '100%' }}
+                                            />
+                                        </div>
                                     </div>
                                 </TableCell>
                             </TableRow>

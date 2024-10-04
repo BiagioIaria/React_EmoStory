@@ -2,6 +2,15 @@
   font-family: "Tahoma", serif;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden; /* Previeni scrolling orizzontale */
+}
+
 .App header {
   background: rgb(193,0,0,255);
   text-align: left;
@@ -65,18 +74,18 @@
 }
 
 .App .edit {
-  margin: 1em auto;
-  width: 90%;
+  margin: 0.5em auto;
+  width: 95%;
 }
 
 .App .home {
   margin: 1em auto;
-  width: 90%;
+  width: 95%;
 }
 
 .App .import {
   margin: 1em auto;
-  width: 90%;
+  width: 95%;
 }
 
 .App .backgroundText {
