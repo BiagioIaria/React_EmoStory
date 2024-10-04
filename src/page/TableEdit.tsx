@@ -1170,7 +1170,7 @@ function TableEdit(params: any) {
         setGroups([...groups, Number(keyLabel[keyLabel.length - 1]), 3]);
     };
 
-    const rowContent = (rowIndex: number, row: Data) => {
+    const rowContent = (rowIndex: number, _ :any) => {
         function ButtonsValue(index: number, column: ColumnData, flag: boolean) {
             if (!flag) {
                 return (
@@ -1217,9 +1217,13 @@ function TableEdit(params: any) {
                 );
             } else {
                 return (
-                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative" display="inline-block" justifyContent="center"
+                    <Box key={'Value ' + index + ' ' + column.dataKey} position="relative"
+                         display="flex"
+                         justifyContent="center"
                          alignItems="center">
-                        <Stack direction="row" spacing={2} alignItems={"center"}>
+                        <Stack direction="row" spacing={2} display="flex"  justifyContent="center"
+                               alignItems="center"
+                               position="relative">
                             <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Plan</span>}
                                      placement="top" arrow>
                                 <span>
