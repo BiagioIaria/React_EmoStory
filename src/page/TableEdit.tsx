@@ -810,6 +810,29 @@ function TableEdit(params: any) {
                             const batch = triples.slice(i, i + BATCH_SIZE).join('\n');
                             await sendBatchQuery(batch);
                         }
+                    } else if (t === 'DifferentFromAgent') {
+                        let query = `
+                                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                                    PREFIX : <http://www.purl.org/drammar#>
+                                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                                    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                                    
+                                    INSERT {
+                                      ?agent1 owl:differentFrom ?agent2 .
+                                    }
+                                    WHERE {
+                                      ?agent1 rdf:type :Agent .
+                                      ?agent2 rdf:type :Agent .
+                                      FILTER(?agent1 != ?agent2) .
+                                      FILTER(?label1 != ?label2) .
+                                    }
+                                
+                                `
+                        await axios.post(variables.API_URL_POST, query, {
+                            headers: {
+                                'Content-Type': 'application/sparql-update'
+                            }
+                        });
                     } else if (t === 'tripleExtra') {
 
                         const sendBatchQuery = async (batch: string) => {
@@ -950,6 +973,7 @@ function TableEdit(params: any) {
                         await fetchDataInsert('Plan');
                         await fetchDataInsert('Goal');
                         await fetchDataInsert('Agent');
+                        await fetchDataInsert('DifferentFromAgent');
                         await fetchDataInsert('Emotion');
                         await fetchDataInsert('Value');
                         await fetchDataInsert('tripleExtra').then()
@@ -968,9 +992,10 @@ function TableEdit(params: any) {
                         await fetchDataInsert('Plan');
                         await fetchDataInsert('Goal');
                         await fetchDataInsert('Agent');
+                        await fetchDataInsert('DifferentFromAgent');
                         await fetchDataInsert('Emotion');
                         await fetchDataInsert('Value');
-                        await fetchDataInsert('tripleExtra')
+                        await fetchDataInsert('tripleExtra').then()
                         params.updateData(0);
                     } catch (error) {
                         console.error('Errore durante l\'aggiornamento dei dati:', error);
@@ -1170,7 +1195,7 @@ function TableEdit(params: any) {
         setGroups([...groups, Number(keyLabel[keyLabel.length - 1]), 3]);
     };
 
-    const rowContent = (rowIndex: number, _ :any) => {
+    const rowContent = (rowIndex: number, _: any) => {
         function ButtonsValue(index: number, column: ColumnData, flag: boolean) {
             if (!flag) {
                 return (
@@ -1221,7 +1246,7 @@ function TableEdit(params: any) {
                          display="flex"
                          justifyContent="center"
                          alignItems="center">
-                        <Stack direction="row" spacing={2} display="flex"  justifyContent="center"
+                        <Stack direction="row" spacing={2} display="flex" justifyContent="center"
                                alignItems="center"
                                position="relative">
                             <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Plan</span>}
@@ -1660,42 +1685,42 @@ function TableEdit(params: any) {
                                                 <Tooltip title={<span style={{fontSize: '1.2em'}}>State of Value before the Unit</span>}
                                                          placement="top"
                                                          arrow>
-                                                        <Button style={{
-                                                            textTransform: 'none',
-                                                            height: '56px',
-                                                            width: '33px',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            marginTop: '1.1em'
-                                                        }}
-                                                                variant="outlined"
-                                                                onDoubleClick={(e) => {
-                                                                    if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
-                                                                        handleClick(e, 'balPreUnit' + index + '_' + column.dataKey);
-                                                                    }
-                                                                }}
-                                                                onClick={(e) => {
-                                                                    if (labels['balPreUnit' + index + '_' + column.dataKey] === undefined || labels['balPreUnit' + index + '_' + column.dataKey] === 'Balance?') {
-                                                                        handleClick(e, 'balPreUnit' + index + '_' + column.dataKey)
-                                                                    }
-                                                                }}
-                                                                sx={{
-                                                                    m: 1,
-                                                                    borderColor: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
-                                                                        ? 'green'
-                                                                        : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
-                                                                            ? 'red' : 'theme.palette.primary.main',
-                                                                    color: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
-                                                                        ? 'green'
-                                                                        : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
-                                                                            ? 'red' : 'theme.palette.primary.main',
-                                                                    fontWeight: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
-                                                                        ? 'bold'
-                                                                        : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
-                                                                            ? 'bold' : 'normal',
-                                                                }}>
-                                                            {labels['balPreUnit' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPreUnit' + index + '_' + column.dataKey]}
-                                                        </Button>
+                                                    <Button style={{
+                                                        textTransform: 'none',
+                                                        height: '56px',
+                                                        width: '33px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        marginTop: '1.1em'
+                                                    }}
+                                                            variant="outlined"
+                                                            onDoubleClick={(e) => {
+                                                                if (labels['balPreUnit' + index + '_' + column.dataKey] !== undefined) {
+                                                                    handleClick(e, 'balPreUnit' + index + '_' + column.dataKey);
+                                                                }
+                                                            }}
+                                                            onClick={(e) => {
+                                                                if (labels['balPreUnit' + index + '_' + column.dataKey] === undefined || labels['balPreUnit' + index + '_' + column.dataKey] === 'Balance?') {
+                                                                    handleClick(e, 'balPreUnit' + index + '_' + column.dataKey)
+                                                                }
+                                                            }}
+                                                            sx={{
+                                                                m: 1,
+                                                                borderColor: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
+                                                                    ? 'green'
+                                                                    : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
+                                                                        ? 'red' : 'theme.palette.primary.main',
+                                                                color: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
+                                                                    ? 'green'
+                                                                    : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
+                                                                        ? 'red' : 'theme.palette.primary.main',
+                                                                fontWeight: labels['balPreUnit' + index + '_' + column.dataKey] === 'inBalance'
+                                                                    ? 'bold'
+                                                                    : labels['balPreUnit' + index + '_' + column.dataKey] === 'atStake'
+                                                                        ? 'bold' : 'normal',
+                                                            }}>
+                                                        {labels['balPreUnit' + index + '_' + column.dataKey] === undefined ? 'Balance?' : labels['balPreUnit' + index + '_' + column.dataKey]}
+                                                    </Button>
 
                                                 </Tooltip>
                                                 <Menu
