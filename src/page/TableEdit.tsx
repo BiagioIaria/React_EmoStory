@@ -1675,7 +1675,7 @@ function TableEdit(params: any) {
                                                                     }
                                                                 }}
                                                                 onClick={(e) => {
-                                                                    if (labels['balPreUnit' + index + '_' + column.dataKey] === undefined) {
+                                                                    if (labels['balPreUnit' + index + '_' + column.dataKey] === undefined || labels['balPreUnit' + index + '_' + column.dataKey] === 'Balance?') {
                                                                         handleClick(e, 'balPreUnit' + index + '_' + column.dataKey)
                                                                     }
                                                                 }}
