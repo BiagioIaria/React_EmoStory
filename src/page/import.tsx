@@ -351,14 +351,16 @@ function Import() {
                                     for (let i = 0; i < kb['Pleasant'].length; i++) {
                                         if (kb['Agent'].includes(kb['Pleasant'][i])) {
                                             tripleAgent += `
-                                            :${kb['Pleasant'][i]} :pleasant true.                             
+                                            :${kb['Pleasant'][i].replace(/ /g, '_')} :pleasant true.                             
                                             
                                             `
                                         } else {
                                             tripleAgent += `
-                                            :${kb['Pleasant'][i]} rdf:type :Object.
+                                            :${kb['Pleasant'][i].replace(/ /g, '_')} rdf:type :Object.
                                             ${comments(commentIndex, plan, kb['Pleasant'][i])}
-                                            :${kb['Pleasant'][i]} :pleasant true.                             
+                                            :${kb['Pleasant'][i].replace(/ /g, '_')} :pleasant true.
+                                            :${kb['Pleasant'][i].replace(/ /g, '_')} :likes "undefined".   
+                                            :${kb['Pleasant'][i].replace(/ /g, '_')} :dislikes "undefined".                            
                                             
                                             `
                                         }
@@ -368,14 +370,16 @@ function Import() {
                                     for (let i = 0; i < kb['Unpleasant'].length; i++) {
                                         if (kb['Agent'].includes(kb['Unpleasant'][i])) {
                                             tripleAgent += `
-                                            :${kb['Unpleasant'][i]} :pleasant false.                             
+                                            :${kb['Unpleasant'][i].replace(/ /g, '_')} :pleasant false.                             
                                             
                                             `
                                         } else {
                                             tripleAgent += `
-                                            :${kb['Unpleasant'][i]} rdf:type :Object.
+                                            :${kb['Unpleasant'][i].replace(/ /g, '_')} rdf:type :Object.
                                             ${comments(commentIndex, plan, kb['Unpleasant'][i])}
-                                            :${kb['Unpleasant'][i]} :pleasant false.                             
+                                            :${kb['Unpleasant'][i].replace(/ /g, '_')} :pleasant false. 
+                                            :${kb['Unpleasant'][i].replace(/ /g, '_')} :likes "undefined".   
+                                            :${kb['Unpleasant'][i].replace(/ /g, '_')} :dislikes "undefined".                                 
                                             
                                             `
                                         }
@@ -395,7 +399,9 @@ function Import() {
                                             tripleAgent += `
                                             :${ao} rdf:type :Object.
                                             ${comments(commentIndex, plan, ao)}
-                                            :${agent} :likes :${ao}.                       
+                                            :${agent} :likes :${ao}.  
+                                            :${ao} :likes "undefined".   
+                                            :${ao} :dislikes "undefined".                        
                                             
                                             `
                                         }
@@ -414,7 +420,9 @@ function Import() {
                                             tripleAgent += `
                                             :${ao} rdf:type :Object.
                                             ${comments(commentIndex, plan, ao)}
-                                            :${agent} :dislikes :${ao}.                       
+                                            :${agent} :dislikes :${ao}.  
+                                            :${ao} :likes "undefined".   
+                                            :${ao} :dislikes "undefined".                       
                                             
                                             `
                                         }
