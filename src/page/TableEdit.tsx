@@ -1265,7 +1265,7 @@ function TableEdit(params: any) {
                                                 }
                                             }}
                                             onClick={(e) => {
-                                                if (labels['balPre' + index + '_' + column.dataKey] === undefined) {
+                                                if (labels['balPre' + index + '_' + column.dataKey] === undefined || labels['balPre' + index + '_' + column.dataKey] === 'Balance?') {
                                                     handleClick(e, 'balPre' + index + '_' + column.dataKey)
                                                 }
                                             }}
@@ -1366,7 +1366,7 @@ function TableEdit(params: any) {
                                                 }
                                             }}
                                             onClick={(e) => {
-                                                if (labels['balEff' + index + '_' + column.dataKey] === undefined) {
+                                                if (labels['balEff' + index + '_' + column.dataKey] === undefined || labels['balEff' + index + '_' + column.dataKey] === 'Balance?') {
                                                     handleClick(e, 'balEff' + index + '_' + column.dataKey)
                                                 }
                                             }}
