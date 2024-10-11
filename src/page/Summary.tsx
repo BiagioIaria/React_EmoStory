@@ -154,7 +154,7 @@ function Summary() {
                 {emoForAgent.map(({agent, Emo}) => (
                     <Box key={agent} mb={4}>
                         <Typography variant="h5" component="h2">
-                            {agent}
+                            {agent.replace(/_/g, ' ')}
                         </Typography>
                         <List>
                             {Emo.map((emo: any, index: any) => (
