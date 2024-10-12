@@ -761,11 +761,12 @@ function Edit() {
         const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
         return Agents.map((str: string, index: number) => {
             let label: any = footerAgentLabel.find((item: any) => item.ao === str);
-            if (!label) {
+            if (!label || (Agents.length + objectData.length) !== footerAgentLabel.length) {
                 setFooterAgentLabel(prevArray => {
-                    let newArray: any = prevArray
-                        .filter((item: any) => item.likes === '' && item.dislikes === '' && Agents.includes(item.ao))
-                    newArray.push({ao: str, likes: '', dislikes: '', pleasure: null})
+                    let newArray: any = []
+                    Agents.forEach(str => {
+                        newArray.push({ao: str, likes: '', dislikes: '', pleasure: null});
+                    });
                     objectData.forEach(str => {
                         newArray.push({ao: str, likes: 'undefined', dislikes: 'undefined', pleasure: null});
                     });
