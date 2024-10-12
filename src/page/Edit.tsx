@@ -762,13 +762,13 @@ function Edit() {
         return Agents.map((str: string, index: number) => {
             let label: any = footerAgentLabel.find((item: any) => item.ao === str);
             if (!label || (Agents.length + objectData.length) !== footerAgentLabel.length) {
-                setFooterAgentLabel(prevArray => {
+                setFooterAgentLabel(() => {
                     let newArray: any = []
-                    Agents.forEach(str => {
-                        newArray.push({ao: str, likes: '', dislikes: '', pleasure: null});
+                    Agents.forEach(strAgent => {
+                        newArray.push({ao: strAgent, likes: '', dislikes: '', pleasure: null});
                     });
-                    objectData.forEach(str => {
-                        newArray.push({ao: str, likes: 'undefined', dislikes: 'undefined', pleasure: null});
+                    objectData.forEach(strObj => {
+                        newArray.push({ao: strObj, likes: 'undefined', dislikes: 'undefined', pleasure: null});
                     });
                     return newArray;
                 });
