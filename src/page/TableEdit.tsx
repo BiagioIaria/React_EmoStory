@@ -110,6 +110,7 @@ function TableEdit(params: any) {
     const [inputs, setInputs] = useState<Inputs>({});
     const [triplesQuery, setTriplesQuery] = useState<Labels>({});
     const [emotion, setEmotion] = useState([]);
+    const [dataByUnit, setDataByUnit] = useState([]);
     const [agentEmotionInf, setAgentEmotionInf] = useState<any>([]);
 
     function setEmotionQuery(data: any) {
@@ -340,6 +341,49 @@ function TableEdit(params: any) {
     }, [queryLabels]);
 
     useEffect(() => {
+        const fetchData = async () => {
+            const comment = params.selectedUnit + '#'
+            try {
+                let query = `
+                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX : <http://www.purl.org/drammar#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                        
+                        SELECT distinct (STRAFTER(STR(?p), "#") AS ?Plan)
+                               (STRAFTER(STR(?g), "#") AS ?Goal) (STRAFTER(STR(?ag), "#") AS ?Agent) ?a
+                        WHERE{
+                          ?p rdfs:comment ?comment .
+                          ?p rdf:type :DirectlyExecutablePlan .
+                          ?p :accomplished ?a .
+                          ?g :isAchievedBy ?p .
+                          ?ag :intends ?p .
+                          FILTER regex(?comment, "${comment}\\\\d+", "i")
+                        }
+
+                       `;
+
+
+                const response = await axios.get(variables.API_URL_GET, {
+                    params: {
+                        query,
+                    },
+                    headers: {
+                        'Accept': 'application/sparql-results+json',
+                    },
+                });
+                setDataByUnit(response.data['results']['bindings']);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        if (params.selectedUnit !== '') {
+            fetchData().then()
+        }
+        // eslint-disable-next-line
+    }, [params.selectedUnit]);
+
+
+    useEffect(() => {
         const unitParam = params.data[0]['value']
         const editParam = params.edit
 
@@ -502,7 +546,7 @@ function TableEdit(params: any) {
                         accomplished1 = ''
                         accomplished2 = ''
                         let triplePlan = ``
-                        if (plan1 !== '') {
+                        if (plan1 !== '' && (params.temp === "1" || params.temp === "3")) {
                             if (queryLabels['accplan1'] && queryLabels['accplan1'] === 'Accomplished') {
                                 accomplished1 = `:${plan1} :accomplished true .`
                             } else if (queryLabels['accplan1']) {
@@ -521,7 +565,7 @@ function TableEdit(params: any) {
                             
                             `
                         }
-                        if (plan2 !== '') {
+                        if (plan2 !== '' && (params.temp === "1" || params.temp === "2")) {
                             if (queryLabels['accplan2'] && queryLabels['accplan2'] === 'Accomplished') {
                                 accomplished2 = `:${plan2} :accomplished true .`
                             } else if (queryLabels['accplan2']) {
@@ -584,7 +628,7 @@ function TableEdit(params: any) {
 
                     } else if (t === 'Goal') {
                         let tripleGoal = ``
-                        if (goal1 !== '') {
+                        if (goal1 !== '' && (params.temp === "1" || params.temp === "3")) {
                             tripleGoal += `
                             :${goal1} rdf:type :Goal.
                             :${goal1} rdfs:comment "${comment}" .
@@ -599,7 +643,7 @@ function TableEdit(params: any) {
                                 `
                             }
                         }
-                        if (goal2 !== '') {
+                        if (goal2 !== '' && (params.temp === "1" || params.temp === "2")) {
                             tripleGoal += `
                             :${goal2} rdf:type :Goal.
                             :${goal2} rdfs:comment "${comment}" .
@@ -628,7 +672,7 @@ function TableEdit(params: any) {
                         });
                     } else if (t === 'Agent') {
                         let tripleAgent = ``
-                        if (agent1 !== '') {
+                        if (agent1 !== '' && (params.temp === "1" || params.temp === "3")) {
                             tripleAgent += `
                             :${agent1} rdf:type :Agent.
                             :${agent1} rdfs:comment "${comment}" .
@@ -647,7 +691,7 @@ function TableEdit(params: any) {
                                 `
                             }
                         }
-                        if (agent2 !== '') {
+                        if (agent2 !== '' && (params.temp === "1" || params.temp === "2")) {
                             tripleAgent += `
                             :${agent2} rdf:type :Agent.
                             :${agent2} rdfs:comment "${comment}" .
@@ -690,7 +734,7 @@ function TableEdit(params: any) {
                             :${elem}_ES :hasEmotionType :${elem}.
                             `
 
-                            if (agent1 !== '') {
+                            if (agent1 !== '' && (params.temp === "1" || params.temp === "3")) {
                                 tripleEmo += `
                                  :${elem}_${agent1} rdf:type :Emotion.
                                  :${elem}_${agent1} rdfs:comment "${comment}" .
@@ -700,7 +744,7 @@ function TableEdit(params: any) {
                                  `
                             }
 
-                            if (agent2 !== '') {
+                            if (agent2 !== '' && (params.temp === "1" || params.temp === "2")) {
                                 tripleEmo += `
                                  :${elem}_${agent2} rdf:type :Emotion.
                                  :${elem}_${agent2} rdfs:comment "${comment}" .
@@ -785,10 +829,10 @@ function TableEdit(params: any) {
                                 }
                             });
                         }
-                        if (agent1 !== '') {
+                        if (agent1 !== '' && (params.temp === "1" || params.temp === "3")) {
                             generateTriples(value_1, agent1, plan1, 'accplan1');
                         }
-                        if (agent2 !== '') {
+                        if (agent2 !== '' && (params.temp === "1" || params.temp === "2")) {
                             generateTriples(value_2, agent2, plan2, 'accplan2');
                         }
 
@@ -1194,10 +1238,21 @@ function TableEdit(params: any) {
         }
         setGroups([...groups, Number(keyLabel[keyLabel.length - 1]), 3]);
     };
-
     const rowContent = (rowIndex: number, _: any) => {
         function ButtonsValue(index: number, column: ColumnData, flag: boolean) {
-            if (!flag) {
+            if (!flag && params.temp !== "1") {
+                return (
+                    <Box
+                        key={'Value ' + index + ' ' + column.dataKey}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        position="relative"
+                        marginTop={2}
+                        height={'56px'}
+                    />
+                )
+            } else if (!flag) {
                 return (
                     <Box
                         key={'Value ' + index + ' ' + column.dataKey}
@@ -1410,6 +1465,77 @@ function TableEdit(params: any) {
 
         }
 
+        function handleInputUnitChange(data: any) {
+            const plan = data['Plan']?.['value'] ?? null;
+
+            const goalplan = data['Goal']?.['value'] ?? null;
+
+            const agentplan = data['Agent']?.['value'] ?? null;
+
+            const elabDataAcc = () => {
+                if (data['a'] !== undefined && data['a']['value'] === 'true') {
+                    return 'Accomplished'
+                } else if (data['a'] !== undefined && data['a']['value'] === 'false') {
+                    return 'Unaccomplished'
+                } else {
+                    return 'accomplished?'
+                }
+            };
+            if (params.temp === '2') {
+                setLabels(prevLabels => {
+
+                    return {
+                        ...prevLabels,
+                        ...(plan !== null && plan !== undefined ? {plan1: plan} : {}),
+                        ...(elabDataAcc() !== null && elabDataAcc() !== undefined ? {accplan1: elabDataAcc()} : {}),
+                        ...(goalplan !== null && goalplan !== undefined ? {goalplan1: goalplan} : {}),
+                        ...(agentplan !== null && agentplan !== undefined ? {agentplan1: agentplan} : {}),
+                    };
+
+
+                })
+
+                setQueryLabels(prevLabels => {
+
+                    return {
+                        ...prevLabels,
+                        ...(plan !== null && plan !== undefined ? {plan1: plan} : {}),
+                        ...(elabDataAcc() !== null && elabDataAcc() !== undefined ? {accplan1: elabDataAcc()} : {}),
+                        ...(goalplan !== null && goalplan !== undefined ? {goalplan1: goalplan} : {}),
+                        ...(agentplan !== null && agentplan !== undefined ? {agentplan1: agentplan} : {}),
+                    };
+
+                })
+            } else if (params.temp === '3') {
+                setLabels(prevLabels => {
+
+                    return {
+                        ...prevLabels,
+                        ...(plan !== null && plan !== undefined ? {plan2: plan} : {}),
+                        ...(elabDataAcc() !== null && elabDataAcc() !== undefined ? {accplan2: elabDataAcc()} : {}),
+                        ...(goalplan !== null && goalplan !== undefined ? {goalplan2: goalplan} : {}),
+                        ...(agentplan !== null && agentplan !== undefined ? {agentplan2: agentplan} : {}),
+                    };
+
+
+                })
+
+                setQueryLabels(prevLabels => {
+
+                    return {
+                        ...prevLabels,
+                        ...(plan !== null && plan !== undefined ? {plan2: plan} : {}),
+                        ...(elabDataAcc() !== null && elabDataAcc() !== undefined ? {accplan2: elabDataAcc()} : {}),
+                        ...(goalplan !== null && goalplan !== undefined ? {goalplan2: goalplan} : {}),
+                        ...(agentplan !== null && agentplan !== undefined ? {agentplan2: agentplan} : {}),
+                    };
+
+                })
+            }
+
+
+        }
+
         return (
             <React.Fragment>
                 {column.map((column) => {
@@ -1571,26 +1697,42 @@ function TableEdit(params: any) {
                                         </span>
                                     </Tooltip>
                                 </Box>
-                                <Menu
-                                    anchorEl={anchorEls[keyLabel]}
-                                    open={Boolean(anchorEls[keyLabel])}
-                                    onClose={() => handleClose(keyLabel)}
-                                >
-                                    <MenuItem>
-                                        <Input
-                                            placeholder="Plan"
-                                            value={inputs[keyLabel]?.input || ''}
-                                            onChange={(e) => handleInputChange(keyLabel, 'input', e.target.value)}
-                                            fullWidth
-                                            onKeyDown={handleKeyDown}
-                                        />
-                                    </MenuItem>
-                                    <MenuItem>
-                                        <Button variant="contained" onClick={() => handleConfirm(keyLabel)}>
-                                            Confirm
-                                        </Button>
-                                    </MenuItem>
-                                </Menu>
+                                {params.temp !== "1" && (column.dataKey === 'unit_b' || column.dataKey === 'unit_n') ? (
+                                    <Menu
+                                        anchorEl={anchorEls[keyLabel]}
+                                        keepMounted
+                                        open={Boolean(anchorEls[keyLabel])}
+                                        onClose={() => handleClose(keyLabel)}
+                                    >
+                                        {dataByUnit.map((data, index) => (
+                                            <MenuItem key={data + '_' + index}
+                                                      onClick={() => handleInputUnitChange(data)}>
+                                                {data['Plan']?.['value'] ?? null}
+                                            </MenuItem>
+                                        ))}
+                                    </Menu>
+                                ) : (
+                                    <Menu
+                                        anchorEl={anchorEls[keyLabel]}
+                                        open={Boolean(anchorEls[keyLabel])}
+                                        onClose={() => handleClose(keyLabel)}
+                                    >
+                                        <MenuItem>
+                                            <Input
+                                                placeholder="Plan"
+                                                value={inputs[keyLabel]?.input || ''}
+                                                onChange={(e) => handleInputChange(keyLabel, 'input', e.target.value)}
+                                                fullWidth
+                                                onKeyDown={handleKeyDown}
+                                            />
+                                        </MenuItem>
+                                        <MenuItem>
+                                            <Button variant="contained" onClick={() => handleConfirm(keyLabel)}>
+                                                Confirm
+                                            </Button>
+                                        </MenuItem>
+                                    </Menu>
+                                )}
                                 <Tooltip title={<span style={{fontSize: '1.2em'}}>Plan Completion</span>}
                                          placement="top" arrow>
                                     <span>

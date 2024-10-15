@@ -140,6 +140,8 @@ function Edit() {
     const [drammarTitle, setDrammarTitle] = useState('');
     const [objectData, setObjectData] = useState([]);
     const [footerAgentLabel, setFooterAgentLabel] = useState([]);
+    const [units, setUnits] = useState([]);
+    const [selectedUnit, setSelectedUnit] = useState('');
 
 
     let params = useParams();
@@ -174,6 +176,13 @@ function Edit() {
         }
 
         setObjectData(Array.from(new Set(obj)))
+    }
+
+    function setUnitsQuery(data: any) {
+        const elabData = data.map((item: { [x: string]: { [x: string]: any; }; }) => {
+            return item['Unit']['value'];
+        });
+        setUnits(elabData);
     }
 
     useEffect(() => {
@@ -231,7 +240,7 @@ function Edit() {
                 for (let i = 0; i <= Number(numberTableEdit[0]['number']['value']); i++) {
                     tableEdit.push(
                         <TableEdit key={'edit_' + i} data={data} updateData={updateData} edit={editParam} temp={temp}
-                                   idTableEdit={i} emoInf={emoInf}/>
+                                   idTableEdit={i} emoInf={emoInf} selectedUnit={selectedUnit}/>
                     )
                 }
             }
@@ -377,6 +386,33 @@ function Edit() {
             }
         };
 
+        const fetchDataUnits = async () => {
+            try {
+                const query = `
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX : <http://www.purl.org/drammar#>
+                    
+                    SELECT (STRAFTER(STR(?individuo), "#")AS ?Unit)
+                    WHERE {
+                      ?individuo rdf:type :Unit .
+                    }
+                `;
+
+                const response = await axios.get(variables.API_URL_GET, {
+                    params: {
+                        query,
+                    },
+                    headers: {
+                        'Accept': 'application/sparql-results+json',
+                    },
+                });
+
+                setUnitsQuery(response.data['results']['bindings']);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
         const fetchData = async () => {
             try {
                 await fetchDataNumber()
@@ -390,6 +426,9 @@ function Edit() {
         if (unitParam) {
             fetchData().then();
         }
+        if (temp !== "1") {
+            fetchDataUnits().then()
+        }
         // eslint-disable-next-line
     }, []);
 
@@ -397,11 +436,11 @@ function Edit() {
         setTableEdits(prevTableEdits =>
             prevTableEdits.map((edit, index) => (
                 <TableEdit key={edit.key} data={data} updateData={updateData} edit={editParam} temp={temp}
-                           idTableEdit={index} emoInf={emoInf}/>
+                           idTableEdit={index} emoInf={emoInf} selectedUnit={selectedUnit}/>
             ))
         );
         // eslint-disable-next-line
-    }, [data, emoInf]);
+    }, [data, emoInf, selectedUnit]);
 
     useEffect(() => {
         if ((data[0]['value'] !== '' && data[0]['value'] !== unitQuery) || data[0]['save']) {
@@ -440,6 +479,20 @@ function Edit() {
                         :${drammarTitle.replace(/\s|\n/g, "_")} dc:description "${drammarSynopsis}" .
                         
                         `
+                    }
+
+                    if (temp === '2' && selectedUnit!=='') {
+                        tripleUnit += `
+                            :Timeline_${selectedUnit.replace(/ /g, '_')} :hypo_precedes :Timeline_${unit}.
+                            
+                            `
+                    }
+
+                    if (temp === '3' && selectedUnit!=='') {
+                        tripleUnit += `
+                            :Timeline_${unit} :is_hypo_preceded_by :Timeline_${selectedUnit.replace(/ /g, '_')}.
+                            
+                            `
                     }
 
                     const query = `${prefixQuery}
@@ -528,7 +581,7 @@ function Edit() {
 
     const [tableEdits, setTableEdits] = useState([<TableEdit key={0} data={data} updateData={updateData}
                                                              edit={editParam} temp={temp} idTableEdit={0}
-                                                             emoInf={emoInf}/>]);
+                                                             emoInf={emoInf} selectedUnit={selectedUnit}/>]);
 
     const handleClick = (event: { currentTarget: any; }, id: any) => {
         setAnchorEls((prev) => ({...prev, [id]: event.currentTarget}));
@@ -546,6 +599,10 @@ function Edit() {
                 [inputName]: value
             }
         }));
+    };
+
+    const handleInputUnitChange = (value: any) => {
+        setSelectedUnit(value);
     };
 
     const handleConfirm = (id: any) => {
@@ -573,14 +630,74 @@ function Edit() {
         setTableEdits(prevTableEdits => [
             ...prevTableEdits,
             <TableEdit key={prevTableEdits.length} data={data} updateData={updateData} edit={editParam} temp={temp}
-                       emoInf={emoInf}/>
+                       emoInf={emoInf} selectedUnit={selectedUnit}/>
         ]);
     };
 
     const headerTable = () => (
         <TableRow>
             {initialColumns.map((col) => {
-                    if ('unit' !== col.dataKey) {
+                    if (temp === "2" && 'unit_b' === col.dataKey) {
+                        const rowId = 'unit_b'
+                        return (
+                            <TableCell key={col.dataKey} style={{width: col.width, textAlign: "center"}}>
+                                <Button
+                                    style={{
+                                        textTransform: 'none',
+                                    }}
+                                    aria-controls={`simple-menu-${rowId}`}
+                                    aria-haspopup="true"
+                                    onClick={(event) => handleClick(event, rowId)}
+                                >
+                                    {selectedUnit === '' ? 'Unit i-' : selectedUnit}
+                                </Button>
+                                <Menu
+                                    id={`menu-${rowId}`}
+                                    anchorEl={anchorEls[rowId]}
+                                    keepMounted
+                                    open={Boolean(anchorEls[rowId])}
+                                    onClose={() => handleClose(rowId)}
+                                >
+                                    {units.map((unit) => (
+                                        <MenuItem key={unit} onClick={() => handleInputUnitChange(unit)}>
+                                            {unit}
+                                        </MenuItem>
+                                    ))}
+                                </Menu>
+                            </TableCell>
+                        )
+
+                    } else if (temp === "3" && 'unit_n' === col.dataKey) {
+                    const rowId = 'unit_n'
+                    return (
+                        <TableCell key={col.dataKey} style={{width: col.width, textAlign: "center"}}>
+                            <Button
+                                style={{
+                                    textTransform: 'none',
+                                }}
+                                aria-controls={`simple-menu-${rowId}`}
+                                aria-haspopup="true"
+                                onClick={(event) => handleClick(event, rowId)}
+                            >
+                                {selectedUnit === '' ? 'Unit i+' : selectedUnit}
+                            </Button>
+                            <Menu
+                                id={`menu-${rowId}`}
+                                anchorEl={anchorEls[rowId]}
+                                keepMounted
+                                open={Boolean(anchorEls[rowId])}
+                                onClose={() => handleClose(rowId)}
+                            >
+                                {units.map((unit) => (
+                                    <MenuItem key={unit} onClick={() => handleInputUnitChange(unit)}>
+                                        {unit}
+                                    </MenuItem>
+                                ))}
+                            </Menu>
+                        </TableCell>
+                    )
+
+                } else if ('unit' !== col.dataKey) {
                         return (
                             <TableCell key={col.dataKey}
                                        style={{width: col.width, textAlign: "center"}}
@@ -751,6 +868,7 @@ function Edit() {
             return newArray;
         });
     };
+
     function createAgentFooterInput() {
         const uniqueAgents = new Set<string>();
 
@@ -918,8 +1036,13 @@ function Edit() {
                         <TableHead style={{position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1}}>
                             <TableRow>
                                 <TableCell align="center" colSpan={initialColumns.length}
-                                           sx={{ textAlign: 'center' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                           sx={{textAlign: 'center'}}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '100%'
+                                    }}>
                                         <TextField
                                             id="Title"
                                             label="Title"
@@ -941,7 +1064,7 @@ function Edit() {
                                             rows={2}
                                             multiline
                                         />
-                                        <div style={{ position: 'relative', flex: 1 }}>
+                                        <div style={{position: 'relative', flex: 1}}>
                                             <span className="backgroundText">Synopsis</span>
                                             <TextField
                                                 multiline
@@ -949,7 +1072,7 @@ function Edit() {
                                                 variant="outlined"
                                                 value={drammarSynopsis}
                                                 onChange={(event) => setDrammarSynopsis(event.target.value)}
-                                                style={{ width: '100%' }}
+                                                style={{width: '100%'}}
                                             />
                                         </div>
                                     </div>
@@ -957,10 +1080,18 @@ function Edit() {
                             </TableRow>
 
                             <TableRow>
-                                <TableCell key={'unit'} align="center" colSpan={initialColumns.length} sx={{ textAlign: 'center' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                                        <Tooltip title={<span style={{fontSize: '1.2em'}}>Unit Title</span>} placement="top" arrow>
-                                            <Button variant="outlined" style={{ textTransform: 'none', width: '33%', marginRight: '1em' }}
+                                <TableCell key={'unit'} align="center" colSpan={initialColumns.length}
+                                           sx={{textAlign: 'center'}}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '100%'
+                                    }}>
+                                        <Tooltip title={<span style={{fontSize: '1.2em'}}>Unit Title</span>}
+                                                 placement="top" arrow>
+                                            <Button variant="outlined"
+                                                    style={{textTransform: 'none', width: '33%', marginRight: '1em'}}
                                                     onDoubleClick={(e) => {
                                                         if (inputs['unit'] !== undefined || unitQuery !== '') {
                                                             handleClick(e, 'unit');
@@ -971,7 +1102,7 @@ function Edit() {
                                                             handleClick(e, 'unit');
                                                         }
                                                     }}
-                                                    sx={{ m: 1 }}>
+                                                    sx={{m: 1}}>
                                                 {labels['unit'].replace(/_/g, ' ')}
                                             </Button>
                                         </Tooltip>
@@ -995,7 +1126,7 @@ function Edit() {
                                                 </Button>
                                             </MenuItem>
                                         </Menu>
-                                        <div style={{ position: 'relative', flex: 1 }}>
+                                        <div style={{position: 'relative', flex: 1}}>
                                             <span className="backgroundText">Synopsis Unit</span>
                                             <TextField
                                                 multiline
@@ -1003,7 +1134,7 @@ function Edit() {
                                                 variant="outlined"
                                                 value={unitSynopsis}
                                                 onChange={(event) => setUnitSynopsis(event.target.value)}
-                                                style={{ width: '100%' }}
+                                                style={{width: '100%'}}
                                             />
                                         </div>
                                     </div>
