@@ -728,12 +728,6 @@ function TableEdit(params: any) {
                         let tripleEmo = ''
                         emotion.forEach((elem) => {
 
-                            tripleEmo += `
-                            :${elem}_ES rdf:type :EmotionSchema.
-                            :${elem}_ES rdfs:comment "${comment}" .
-                            :${elem}_ES :hasEmotionType :${elem}.
-                            `
-
                             if (agent1 !== '' && (params.temp === "1" || params.temp === "3")) {
                                 tripleEmo += `
                                  :${elem}_${agent1} rdf:type :Emotion.

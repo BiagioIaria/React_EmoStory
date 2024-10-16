@@ -459,9 +459,6 @@ function Import() {
                                     :${elem}_${agent} rdf:type :Emotion.
                                     ${comments(commentIndex, plan, `${elem}_${agent}`)}
                                     :${elem}_${agent} :isEmotionOf :${agent}.
-                                    :${elem}_ES rdf:type :EmotionSchema.
-                                    ${comments(commentIndex, plan, `${elem}_ES`)}
-                                    :${elem}_ES :hasEmotionType :${elem}.
                                     :${elem}_ES :describes :${elem}_${agent}.
                                     `;
                                         });
