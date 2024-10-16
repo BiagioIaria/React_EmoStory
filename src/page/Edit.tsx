@@ -1008,23 +1008,33 @@ function Edit() {
             return newData;
         });
     }
-
     function createEmoExplanation() {
         const checkEmo: any = new Set([])
+        const uniqueAgents = new Set<string>();
+
+        data.forEach((item: any) => {
+            uniqueAgents.add(item.value.agentplan1);
+            uniqueAgents.add(item.value.agentplan2);
+        });
+
+        const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
         return emoInf.map((emo: any, index: number) => {
             const str = emo['emo']['value'].split('#')[1].split('_')[0]
-            const lengthBefore = checkEmo.size
-            checkEmo.add(str)
-            if (lengthBefore !== checkEmo.size) {
-                return (
-                    <div key={str + index + 'Explanation'}>
-                        <h4>{str}: {emotions[str]}</h4>
-                    </div>
-                )
-            } else {
+            if(Agents.includes(emo['i']['value'])){
+                const lengthBefore = checkEmo.size
+                checkEmo.add(str)
+                if (lengthBefore !== checkEmo.size) {
+                    return (
+                        <div key={str + index + 'Explanation'}>
+                            <h4>{str}: {emotions[str]}</h4>
+                        </div>
+                    )
+                } else {
+                    return null
+                }
+            }else{
                 return null
             }
-
         });
     }
 
