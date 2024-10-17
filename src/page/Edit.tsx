@@ -481,14 +481,14 @@ function Edit() {
                         `
                     }
 
-                    if (temp === '2' && selectedUnit!=='') {
+                    if (temp === '2' && selectedUnit !== '') {
                         tripleUnit += `
                             :Timeline_${selectedUnit.replace(/ /g, '_')} :hypo_precedes :Timeline_${unit}.
                             
                             `
                     }
 
-                    if (temp === '3' && selectedUnit!=='') {
+                    if (temp === '3' && selectedUnit !== '') {
                         tripleUnit += `
                             :Timeline_${unit} :is_hypo_preceded_by :Timeline_${selectedUnit.replace(/ /g, '_')}.
                             
@@ -668,36 +668,36 @@ function Edit() {
                         )
 
                     } else if (temp === "3" && 'unit_n' === col.dataKey) {
-                    const rowId = 'unit_n'
-                    return (
-                        <TableCell key={col.dataKey} style={{width: col.width, textAlign: "center"}}>
-                            <Button
-                                style={{
-                                    textTransform: 'none',
-                                }}
-                                aria-controls={`simple-menu-${rowId}`}
-                                aria-haspopup="true"
-                                onClick={(event) => handleClick(event, rowId)}
-                            >
-                                {selectedUnit === '' ? 'Unit i+' : selectedUnit}
-                            </Button>
-                            <Menu
-                                id={`menu-${rowId}`}
-                                anchorEl={anchorEls[rowId]}
-                                keepMounted
-                                open={Boolean(anchorEls[rowId])}
-                                onClose={() => handleClose(rowId)}
-                            >
-                                {units.map((unit) => (
-                                    <MenuItem key={unit} onClick={() => handleInputUnitChange(unit)}>
-                                        {unit}
-                                    </MenuItem>
-                                ))}
-                            </Menu>
-                        </TableCell>
-                    )
+                        const rowId = 'unit_n'
+                        return (
+                            <TableCell key={col.dataKey} style={{width: col.width, textAlign: "center"}}>
+                                <Button
+                                    style={{
+                                        textTransform: 'none',
+                                    }}
+                                    aria-controls={`simple-menu-${rowId}`}
+                                    aria-haspopup="true"
+                                    onClick={(event) => handleClick(event, rowId)}
+                                >
+                                    {selectedUnit === '' ? 'Unit i+' : selectedUnit}
+                                </Button>
+                                <Menu
+                                    id={`menu-${rowId}`}
+                                    anchorEl={anchorEls[rowId]}
+                                    keepMounted
+                                    open={Boolean(anchorEls[rowId])}
+                                    onClose={() => handleClose(rowId)}
+                                >
+                                    {units.map((unit) => (
+                                        <MenuItem key={unit} onClick={() => handleInputUnitChange(unit)}>
+                                            {unit}
+                                        </MenuItem>
+                                    ))}
+                                </Menu>
+                            </TableCell>
+                        )
 
-                } else if ('unit' !== col.dataKey) {
+                    } else if ('unit' !== col.dataKey) {
                         return (
                             <TableCell key={col.dataKey}
                                        style={{width: col.width, textAlign: "center"}}
@@ -873,8 +873,12 @@ function Edit() {
         const uniqueAgents = new Set<string>();
 
         data.forEach((item: any) => {
-            uniqueAgents.add(item.value.agentplan1);
-            uniqueAgents.add(item.value.agentplan2);
+            if(temp !== "2"){
+                uniqueAgents.add(item.value.agentplan1);
+            }
+            if(temp !== "3") {
+                uniqueAgents.add(item.value.agentplan2);
+            }
         });
         const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
         return Agents.map((str: string, index: number) => {
@@ -900,7 +904,7 @@ function Edit() {
 
             return (
                 <div key={str + index + 'Header'}>
-                    <h3>{str}</h3>
+                    <h3>{str.replace(/_/g, ' ')}</h3>
                     <TextField
                         label="Likes"
                         variant="outlined"
@@ -1008,6 +1012,7 @@ function Edit() {
             return newData;
         });
     }
+
     function createEmoExplanation() {
         const checkEmo: any = new Set([])
         const uniqueAgents = new Set<string>();
@@ -1020,7 +1025,7 @@ function Edit() {
         const Agents = Array.from(uniqueAgents).filter(agent => agent !== undefined && agent !== "");
         return emoInf.map((emo: any, index: number) => {
             const str = emo['emo']['value'].split('#')[1].split('_')[0]
-            if(Agents.includes(emo['i']['value'])){
+            if (Agents.includes(emo['i']['value'])) {
                 const lengthBefore = checkEmo.size
                 checkEmo.add(str)
                 if (lengthBefore !== checkEmo.size) {
@@ -1032,7 +1037,7 @@ function Edit() {
                 } else {
                     return null
                 }
-            }else{
+            } else {
                 return null
             }
         });
@@ -1193,7 +1198,7 @@ function Edit() {
             {createAgentFooterInput()}
             <Divider/>
             <h3>Object Pleasant</h3>
-            {objectData.map((item, index) => {
+            {objectData.map((item: any, index) => {
                 const label: any = footerAgentLabel.find((elem: any) => elem['ao'] === item);
                 if (label) {
                     let radioGroupValue = "null"
@@ -1203,7 +1208,7 @@ function Edit() {
                     return (
                         item !== '' && (
                             <div key={index} style={{marginTop: 10}}>
-                                <div>{item} Pleasant?</div>
+                                <div>{item.replace(/_/g, ' ')} Pleasant?</div>
                                 <RadioGroup row name={`Pleasant-${index}`} value={radioGroupValue}>
                                     <FormControlLabel
                                         value="True"

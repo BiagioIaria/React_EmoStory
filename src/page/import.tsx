@@ -389,19 +389,19 @@ function Import() {
                                 if (Object.keys(kb).includes('Like')) {
                                     for (let i = 0; i < kb['Like'].length; i++) {
                                         agent = kb['Like'][i]['a'].replace(/ /g, '_')
-                                        const ao = kb['Like'][i]['ao'].replace(/ /g, '_')
+                                        const ao = kb['Like'][i]['ao']
                                         if (kb['Agent'].includes(ao)) {
                                             tripleAgent += `
-                                            :${agent} :likes :${ao}.                             
+                                            :${agent} :likes :${ao.replace(/ /g, '_')}.                             
                                             
                                             `
                                         } else {
                                             tripleAgent += `
-                                            :${ao} rdf:type :Object.
-                                            ${comments(commentIndex, plan, ao)}
-                                            :${agent} :likes :${ao}.  
-                                            :${ao} :likes "undefined".   
-                                            :${ao} :dislikes "undefined".                        
+                                            :${ao.replace(/ /g, '_')} rdf:type :Object.
+                                            ${comments(commentIndex, plan, ao.replace(/ /g, '_'))}
+                                            :${agent} :likes :${ao.replace(/ /g, '_')}.  
+                                            :${ao.replace(/ /g, '_')} :likes "undefined".   
+                                            :${ao.replace(/ /g, '_')} :dislikes "undefined".                        
                                             
                                             `
                                         }
@@ -410,19 +410,19 @@ function Import() {
                                 if (Object.keys(kb).includes('Dislike')) {
                                     for (let i = 0; i < kb['Dislike'].length; i++) {
                                         agent = kb['Dislike'][i]['a'].replace(/ /g, '_')
-                                        const ao = kb['Dislike'][i]['ao'].replace(/ /g, '_')
+                                        const ao = kb['Dislike'][i]['ao']
                                         if (kb['Agent'].includes(ao)) {
                                             tripleAgent += `
-                                            :${agent} :dislikes :${ao}.                             
+                                            :${agent} :dislikes :${ao.replace(/ /g, '_')}.                             
                                             
                                             `
                                         } else {
                                             tripleAgent += `
-                                            :${ao} rdf:type :Object.
-                                            ${comments(commentIndex, plan, ao)}
-                                            :${agent} :dislikes :${ao}.  
-                                            :${ao} :likes "undefined".   
-                                            :${ao} :dislikes "undefined".                       
+                                            :${ao.replace(/ /g, '_')} rdf:type :Object.
+                                            ${comments(commentIndex, plan, ao.replace(/ /g, '_'))}
+                                            :${agent} :dislikes :${ao.replace(/ /g, '_')}.  
+                                            :${ao.replace(/ /g, '_')} :likes "undefined".   
+                                            :${ao.replace(/ /g, '_')} :dislikes "undefined".                       
                                             
                                             `
                                         }
