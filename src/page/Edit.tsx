@@ -601,8 +601,9 @@ function Edit() {
         }));
     };
 
-    const handleInputUnitChange = (value: any) => {
+    const handleInputUnitChange = (value: any, rowId:any) => {
         setSelectedUnit(value);
+        handleClose(rowId)
     };
 
     const handleConfirm = (id: any) => {
@@ -659,7 +660,7 @@ function Edit() {
                                     onClose={() => handleClose(rowId)}
                                 >
                                     {units.map((unit) => (
-                                        <MenuItem key={unit} onClick={() => handleInputUnitChange(unit)}>
+                                        <MenuItem key={unit} onClick={() => handleInputUnitChange(unit, rowId)}>
                                             {unit}
                                         </MenuItem>
                                     ))}
@@ -689,7 +690,7 @@ function Edit() {
                                     onClose={() => handleClose(rowId)}
                                 >
                                     {units.map((unit) => (
-                                        <MenuItem key={unit} onClick={() => handleInputUnitChange(unit)}>
+                                        <MenuItem key={unit} onClick={() => handleInputUnitChange(unit, rowId)}>
                                             {unit}
                                         </MenuItem>
                                     ))}

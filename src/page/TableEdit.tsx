@@ -675,8 +675,13 @@ function TableEdit(params: any) {
                         if (agent1 !== '' && (params.temp === "1" || params.temp === "3")) {
                             tripleAgent += `
                             :${agent1} rdf:type :Agent.
-                            :${agent1} rdfs:comment "${comment}" .
                             `
+                            if (params.temp === "1") {
+                                tripleAgent += `
+                                :${agent1} rdfs:comment "${comment}" .
+                                `
+                            }
+
                             if (plan1 !== '') {
                                 tripleAgent += `
                                 :${agent1} :intends :${plan1}.
@@ -693,10 +698,13 @@ function TableEdit(params: any) {
                         }
                         if (agent2 !== '' && (params.temp === "1" || params.temp === "2")) {
                             tripleAgent += `
-                            :${agent2} rdf:type :Agent.
-                            :${agent2} rdfs:comment "${comment}" .
-                            
+                            :${agent2} rdf:type :Agent.      
                             `
+                            if (params.temp === "1") {
+                                tripleAgent += `
+                                :${agent2} rdfs:comment "${comment}" .
+                                `
+                            }
                             if (plan2 !== '') {
                                 tripleAgent += `
                                 :${agent2} :intends :${plan2}.
@@ -1459,7 +1467,7 @@ function TableEdit(params: any) {
 
         }
 
-        function handleInputUnitChange(data: any) {
+        function handleInputUnitChange(data: any, keyLabel: any) {
             const plan = data['Plan']?.['value'] ?? null;
 
             const goalplan = data['Goal']?.['value'] ?? null;
@@ -1526,6 +1534,7 @@ function TableEdit(params: any) {
 
                 })
             }
+            handleClose(keyLabel)
 
 
         }
@@ -1698,13 +1707,20 @@ function TableEdit(params: any) {
                                         open={Boolean(anchorEls[keyLabel])}
                                         onClose={() => handleClose(keyLabel)}
                                     >
-                                        {dataByUnit.map((data, index) => (
-                                            <MenuItem key={data + '_' + index}
-                                                      onClick={() => handleInputUnitChange(data)}>
-                                                {data['Plan']?.['value'] ?? null}
+                                        {dataByUnit.length === 0 ? (
+                                            <MenuItem style={{ color: 'red', pointerEvents: 'none' }}>
+                                                Selezionare prima l'unità
                                             </MenuItem>
-                                        ))}
+                                        ) : (
+                                            dataByUnit.map((data, index) => (
+                                                <MenuItem key={data + '_' + index}
+                                                          onClick={() => handleInputUnitChange(data, keyLabel)}>
+                                                    {data['Plan']?.['value'] ?? null}
+                                                </MenuItem>
+                                            ))
+                                        )}
                                     </Menu>
+
                                 ) : (
                                     <Menu
                                         anchorEl={anchorEls[keyLabel]}
